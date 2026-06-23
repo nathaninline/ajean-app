@@ -96,6 +96,14 @@ header .sp{flex:1}
 .empty{grid-column:1/-1;text-align:center;color:var(--dim);padding:40px 20px;border:1px dashed var(--border);border-radius:8px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:40;padding:16px}
 .modal.show{display:grid}
+.seshead{margin:14px 0 6px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em}
+.seslist{display:flex;flex-direction:column;gap:6px;max-height:230px;overflow:auto}
+.ses{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--border);border-radius:7px;background:var(--bg)}
+.ses .sesinfo{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.ses .sesinfo b{font-size:13px;display:flex;align-items:center;gap:7px}
+.ses .sub{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ses .badge{font-size:10px;font-weight:600;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:1px 7px;text-transform:none;letter-spacing:0}
+.btn.sm{padding:6px 10px;font-size:12px;flex:none}
 .sheet{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow:auto}
 .sheet h3{margin-bottom:18px;font-size:16px;font-weight:600;color:var(--accent)}
 .field{margin-bottom:13px}
@@ -285,6 +293,8 @@ header .sp{flex:1}
   <div class="kv"><span>Agents</span><b id="acctAg"></b></div>
   <div class="kv"><span>Chiffrement</span><b>🔒 bout en bout (OPAQUE)</b></div>
   <p class="hint" style="margin-top:10px">Tes system prompts sont chiffrés avec une clé dérivée de ton mot de passe, qui ne quitte jamais ton navigateur. Le relais ne peut pas les lire.</p>
+  <div class="seshead">Sessions ouvertes</div>
+  <div id="acctSessions" class="seslist"></div>
   <div class="row"><button class="btn danger" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
     <button class="btn" onclick="closeAcct()">Fermer</button></div>
 </div></div>
@@ -389,8 +399,24 @@ async function me(){var r=await j('/app/me');if(!r)return;var d=await r.json();E
 function openAccount(){document.getElementById('acctEmail').textContent=EMAIL;
   document.getElementById('acctSrv').textContent=MACHINES.filter(function(m){return m.online}).length+' en ligne · '+MACHINES.length+' au total';
   document.getElementById('acctAg').textContent=AGENTS.length;
-  document.getElementById('acctModal').classList.add('show');}
+  document.getElementById('acctModal').classList.add('show');
+  loadSessions();}
 function closeAcct(){document.getElementById('acctModal').classList.remove('show');}
+// Sessions ouvertes : où le compte est connecté + déconnexion à distance.
+function ago(ts){if(!ts)return 'à l\'instant';var s=Math.floor(Date.now()/1000)-ts;
+  if(s<60)return 'à l\'instant';if(s<3600)return 'il y a '+Math.floor(s/60)+' min';
+  if(s<86400)return 'il y a '+Math.floor(s/3600)+' h';return 'il y a '+Math.floor(s/86400)+' j';}
+async function loadSessions(){var el=document.getElementById('acctSessions');
+  el.innerHTML='<div class="hint">Chargement…</div>';
+  var r=await j('/app/sessions');if(!r)return;var ss=((await r.json()).sessions)||[];
+  if(!ss.length){el.innerHTML='<div class="hint">Aucune session.</div>';return;}
+  el.innerHTML=ss.map(function(s){return '<div class="ses"><div class="sesinfo">'+
+    '<b>'+esc(s.device||'Appareil')+(s.current?' <span class="badge">cet appareil</span>':'')+'</b>'+
+    '<span class="sub">'+esc(s.ip||'IP inconnue')+' · vu '+ago(s.lastSeen)+'</span></div>'+
+    (s.current?'':'<button class="btn danger sm" onclick="revokeSession(\''+s.id+'\')">Déconnecter</button>')+
+    '</div>';}).join('');}
+async function revokeSession(id){if(!confirm('Déconnecter cet appareil ?'))return;
+  await jsonPost('/app/session/revoke',{id:id});toast('Appareil déconnecté');loadSessions();}
 
 /* ---- clés de liaison (1 par serveur) ---- */
 function openKeys(){document.getElementById('keyReveal').style.display='none';
