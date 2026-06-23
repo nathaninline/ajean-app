@@ -1,0 +1,90 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ajean.link — connexion</title>
+<style>:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c222b;--border:#30363d;--text:#e6edf3;
+--dim:#7d8590;--accent:#58a6ff;--blue:#1f6feb;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body.auth{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:22px;background:var(--bg);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
+.card{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--border);border-radius:10px}
+.card .inner{padding:32px 28px;text-align:center}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:18px;margin-bottom:14px}
+.brand .tag{color:var(--accent)}
+h1{font-size:18px;font-weight:600;color:var(--accent);margin-bottom:8px}
+p{color:var(--dim);font-size:13px;line-height:1.5}
+form{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+input{padding:11px 13px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-size:14px}
+input:focus{outline:none;border-color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:14px;font-weight:600;
+  padding:11px 16px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--text);transition:.12s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-primary:hover{filter:brightness(1.1);color:#fff}
+.err{color:var(--err);margin-top:10px;font-size:13px}
+.foot{font-size:12px;color:var(--dim);margin-top:18px;line-height:1.7}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+code{background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.9em;border:1px solid var(--border)}
+@media (hover:none) and (pointer:coarse){input{font-size:16px}}
+</style></head><body class="auth">
+<div class="card"><div class="inner">
+  <div class="brand"><span>ajean<span class="tag">.link</span></span></div>
+  <h1>Connexion</h1>
+  <p>Connecte-toi pour gérer tes serveurs et tes agents IA.</p>
+  <p class="err" id="jsErr" style="display:none"></p>
+  <form id="lf">
+    <input type="email" name="email" id="le" placeholder="email" autocomplete="username" autofocus required>
+    <input type="password" name="password" id="lp" placeholder="mot de passe" autocomplete="current-password" required>
+    <button class="btn btn-primary" type="submit">Se connecter →</button>
+  </form>
+  <p class="foot">🔒 Aucun log de tes conversations · Chiffrement bout-en-bout · <a href="/">← Accueil</a></p>
+</div></div>
+<script src="/wasm_exec.js"></script>
+<script>
+// Boîte noire : ce code vient de GitHub Pages (app.ajean.link). Les appels d'auth
+// vont au relais (ajean.link) via ce shim, qui ajoute aussi les cookies. Le mot de
+// passe ne quitte JAMAIS le navigateur (protocole OPAQUE en WebAssembly).
+var API='https://ajean.link';
+(function(){var _f=window.fetch.bind(window);
+  window.fetch=function(u,opt){
+    if(typeof u==='string'&&u.charAt(0)==='/'&&!/^\/(opaque\.wasm|wasm_exec\.js|marked\.min\.js)/.test(u)){
+      u=API+u;opt=Object.assign({credentials:'include'},opt||{});
+    }
+    return _f(u,opt);};})();
+function jpost(u,b){return fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(function(r){return r.json();});}
+var _wasm=(function(){var go=new Go();return WebAssembly.instantiateStreaming(fetch('/opaque.wasm'),go.importObject)
+  .then(function(res){go.run(res.instance);});})();
+var lf=document.getElementById('lf');
+lf.onsubmit=async function(e){e.preventDefault();
+  var email=document.getElementById('le').value.trim(),pw=document.getElementById('lp').value;
+  var er=document.getElementById('jsErr');er.style.display='none';
+  function show(m){er.textContent=m;er.style.display='';}
+  try{await _wasm;
+    // 1) Tente un login OPAQUE.
+    var i1=opaqueLoginInit(pw);if(!i1.ok)throw new Error(i1.err);
+    var s1=await jpost('/auth/login/init',{email:email,ke1:i1.ke1});
+    if(s1.needLegacy){
+      // 2) Compte encore en bcrypt → bascule unique vers OPAQUE.
+      var lr=await fetch('/login',{method:'POST',headers:{'X-Ajax':'1','Content-Type':'application/x-www-form-urlencoded'},
+        body:'email='+encodeURIComponent(email)+'&password='+encodeURIComponent(pw)});
+      var lj={};try{lj=await lr.json();}catch(_){}
+      if(!lr.ok||!lj.ok){show((lj&&lj.err)||'Connexion impossible.');return;}
+      var ek=await opaqueRegisterFlow(pw);if(!ek){show('Échec de la migration du chiffrement.');return;}
+      localStorage.setItem('ajk',ek);location.href='/';return;}
+    if(!s1.ok){show(s1.err||'Connexion impossible.');return;}
+    var f1=opaqueLoginFinish(s1.ke2,s1.clientID,s1.serverID);
+    if(!f1.ok){show('Email ou mot de passe incorrect.');return;}
+    var s2=await jpost('/auth/login/finish',{sid:s1.sid,ke3:f1.ke3});
+    if(!s2.ok){show(s2.err||'Email ou mot de passe incorrect.');return;}
+    localStorage.setItem('ajk',f1.exportKey); // exportKey complète (base64) ; tronquée à 32o à l'import
+    location.href='/';
+  }catch(err){show('Erreur : '+err);}
+};
+// Enregistrement OPAQUE (création/migration) → retourne l'exportKey (base64).
+async function opaqueRegisterFlow(pw){
+  var ri=opaqueRegInit(pw);if(!ri.ok)return null;
+  var rr=await jpost('/auth/register/init',{req:ri.req});if(!rr.ok)return null;
+  var rf=opaqueRegFinish(rr.response,rr.clientID,rr.serverID);if(!rf.ok)return null;
+  var done=await jpost('/auth/register/finish',{record:rf.record});if(!done.ok)return null;
+  return rf.exportKey;}
+</script>
+</body></html>

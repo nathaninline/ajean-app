@@ -1,0 +1,760 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ajean.link — tableau de bord</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c222b;--border:#30363d;--text:#e6edf3;
+--dim:#7d8590;--accent:#58a6ff;--blue:#1f6feb;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.5;overscroll-behavior-y:none}
+header{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:14px;padding:12px 20px;background:var(--bg);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:18px}
+.brand .mk{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:.8rem;background:var(--blue);color:#fff}
+.brandcol{display:flex;flex-direction:column;line-height:1.2}
+.email{font-size:11px;color:var(--dim);margin-top:4px}
+.accent{color:var(--accent)}
+header .sp{flex:1}
+.chip{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:12px;background:var(--panel);border:1px solid var(--border);padding:5px 11px;border-radius:999px}
+.chip .av{width:16px;height:16px;border-radius:50%;background:var(--accent)}
+.ghost{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 11px;cursor:pointer;font:inherit;font-size:13px;transition:.12s}
+.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.iconbtn{width:38px;height:38px;border:0;background:transparent;color:var(--dim);cursor:pointer;display:grid;place-items:center;transition:.12s}
+.iconbtn:hover{color:var(--accent)}
+.iconbtn svg{display:block}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 20px 70px}
+.sec{display:flex;align-items:center;gap:10px;margin:30px 0 14px}
+.sec h2{font-size:16px;font-weight:600;color:var(--text)}
+.sec .ct{color:var(--dim);font-size:11px;background:var(--panel);border:1px solid var(--border);padding:1px 8px;border-radius:10px}
+.sec .sp{flex:1}
+.btn{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 14px;cursor:pointer;font:inherit;font-size:13px;font-weight:600;transition:.12s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{filter:brightness(1.1);color:#fff}
+.btn.subtle{background:transparent;border-color:transparent;color:var(--dim);font-weight:500;padding:5px 10px}
+.btn.subtle:hover{background:var(--panel);border-color:var(--border);color:var(--text)}
+.sdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:middle;background:var(--dim)}
+.sdot.on{background:var(--ok,#3fb950)}
+.sdot.wait{background:var(--warn,#d29922)}
+.btn.danger{border-color:var(--err);color:var(--err)}
+.btn.danger:hover{background:var(--err);border-color:var(--err);color:#fff}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.tile{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px;transition:border-color .12s}
+.tile>.dot,.tile .top>.dot{position:absolute;top:14px;right:14px}
+.tile:hover{border-color:var(--accent)}
+.tile.agent{cursor:pointer}
+.top{display:flex;align-items:center;gap:10px;padding-right:16px}
+.av{width:34px;height:34px;border-radius:7px;flex:none;display:grid;place-items:center;font-size:1rem;background:var(--panel2);border:1px solid var(--border)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--dim);flex:none}
+.dot.on{background:var(--ok)}
+.name{font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{color:var(--dim);font-size:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pill{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1px 7px;font-size:11px;color:var(--dim)}
+.tile.srv .top{align-items:center}
+.tile.srv .av{background:linear-gradient(160deg,var(--panel2),var(--bg));font-size:17px}
+.tile.srv.off{opacity:.62}
+.hcol{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.hcol .name{flex:none}
+.hcol .pill{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sumline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+.sumline .sp{flex:1}
+.stat{display:inline-flex;align-items:center;gap:7px;font-weight:600;color:var(--text)}
+.modelrow{min-width:0}
+.mbadge{display:inline-block;max-width:100%;font-size:11px;color:var(--accent);background:var(--bg);
+  border:1px solid var(--border);border-radius:6px;padding:2px 9px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;vertical-align:bottom}
+.dettog{flex:none;background:none;border:none;color:var(--dim);font:inherit;font-size:11px;cursor:pointer;padding:2px 4px;border-radius:5px}
+.dettog:hover{color:var(--accent);background:var(--bg)}
+.det{margin-top:6px;animation:fade .14s ease}
+@keyframes fade{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:none}}
+.det .ctx{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--dim);margin-bottom:10px}
+.det .ctx b{color:var(--text);font-weight:600}
+.gpu{margin-top:11px}
+.gpu:first-child{margin-top:0}
+.grow{display:flex;justify-content:space-between;gap:8px;font-size:11px;margin-bottom:5px}
+.gn{color:var(--text);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gv{color:var(--dim);flex:none}
+.gbar{height:5px;border-radius:99px;background:var(--bg);overflow:hidden}
+.gbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),#6aa6ff);transition:width .35s ease}
+.gmeta{font-size:10px;color:var(--dim);margin-top:4px}
+.kv{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);gap:8px;padding:3px 0;border-bottom:1px solid var(--border)}
+.kv b{color:var(--text);font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:6px;border-radius:3px;background:var(--bg);overflow:hidden;border:1px solid var(--border)}
+.bar i{display:block;height:100%;background:var(--accent)}
+.gname{font-size:12px;color:var(--text);word-break:break-word;line-height:1.35;margin:5px 0 3px}
+.prompt{font-size:12px;color:var(--dim);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;max-height:54px;overflow:hidden;line-height:1.4}
+.tile .desc{font-size:13px;color:var(--dim);line-height:1.45}
+.acts{display:flex;gap:6px;margin-top:auto}
+.acts a,.acts button{flex:1;text-align:center;padding:8px;border-radius:6px;font:inherit;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer;text-decoration:none;transition:.12s}
+.acts a:hover,.acts button:hover{border-color:var(--accent);color:var(--accent)}
+.acts .go,.acts .open{background:var(--blue);border-color:var(--blue);color:#fff}
+.acts .go:hover,.acts .open:hover{filter:brightness(1.1);color:#fff}
+.acts .go[disabled]{opacity:.5;cursor:not-allowed}
+.acts .x{flex:0 0 40px;color:var(--dim)}
+.add{padding:18px;margin-top:16px;background:var(--panel);border:1px dashed var(--border);border-radius:8px}
+.add b{font-size:14px}
+.add code{display:block;background:var(--bg);padding:11px 13px;border-radius:6px;margin-top:9px;font-size:12px;user-select:all;word-break:break-all;color:var(--accent);border:1px solid var(--border)}
+.muted{color:var(--dim);font-size:12px}
+.empty{grid-column:1/-1;text-align:center;color:var(--dim);padding:40px 20px;border:1px dashed var(--border);border-radius:8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:40;padding:16px}
+.modal.show{display:grid}
+.sheet{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow:auto}
+.sheet h3{margin-bottom:18px;font-size:16px;font-weight:600;color:var(--accent)}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:11px;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-size:14px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.field textarea{min-height:90px;resize:vertical;line-height:1.5}
+.field input[type=range]{padding:0;accent-color:var(--accent)}
+.chk{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text);text-transform:none;letter-spacing:0;margin:8px 0;cursor:pointer}
+.chk input[type=checkbox]{width:auto;padding:0;accent-color:var(--accent);cursor:pointer}
+.chk .muted{margin-left:auto}
+.hint{font-size:11px;color:var(--dim);margin-top:6px}
+.reveal{display:flex;gap:8px;align-items:stretch;margin-top:6px}
+.reveal code{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--accent);word-break:break-all;user-select:all}
+.keys-head{margin:20px 0 8px;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+.keyrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.kinfo{display:flex;flex-direction:column;gap:2px;min-width:0}
+.keyrow .km{color:var(--text);font-size:12px}
+.kassoc{font-size:11px;color:var(--ok)}
+.kfree{font-size:11px;color:var(--dim)}
+.keyrow .kd{color:var(--dim);font-size:11px;margin-left:auto;flex-shrink:0}
+.keyrow button{background:none;border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:4px 9px;cursor:pointer;font:inherit;font-size:12px}
+.keyrow button:hover{border-color:var(--err);color:var(--err)}
+.row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.hg{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+#hChat,#hEdit{margin-left:-8px;gap:8px}
+#editor{display:none;flex-direction:column;min-height:calc(100dvh - 53px)}
+#editor.show{display:flex}
+.formwrap{width:100%;max-width:620px;margin:0 auto;padding:22px 20px 48px}
+.erow{display:flex;gap:8px;justify-content:flex-end;margin-top:22px}
+.field label.tgl{display:flex;align-items:center;gap:14px;padding:13px 15px;border:1px solid var(--border);border-radius:9px;background:var(--panel);cursor:pointer;margin-bottom:10px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text)}
+.tgl input{display:none}
+.tgl .tgl-txt{flex:1;display:flex;flex-direction:column;gap:3px}
+.tgl .tgl-txt b{font-size:13px;color:var(--text);font-weight:600}
+.tgl .tgl-txt small{font-size:11px;color:var(--dim);line-height:1.35}
+.tgl .sw{position:relative;width:42px;height:24px;border-radius:999px;background:var(--bg);border:1px solid var(--border);flex:none;transition:.16s}
+.tgl .sw::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--dim);transition:.16s}
+.tgl input:checked + .sw{background:var(--blue);border-color:var(--blue)}
+.tgl input:checked + .sw::after{transform:translateX(18px);background:#fff}
+.tgl:has(input:checked){border-color:var(--blue)}
+#chat{display:none;flex-direction:column;min-height:calc(100dvh - 53px)}
+#chat.show{display:flex}
+#chat.show{display:flex}
+.chead{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);background:var(--bg)}
+.chead .meta{flex:1;min-width:0}
+.chead .name{font-weight:600;font-size:14px;color:var(--accent)}
+.chead .sub{font-size:11px}
+.chead .av{display:none}
+.banner{text-align:center;padding:9px;color:var(--warn);font-size:12px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px}
+.spin{width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--warn);border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.msgs{flex:1 0 auto;overflow-x:hidden;padding:20px}
+.thread{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex}
+.msg.u{justify-content:flex-end}
+.msg .ic{display:none}
+.bubble{max-width:82%;padding:10px 14px;border-radius:10px;line-height:1.45}
+.msg.a .bubble{max-width:100%}
+.msg.u .bubble{background:var(--blue);color:#fff}
+.msg.a .bubble{background:var(--panel);border:1px solid var(--border);color:var(--text)}
+.txt{white-space:pre-wrap;word-wrap:break-word}
+.msg.a .txt{white-space:normal}
+.msg.a .txt>*:first-child{margin-top:0}.msg.a .txt>*:last-child{margin-bottom:0}
+.msg.a .txt p{margin:.5em 0}
+.msg.a .txt pre{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;overflow-x:auto;margin:.5em 0}
+.msg.a .txt code{background:var(--bg);border:1px solid var(--border);padding:1px 5px;border-radius:4px;font-size:.9em}
+.msg.a .txt pre code{border:0;padding:0;background:none}
+.msg.a .txt ul,.msg.a .txt ol{padding-left:1.3em;margin:.4em 0}
+.msg.a .txt li{margin:.15em 0}
+.msg.a .txt a{color:var(--accent)}
+.msg.a .txt h1,.msg.a .txt h2,.msg.a .txt h3,.msg.a .txt h4{font-size:1.05em;font-weight:600;margin:.7em 0 .3em}
+.msg.a .txt blockquote{border-left:3px solid var(--border);padding-left:10px;margin:.4em 0;color:var(--dim)}
+.msg.a .txt table{border-collapse:collapse;margin:.4em 0}
+.msg.a .txt th,.msg.a .txt td{border:1px solid var(--border);padding:3px 7px}
+.toolcall{border:1px dashed var(--border);border-radius:7px;margin:0 0 8px;padding:7px 10px;background:var(--bg)}
+.toolcall .thead{font-size:12px;color:var(--accent);font-weight:600;word-break:break-word}
+.toolcall .tres{margin:6px 0 0;background:#05070a;border:1px solid var(--border);border-radius:5px;padding:7px 9px;font-size:11px;color:var(--dim);max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.msg.a>.toolcall,.msg.a>.reason{flex:1;min-width:0;margin-bottom:0}
+.reason{margin-bottom:8px;border:1px dashed var(--border);border-radius:7px;background:transparent;overflow:hidden}
+.rhead{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:11px;color:var(--mag);user-select:none;text-transform:uppercase;letter-spacing:.06em}
+.rhead .chev{margin-left:auto;transition:.15s}
+.reason.col .rhead .chev{transform:rotate(-90deg)}
+.reason.col .rbody{display:none}
+.rbody{padding:0 10px 9px;font-size:12px;color:var(--mag);white-space:pre-wrap;line-height:1.5}
+.shim{animation:bl 1.2s ease-in-out infinite}
+@keyframes bl{0%,100%{opacity:.45}50%{opacity:1}}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--dim);animation:bb 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes bb{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.composer{position:sticky;bottom:0;z-index:10;border-top:1px solid var(--border);background:var(--bg);padding:12px 18px}
+.cbar{max-width:960px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
+.cbar textarea{flex:1;border:1px solid var(--border);background:var(--panel);color:var(--text);font:inherit;font-size:14px;border-radius:6px;resize:none;max-height:160px;padding:11px;outline:none}
+.cbar textarea:focus{border-color:var(--accent)}
+.send{padding:0 18px;height:44px;border-radius:6px;border:1px solid var(--blue);flex:none;cursor:pointer;color:#fff;font-size:1rem;font-weight:700;background:var(--blue)}
+.send.stop{background:var(--err);border-color:var(--err)}
+.send:hover{filter:brightness(1.1)}
+.send:disabled{opacity:.5;cursor:not-allowed}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 16px;border-radius:6px;opacity:0;transition:.2s;pointer-events:none;z-index:50;font-size:13px}
+#toast.show{opacity:1}
+/* iOS zoome au focus sur tout champ < 16px → on force 16px sur tactile. */
+@media (hover:none) and (pointer:coarse){input,select,textarea,.field input,.field select,.field textarea,.cbar textarea{font-size:16px}}
+</style></head><body>
+
+<header>
+  <div class="hg" id="hMain">
+    <div class="brand"><span>ajean<span class="accent">.link</span></span></div>
+    <span class="sp"></span>
+    <button class="iconbtn" onclick="openAccount()" title="Mon compte" aria-label="Mon compte"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></svg></button>
+  </div>
+  <div class="hg" id="hChat" style="display:none">
+    <button class="iconbtn" onclick="closeChat()" title="Retour" aria-label="Retour"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="brandcol" style="flex:1;min-width:0"><div class="name" id="cAgent" style="font-weight:600;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div><div class="email" id="cModel" style="margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div></div>
+    <button class="iconbtn" onclick="editCurAgent()" title="Éditer l'agent" aria-label="Éditer l'agent"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
+  </div>
+  <div class="hg" id="hEdit" style="display:none">
+    <button class="iconbtn" onclick="closeEditor()" title="Retour" aria-label="Retour"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="brandcol" style="flex:1;min-width:0"><div class="name" id="eTitle" style="font-weight:600;color:var(--accent)">Créer un agent</div></div>
+  </div>
+</header>
+
+<div class="wrap" id="home">
+  <div class="sec"><h2>Mes agents</h2><span class="ct" id="agCt">0</span><span class="sp"></span>
+    <button class="btn subtle" onclick="openCreate()">+ Agent</button></div>
+  <div class="grid" id="agents"></div>
+
+  <div class="sec"><h2>Mes serveurs</h2><span class="ct" id="srvCt">0</span><span class="sp"></span>
+    <button class="btn subtle" onclick="openKeys()">Gérer les clés</button></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div id="chat">
+  <div class="banner" id="cBanner" style="display:none"></div>
+  <div class="msgs"><div class="thread" id="cMsgs"></div></div>
+  <div class="composer"><div class="cbar">
+    <textarea id="cInput" rows="1" placeholder="Écris à ton agent…" oninput="grow(this)" onkeydown="chatKey(event)"></textarea>
+    <button class="send" id="cSend" onclick="sendMsg()">↑</button>
+  </div></div>
+</div>
+
+<div id="editor">
+  <div class="formwrap">
+    <input type="hidden" id="aId">
+    <div class="field"><label>Nom de l'agent</label><input id="aName" placeholder="ex : Assistant code"></div>
+    <div class="field"><label>Description <span class="muted">(affichée sur la carte)</span></label><input id="aDesc" placeholder="ex : T'aide à coder et débugger"></div>
+    <div class="field"><label>Serveur IA</label><select id="aMachine" onchange="onMachine()"></select></div>
+    <div class="field"><label>Preset / modèle</label><select id="aPreset"></select><div class="hint" id="presetHint"></div></div>
+    <div class="field"><label>System prompt</label><textarea id="aSystem" placeholder="Tu es un assistant expert en…"></textarea></div>
+    <div class="field"><label>Capacités</label>
+      <label class="tgl"><span class="tgl-txt"><b>Accès au shell</b><small>L'agent peut exécuter des commandes sur le serveur</small></span><input type="checkbox" id="aTools"><span class="sw"></span></label>
+      <label class="tgl"><span class="tgl-txt"><b>Accès aux skills</b><small>L'agent peut lire et gérer les guides réutilisables</small></span><input type="checkbox" id="aSkills"><span class="sw"></span></label>
+    </div>
+    <div class="erow"><button class="btn danger" id="agDel" onclick="delAgentFromModal()" style="display:none;margin-right:auto">Supprimer l'agent</button>
+      <button class="btn primary" onclick="saveAgent()">Enregistrer</button></div>
+  </div>
+</div>
+
+<div class="modal" id="srvModal"><div class="sheet">
+  <h3>Éditer le serveur</h3>
+  <input type="hidden" id="sId">
+  <div class="field"><label>Nom du serveur</label><input id="sName" placeholder="ex : Studio RTX"></div>
+  <div class="field"><label>Endpoint OpenAI — pour OpenCode, Hermes…</label>
+    <div class="reveal"><code id="sOai"></code><button class="btn" type="button" onclick="copyOai()">Copier</button></div>
+    <div class="hint">Clé API = une de tes clés de liaison (bouton « Gérer les clés »). Nom du modèle : <b>jean</b>.</div></div>
+  <div class="row"><button class="btn danger" onclick="delServer()" style="margin-right:auto">Retirer du compte</button>
+    <button class="btn" onclick="closeSrv()">Annuler</button>
+    <button class="btn primary" onclick="saveServer()">Enregistrer</button></div>
+</div></div>
+
+<div class="modal" id="keyModal"><div class="sheet">
+  <h3>Clés de liaison</h3>
+  <p class="muted">Génère une clé de liaison (une par serveur) puis gère-les ici. Sur la machine, une fois Jean installé, lance la commande affichée.</p>
+  <div id="keyReveal" style="display:none">
+    <div class="reveal"><code id="keyCmd"></code><button class="btn" onclick="copyCmd()">Copier</button></div>
+    <p class="hint">⚠️ Copie-la maintenant — elle ne sera plus affichée en clair. Le serveur apparaîtra ici dès qu'il se connecte.</p>
+  </div>
+  <button class="btn primary" id="genBtn" onclick="genKey()" style="margin-top:10px">+ Générer une clé</button>
+  <div class="keys-head">Clés existantes</div>
+  <div id="keyList"><p class="muted">—</p></div>
+  <div class="row"><button class="btn" onclick="closeKeys()">Fermer</button></div>
+</div></div>
+
+<div class="modal" id="acctModal"><div class="sheet">
+  <h3>Mon compte</h3>
+  <div class="kv"><span>Email</span><b id="acctEmail"></b></div>
+  <div class="kv"><span>Serveurs connectés</span><b id="acctSrv"></b></div>
+  <div class="kv"><span>Agents</span><b id="acctAg"></b></div>
+  <div class="kv"><span>Chiffrement</span><b>🔒 bout en bout (OPAQUE)</b></div>
+  <p class="hint" style="margin-top:10px">Tes system prompts sont chiffrés avec une clé dérivée de ton mot de passe, qui ne quitte jamais ton navigateur. Le relais ne peut pas les lire.</p>
+  <div class="row"><button class="btn danger" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
+    <button class="btn" onclick="closeAcct()">Fermer</button></div>
+</div></div>
+
+<div class="modal" id="confirmModal"><div class="sheet">
+  <h3 id="cfTitle">Confirmer</h3>
+  <p class="muted" id="cfMsg"></p>
+  <div class="row"><button class="btn" onclick="cfResolve(false)" id="cfNo">Annuler</button>
+    <button class="btn primary" onclick="cfResolve(true)" id="cfYes">Continuer</button></div>
+</div></div>
+
+<div id="toast"></div>
+<script src="/marked.min.js"></script>
+<script src="/wasm_exec.js"></script>
+<script>
+// --- Boîte noire : ce code est servi par GitHub Pages (app.ajean.link), une
+// origine que le relais NE contrôle PAS. Les appels API vont, eux, au relais
+// (ajean.link). Ce shim réécrit tout chemin API absolu-racine vers le relais
+// avec les cookies de session ; les assets locaux (wasm/js) restent sur GitHub.
+var API='https://ajean.link';
+(function(){var _f=window.fetch.bind(window);
+  window.fetch=function(u,opt){
+    if(typeof u==='string'&&u.charAt(0)==='/'&&!/^\/(opaque\.wasm|wasm_exec\.js|marked\.min\.js)/.test(u)){
+      u=API+u;opt=Object.assign({credentials:'include'},opt||{});
+    }
+    return _f(u,opt);};})();
+var TOKEN='',MACHINES=[],AGENTS=[],CUR=null,BUSY=false,PROBE={},SCARDS={},SIG_M='',SIG_A='',ABORT=null,CREADER=null,EDIT_FROM='home',E2E={};
+if(window.marked&&marked.setOptions)marked.setOptions({gfm:true,breaks:false});
+function md(src){if(!src)return '';try{return window.marked?marked.parse(src.replace(/\n{3,}/g,'\n\n')):src;}catch(e){return src;}}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
+function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function logout(){localStorage.removeItem('ajk');CKEY=null;
+  // Le cookie de session vit sur le relais (HttpOnly) : on le fait effacer côté serveur.
+  try{fetch('/logout',{method:'POST'});}catch(e){}
+  location.href='/';}
+
+/* ---- Chiffrement E2E des system prompts (clé = exportKey OPAQUE) ------------
+   La clé vient du login OPAQUE (dérivée du mot de passe côté navigateur, jamais
+   transmise) et est conservée en localStorage pour la durée de la session. Le
+   relais ne stocke que du chiffré ('enc:v1:...') et ne voit jamais CKEY. */
+var CKEY=null;
+function b64e(buf){var b=new Uint8Array(buf),s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s);}
+function b64d(str){var s=atob(str),b=new Uint8Array(s.length);for(var i=0;i<s.length;i++)b[i]=s.charCodeAt(i);return b;}
+async function encStr(txt){if(!txt)return '';
+  var iv=crypto.getRandomValues(new Uint8Array(12));
+  var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},CKEY,new TextEncoder().encode(txt));
+  var out=new Uint8Array(iv.length+ct.byteLength);out.set(iv,0);out.set(new Uint8Array(ct),iv.length);
+  return 'enc:v1:'+b64e(out);}
+async function decStr(blob){if(!blob)return '';
+  if(blob.indexOf('enc:v1:')!==0)return blob; // non chiffré (ancien) → renvoyé tel quel
+  var raw=b64d(blob.slice(7)),iv=raw.slice(0,12),ct=raw.slice(12);
+  var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},CKEY,ct);
+  return new TextDecoder().decode(pt);}
+// Importe la clé AES depuis l'exportKey OPAQUE (32 premiers octets) en localStorage.
+async function loadKey(){var raw=localStorage.getItem('ajk');if(!raw)return false;
+  try{CKEY=await crypto.subtle.importKey('raw',b64d(raw).slice(0,32),{name:'AES-GCM'},true,['encrypt','decrypt']);return true;}catch(e){CKEY=null;return false;}}
+// ensureKey : la clé vient du login. Si absente (storage vidé, autre navigateur),
+// on renvoie vers le login pour ré-authentifier — le mot de passe n'est demandé qu'là.
+async function ensureKey(){if(CKEY)return true;if(await loadKey())return true;
+  toast('Reconnexion nécessaire…');logout();return false;}
+async function j(u,opt){var r=await fetch(u,opt);if(r.status===401){location.href='/login.html';return null;}return r;}
+
+/* ---- Boîte noire : chiffrement E2E du chat navigateur↔agent -----------------
+   Le relais ne transporte que de l'opaque. Racine R = SHA256(exportKey||"root"),
+   scellée vers la clé publique X25519 de l'agent (vérifiée par empreinte). */
+var _wasm=null,_te=new TextEncoder(),_td=new TextDecoder();
+function e2eInit(){if(_wasm)return _wasm;if(typeof Go==='undefined')return Promise.reject('wasm indisponible');
+  var go=new Go();_wasm=WebAssembly.instantiateStreaming(fetch('/opaque.wasm'),go.importObject).then(function(res){go.run(res.instance);});return _wasm;}
+async function sha256b(bytes){return new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));}
+function concatB(a,b){var o=new Uint8Array(a.length+b.length);o.set(a,0);o.set(b,a.length);return o;}
+function hexOf(bytes){return Array.from(bytes).map(function(x){return x.toString(16).padStart(2,'0')}).join('');}
+async function e2eRoot(){var raw=localStorage.getItem('ajk');if(!raw)return null;
+  return await sha256b(concatB(b64d(raw),_te.encode('ajean-e2e-root')));}
+async function fpOfPub(pubHex){var b=new Uint8Array(pubHex.match(/../g).map(function(h){return parseInt(h,16)}));
+  var s=hexOf((await sha256b(b)).slice(0,8)).toUpperCase(),p=[];
+  for(var i=0;i<s.length;i+=4)p.push(s.slice(i,i+4));return p.join('-');}
+// e2eFor : session E2E pour une machine (clé chat + sceau), si clé publique connue
+// ET empreinte confirmée. Renvoie null sinon → repli sur le chat clair.
+async function e2eFor(m){if(!m||!m.pubkey)return null;
+  var fp=await fpOfPub(m.pubkey);if(localStorage.getItem('fp:'+m.id)!==fp)return null;
+  if(E2E[m.id]&&E2E[m.id].pub===m.pubkey)return E2E[m.id];
+  try{await e2eInit();}catch(e){return null;}
+  var R=await e2eRoot();if(!R)return null;
+  var sealed=e2eSeal(m.pubkey,b64e(R));if(!sealed.ok)return null;
+  var kb=await sha256b(concatB(R,_te.encode('ajean-chat-v1')));
+  var key=await crypto.subtle.importKey('raw',kb,{name:'AES-GCM'},false,['encrypt','decrypt']);
+  var kid=hexOf((await sha256b(R)).slice(0,8));
+  E2E[m.id]={pub:m.pubkey,kid:kid,sealed:sealed.sealed,key:key};return E2E[m.id];}
+// Demande la confirmation de l'empreinte (une fois par machine).
+async function e2eConfirm(m){if(!m||!m.pubkey)return;
+  var fp=await fpOfPub(m.pubkey);if(localStorage.getItem('fp:'+m.id)===fp)return;
+  var ok=await askConfirm({title:'Vérifier l\'empreinte E2E',
+    msg:'Pour activer la boîte noire, confirme que cette empreinte est bien celle affichée par « jean link » sur ton serveur : '+fp,
+    yes:'Elle correspond',no:'Plus tard'});
+  if(ok){localStorage.setItem('fp:'+m.id,fp);toast('Boîte noire activée 🔒');}}
+function jsonPost(u,b){return j(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});}
+function machineName(id){var m=MACHINES.find(function(x){return x.id===id});return m?m.name:id;}
+function isOnline(id){var m=MACHINES.find(function(x){return x.id===id});return m&&m.online;}
+
+var EMAIL='';
+async function me(){var r=await j('/app/me');if(!r)return;var d=await r.json();EMAIL=d.email;}
+function openAccount(){document.getElementById('acctEmail').textContent=EMAIL;
+  document.getElementById('acctSrv').textContent=MACHINES.filter(function(m){return m.online}).length+' en ligne · '+MACHINES.length+' au total';
+  document.getElementById('acctAg').textContent=AGENTS.length;
+  document.getElementById('acctModal').classList.add('show');}
+function closeAcct(){document.getElementById('acctModal').classList.remove('show');}
+
+/* ---- clés de liaison (1 par serveur) ---- */
+function openKeys(){document.getElementById('keyReveal').style.display='none';
+  document.getElementById('genBtn').style.display='';loadKeys();
+  document.getElementById('keyModal').classList.add('show');}
+function closeKeys(){document.getElementById('keyModal').classList.remove('show');}
+
+async function loadKeys(){var r=await j('/app/keys');if(!r)return;var d=await r.json();
+  var el=document.getElementById('keyList');
+  if(!d.keys.length){el.innerHTML='<p class="muted">Aucune clé. Génère-en une ci-dessus.</p>';return;}
+  el.innerHTML='';d.keys.forEach(function(k){var row=document.createElement('div');row.className='keyrow';
+    var srv=(k.servers||[]);
+    var assoc;
+    if(srv.length){assoc='<span class="kassoc">🔗 '+srv.map(function(s){return esc(s.name)+(s.online?' ●':'')}).join(', ')+'</span>';}
+    else{assoc='<span class="kfree">libre</span>';}
+    var names=srv.map(function(s){return s.name}).join(', ');
+    row.innerHTML='<div class="kinfo"><span class="km">'+esc(k.mask)+'</span>'+assoc+'</div>'+
+      '<span class="kd">'+(k.created||'').slice(0,10)+'</span>'+
+      '<button onclick="revokeKey(\''+k.id+'\',\''+esc(names)+'\')">Révoquer</button>';
+    el.appendChild(row);});}
+
+async function genKey(){var r=await jsonPost('/app/key/new',{});if(!r)return;var d=await r.json();
+  document.getElementById('keyCmd').textContent=d.command;
+  document.getElementById('keyReveal').style.display='';
+  document.getElementById('genBtn').style.display='none';
+  loadKeys();}
+
+function copyCmd(){var t=document.getElementById('keyCmd').textContent;
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){toast('Commande copiée ✓')});
+  else toast('Copie manuelle');}
+
+async function revokeKey(id,names){var msg=names?('⚠️ Cette clé est utilisée par : '+names+'.\nCe(s) serveur(s) seront déconnectés et devront être re-linkés. Révoquer ?'):'Révoquer cette clé ?';
+  if(!confirm(msg))return;
+  await jsonPost('/app/key/remove',{id:id});toast('Clé révoquée');loadKeys();}
+
+async function probe(id){var base='/m/'+id+'/api/',out={};
+  try{var s=await(await fetch(base+'status')).json();out.health=s.health;out.ctx=s.ctx;}catch(e){}
+  try{var ps=await(await fetch(base+'presets')).json();var a=(ps||[]).find(function(p){return p.active});if(a){out.model=a.name;out.quant=a.quant;}}catch(e){}
+  try{var g=await(await fetch(base+'vram')).json();if(g&&g.length)out.gpus=g;}catch(e){}
+  return out;}
+
+// Squelette stable du corps : on ne remplace JAMAIS ce DOM ensuite, on met juste
+// à jour le texte/les valeurs in place (cf. updateProbe) → zéro clignotement.
+function probeSkeleton(){return '<div class="body">'+
+  '<div class="sumline">'+
+    '<span class="stat"><span class="sdot wait"></span><span class="st-t">connexion…</span></span>'+
+    '<span class="sp"></span>'+
+    '<button class="dettog" onclick="toggleDet(event,this)" style="display:none">détails ▾</button>'+
+  '</div>'+
+  '<div class="modelrow" style="display:none"><span class="mbadge"></span></div>'+
+  '<div class="det" hidden></div>'+
+'</div>';}
+
+function updateProbe(card,p){var b=card.querySelector('.body');if(!b)return;
+  var sd=b.querySelector('.sdot'),st=b.querySelector('.st-t');
+  if(sd)sd.className='sdot '+(p.health?'on':'wait');
+  if(st)st.textContent=p.health?'prêt':'démarrage';
+  var mr=b.querySelector('.modelrow'),mb=b.querySelector('.mbadge');
+  if(mr){if(p.model){mb.textContent=p.model+(p.quant?' · '+p.quant:'');mr.style.display='';}else mr.style.display='none';}
+  var det='';
+  if(p.ctx)det+='<div class="ctx"><span>Contexte</span><b>'+p.ctx.toLocaleString()+' tok</b></div>';
+  if(p.gpus&&p.gpus.length)p.gpus.forEach(function(g){var pct=g.total?Math.round(100*g.used/g.total):0;
+    det+='<div class="gpu"><div class="grow"><span class="gn">'+esc(g.name||'GPU')+'</span>'+
+      '<span class="gv">'+g.used+' / '+g.total+' Mo</span></div>'+
+      '<div class="gbar"><i style="width:'+pct+'%"></i></div>'+
+      '<div class="gmeta">'+pct+'% · charge '+g.util+'% · '+g.temp+'°C</div></div>';});
+  var dEl=b.querySelector('.det'),tog=b.querySelector('.dettog');
+  if(tog)tog.style.display=det?'':'none';
+  // N'écrit le DOM des détails QUE s'il a réellement changé (évite tout reflow).
+  if(dEl&&dEl.innerHTML!==det)dEl.innerHTML=det;}
+
+function toggleDet(e,b){e.stopPropagation();var det=b.closest('.body').querySelector('.det');
+  if(!det)return;var open=det.hasAttribute('hidden');
+  if(open)det.removeAttribute('hidden');else det.setAttribute('hidden','');
+  b.textContent=open?'masquer ▴':'détails ▾';}
+
+// fillProbe met à jour la carte EN PLACE — l'état déplié et le DOM sont préservés.
+function fillProbe(id,card){probe(id).then(function(p){PROBE[id]=p;updateProbe(card,p);});}
+
+function serverCard(m){var d=document.createElement('div');d.className='tile srv'+(m.online?'':' off');
+  var body=m.online?probeSkeleton():'<div class="body"><div class="sumline"><span class="stat"><span class="sdot"></span><span class="st-t">hors ligne</span></span></div></div>';
+  d.innerHTML='<div class="top"><span class="av">🖥️</span>'+
+      '<span class="hcol"><span class="name">'+esc(m.name)+'</span>'+
+      '<span class="pill">'+esc(m.hostname||m.id.slice(0,8))+'</span></span>'+
+      '<span class="dot '+(m.online?'on':'')+'"></span></div>'+
+    body+
+    '<div class="acts">'+
+    '<button onclick="editServer(\''+m.id+'\',\''+esc(m.name)+'\')">Éditer</button>'+
+    (m.online?'<a class="open" href="'+API+'/m/'+m.id+'/" target="_blank">Ouvrir</a>':'')+'</div>';
+  if(m.online&&PROBE[m.id])updateProbe(d,PROBE[m.id]);
+  return d;}
+
+function agentCard(a){var d=document.createElement('div');d.className='tile agent';var on=isOnline(a.machine);
+  d.onclick=function(){openChat(a.id);};
+  d.innerHTML='<div class="top"><span class="name">'+esc(a.name)+'</span><span class="dot '+(on?'on':'')+'"></span></div>'+
+    (a.desc?'<div class="desc">'+esc(a.desc)+'</div>':'');
+  return d;}
+
+function renderServers(){var g=document.getElementById('grid');g.innerHTML='';SCARDS={};
+  if(!MACHINES.length){g.innerHTML='<div class="empty">Aucun serveur connecté.<br>Clique « Gérer les clés » pour générer une clé de liaison.</div>';return;}
+  MACHINES.forEach(function(m){var c=serverCard(m);SCARDS[m.id]=c;g.appendChild(c);});}
+
+function renderAgents(){var ag=document.getElementById('agents');ag.innerHTML='';
+  if(!AGENTS.length){ag.innerHTML='<div class="empty">Aucun agent pour l\'instant.<br>Crée ton premier agent.</div>';return;}
+  AGENTS.forEach(function(a){ag.appendChild(agentCard(a))});}
+
+async function load(){
+  var rm=await j('/app/machines');if(!rm)return;MACHINES=(await rm.json()).machines;
+  var ra=await j('/app/agents');AGENTS=ra?(await ra.json()).agents:[];
+  document.getElementById('srvCt').textContent=MACHINES.length;
+  document.getElementById('agCt').textContent=AGENTS.length;
+  // Re-render UNIQUEMENT si la structure change (id/online/nom). Sinon on met à
+  // jour les stats en place → plus de clignotement.
+  var sigM=JSON.stringify(MACHINES.map(function(m){return [m.id,m.online,m.name,m.hostname]}));
+  if(sigM!==SIG_M){SIG_M=sigM;renderServers();}
+  MACHINES.forEach(function(m){if(m.online&&SCARDS[m.id])fillProbe(m.id,SCARDS[m.id]);});
+  var sigA=JSON.stringify(AGENTS.map(function(a){return [a.id,a.name,a.desc,isOnline(a.machine)]}));
+  if(sigA!==SIG_A){SIG_A=sigA;renderAgents();}
+}
+
+function editServer(id,name){document.getElementById('sId').value=id;document.getElementById('sName').value=name;
+  document.getElementById('sOai').textContent=location.origin+'/oai/'+id+'/v1';
+  document.getElementById('srvModal').classList.add('show');}
+function copyOai(){var t=document.getElementById('sOai').textContent;
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){toast('Endpoint copié ✓')});else toast('Copie manuelle');}
+function closeSrv(){document.getElementById('srvModal').classList.remove('show');}
+async function saveServer(){var id=document.getElementById('sId').value,name=document.getElementById('sName').value.trim();
+  if(!name){toast('Donne un nom');return;}
+  await jsonPost('/app/machine/rename',{id:id,name:name});closeSrv();toast('Enregistré ✓');load();}
+async function delServer(){var id=document.getElementById('sId').value,name=document.getElementById('sName').value;
+  if(!confirm('Retirer « '+name+' » du compte ?'))return;
+  await jsonPost('/app/machine/remove',{id:id});closeSrv();toast('Retiré');load();}
+
+function fillMachines(sel){var s=document.getElementById('aMachine');s.innerHTML='';
+  MACHINES.filter(function(m){return m.online}).forEach(function(m){
+    var o=document.createElement('option');o.value=m.id;o.textContent=m.name;if(m.id===sel)o.selected=true;s.appendChild(o);});
+  if(!s.options.length){var o=document.createElement('option');o.textContent='(aucun serveur en ligne)';o.value='';s.appendChild(o);}}
+
+async function onMachine(presetSel){var mid=document.getElementById('aMachine').value;
+  var ps=document.getElementById('aPreset');ps.innerHTML='<option value="">Modèle actuellement chargé</option>';
+  document.getElementById('presetHint').textContent='';
+  if(!mid)return;
+  try{var list=await(await fetch('/m/'+mid+'/api/presets')).json();
+    (list||[]).forEach(function(p){var o=document.createElement('option');o.value=p.id;
+      var lbl=p.name;if(p.quant)lbl+=' · '+p.quant;if(p.active)lbl+=' ✓';
+      o.textContent=lbl;if(p.id===presetSel)o.selected=true;ps.appendChild(o);});
+    document.getElementById('presetHint').textContent='Choisir un autre preset redémarre le modèle sur le serveur (1–2 min au 1er message).';
+  }catch(e){document.getElementById('presetHint').textContent='Impossible de lire les presets de ce serveur.';}}
+
+function showEditor(){window.scrollTo(0,0);
+  document.getElementById('home').style.display='none';
+  document.getElementById('chat').classList.remove('show');
+  document.getElementById('hMain').style.display='none';
+  document.getElementById('hChat').style.display='none';
+  document.getElementById('hEdit').style.display='flex';
+  document.getElementById('editor').classList.add('show');}
+
+async function closeEditor(){document.getElementById('editor').classList.remove('show');
+  document.getElementById('hEdit').style.display='none';
+  if(EDIT_FROM==='chat'&&CUR){await load();
+    var a=AGENTS.find(function(x){return x.id===CUR.agent.id});
+    if(a){CUR.agent=a;document.getElementById('cAgent').textContent=a.name;
+      document.getElementById('cModel').textContent=machineName(a.machine)+(a.presetName?' · '+a.presetName:'');}
+    document.getElementById('hMain').style.display='none';
+    document.getElementById('hChat').style.display='flex';
+    document.getElementById('chat').classList.add('show');
+    return;}
+  document.getElementById('hChat').style.display='none';
+  document.getElementById('hMain').style.display='flex';
+  document.getElementById('home').style.display='';
+  load();}
+
+function openCreate(){EDIT_FROM='home';document.getElementById('eTitle').textContent='Créer un agent';
+  document.getElementById('agDel').style.display='none';
+  document.getElementById('aId').value='';document.getElementById('aName').value='';
+  document.getElementById('aDesc').value='';
+  document.getElementById('aSystem').value='';
+  document.getElementById('aSkills').checked=false;document.getElementById('aTools').checked=false;
+  fillMachines();onMachine();showEditor();}
+
+async function editAgent(id){var a=AGENTS.find(function(x){return x.id===id});if(!a)return;
+  var sys=a.system||'';
+  if(sys){if(!await ensureKey()){toast('Déverrouillage requis');return;}
+    try{sys=await decStr(sys);}catch(e){toast('Déchiffrement impossible');return;}}
+  document.getElementById('eTitle').textContent='Éditer l\'agent';
+  document.getElementById('agDel').style.display='';
+  document.getElementById('aId').value=a.id;document.getElementById('aName').value=a.name;
+  document.getElementById('aDesc').value=a.desc||'';
+  document.getElementById('aSystem').value=sys;
+  document.getElementById('aSkills').checked=!!a.skills;document.getElementById('aTools').checked=!!a.tools;
+  fillMachines(a.machine);onMachine(a.preset);showEditor();}
+
+function closeModal(){closeEditor();}
+
+async function saveAgent(){var ps=document.getElementById('aPreset');
+  var body={id:document.getElementById('aId').value,name:document.getElementById('aName').value.trim(),
+    desc:document.getElementById('aDesc').value.trim(),
+    machine:document.getElementById('aMachine').value,preset:ps.value,
+    presetName:ps.value?ps.options[ps.selectedIndex].text.replace(' ✓',''):'',
+    skills:document.getElementById('aSkills').checked,tools:document.getElementById('aTools').checked};
+  if(!body.name){toast('Donne un nom à l\'agent');return;}
+  if(!body.machine){toast('Choisis un serveur en ligne');return;}
+  // Chiffre le system prompt localement avant l'envoi : le relais ne reçoit que du chiffré.
+  var sysRaw=document.getElementById('aSystem').value;
+  if(sysRaw){if(!await ensureKey()){toast('Déverrouillage requis pour chiffrer');return;}
+    body.system=await encStr(sysRaw);}else body.system='';
+  var r=await jsonPost('/app/agent/save',body);
+  if(!r)return;if(!r.ok){toast('Erreur d\'enregistrement');return;}
+  closeModal();toast('Agent enregistré ✓');load();}
+
+async function delAgentFromModal(){var id=document.getElementById('aId').value;if(!id)return;
+  var name=document.getElementById('aName').value;
+  var ok=await askConfirm({title:'Supprimer l\'agent ?',msg:'L\'agent « '+name+' » sera supprimé définitivement.',yes:'Supprimer',no:'Annuler'});
+  if(!ok)return;
+  await jsonPost('/app/agent/remove',{id:id});EDIT_FROM='home';CUR=null;closeEditor();toast('Supprimé');}
+
+function banner(t){var b=document.getElementById('cBanner');if(t){b.innerHTML='<span class="spin"></span>'+esc(t);b.style.display='flex';}else b.style.display='none';}
+function grow(t){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,160)+'px';}
+function toggleR(el){el.parentNode.classList.toggle('col');}
+
+function addUser(txt){var d=document.createElement('div');d.className='msg u';
+  d.innerHTML='<div class="bubble"><div class="txt"></div></div>';
+  d.querySelector('.txt').textContent=txt;mount(d);}
+
+// Chaque élément du tour (réflexion, appel d'outil, réponse) est un bloc séparé
+// ajouté au fil dans l'ordre chronologique.
+function typingBlock(){var d=document.createElement('div');d.className='msg a';
+  d.innerHTML='<div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div>';mount(d);return d;}
+function toolBlock(){var d=document.createElement('div');d.className='msg a';
+  d.innerHTML='<div class="toolcall"><div class="thead"></div><pre class="tres" style="display:none"></pre></div>';mount(d);return d;}
+function reasonBlock(){var d=document.createElement('div');d.className='msg a';
+  d.innerHTML='<div class="reason"><div class="rhead" onclick="toggleR(this)"><span class="rlabel shim">réflexion…</span><span class="chev">▾</span></div><div class="rbody"></div></div>';mount(d);return d;}
+function answerBlock(){var d=document.createElement('div');d.className='msg a';
+  d.innerHTML='<div class="bubble"><div class="txt"></div></div>';mount(d);return d.querySelector('.txt');}
+
+function mount(d){document.getElementById('cMsgs').appendChild(d);scrollDown();}
+var _scrTimer=null;
+function scrollDown(){if(_scrTimer)return;
+  _scrTimer=setTimeout(function(){_scrTimer=null;
+    var d=document.scrollingElement||document.documentElement;
+    // N'auto-scroll que si l'utilisateur est déjà près du bas, et au plus une
+    // fois toutes les ~140ms — sinon le scroll permanent avale les taps (stop).
+    if(d.scrollHeight-window.scrollY-window.innerHeight<300)window.scrollTo(0,d.scrollHeight);
+  },140);}
+
+async function openChat(id){var a=AGENTS.find(function(x){return x.id===id});if(!a)return;
+  CUR={agent:a,history:[]};document.getElementById('cAgent').textContent=a.name;
+  document.getElementById('cModel').textContent=machineName(a.machine)+(a.presetName?' · '+a.presetName:'');
+  document.getElementById('cMsgs').innerHTML='';document.getElementById('cInput').value='';
+  document.getElementById('home').style.display='none';
+  document.getElementById('hMain').style.display='none';
+  document.getElementById('hChat').style.display='flex';
+  document.getElementById('chat').classList.add('show');banner('');
+  if(a.preset){try{var ps=await(await fetch('/m/'+a.machine+'/api/presets')).json();
+    var idx=(ps||[]).findIndex(function(p){return p.id===a.preset});
+    if(idx>=0 && !ps[idx].active){
+      var ok=await askConfirm({title:'Changer de modèle ?',
+        msg:'Cet agent utilise le modèle « '+(a.presetName||'')+' », qui n\'est pas chargé actuellement. Il faut le charger pour discuter avec cet agent (cela peut prendre un moment).',
+        yes:'Charger le modèle',no:'Annuler'});
+      if(!ok){closeChat();return;}
+      banner('Chargement du modèle '+(a.presetName||'')+'…');
+      await jsonPost('/m/'+a.machine+'/api/switch',{n:idx+1});
+      for(var i=0;i<90;i++){await new Promise(function(r){setTimeout(r,2000)});
+        try{var s=await(await fetch('/m/'+a.machine+'/api/status')).json();if(s.health)break;}catch(e){}}
+      banner('');}
+  }catch(e){}}
+  // Applique les capacités de l'agent (skills / shell) à l'état du serveur.
+  try{await jsonPost('/m/'+a.machine+'/api/skills/toggle',{on:!!a.skills});}catch(e){}
+  try{await jsonPost('/m/'+a.machine+'/api/tools/toggle',{on:!!a.tools});}catch(e){}
+  // Boîte noire : propose de confirmer l'empreinte E2E du serveur (une fois).
+  try{await e2eConfirm(MACHINES.find(function(x){return x.id===a.machine}));}catch(e){}}
+
+var _cf=null;
+function askConfirm(opt){opt=opt||{};
+  document.getElementById('cfTitle').textContent=opt.title||'Confirmer';
+  document.getElementById('cfMsg').textContent=opt.msg||'';
+  document.getElementById('cfYes').textContent=opt.yes||'Continuer';
+  document.getElementById('cfNo').textContent=opt.no||'Annuler';
+  document.getElementById('confirmModal').classList.add('show');
+  return new Promise(function(r){_cf=r;});}
+function cfResolve(v){document.getElementById('confirmModal').classList.remove('show');if(_cf){var f=_cf;_cf=null;f(v);}}
+function editCurAgent(){if(CUR&&CUR.agent){EDIT_FROM='chat';editAgent(CUR.agent.id);}}
+function closeChat(){document.getElementById('chat').classList.remove('show');
+  document.getElementById('home').style.display='';
+  document.getElementById('hChat').style.display='none';
+  document.getElementById('hMain').style.display='flex';
+  CUR=null;load();}
+function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+
+function collapseReason(el){if(!el)return;el.querySelector('.reason').classList.add('col');
+  var lab=el.querySelector('.rlabel');lab.classList.remove('shim');lab.textContent='💭 Réflexion';}
+
+async function sendMsg(){if(BUSY||!CUR)return;var inp=document.getElementById('cInput');
+  var text=inp.value.trim();if(!text)return;
+  // Déchiffre le system prompt localement (jamais stocké en clair côté relais).
+  var sysd='';
+  if(CUR.agent.system){if(!await ensureKey()){toast('Déverrouillage requis');return;}
+    try{sysd=await decStr(CUR.agent.system);}catch(e){toast('Déchiffrement impossible');return;}}
+  inp.value='';grow(inp);
+  addUser(text);CUR.history.push({role:'user',content:text});
+  BUSY=true;setSend(true);ABORT=new AbortController();
+  var typing=typingBlock(),ansTxt=null,reasonEl=null,curTool=null,acc='',rea='',fullAns='',produced=false;
+  function killTyping(){if(typing){typing.remove();typing=null;}}
+  function ans(){if(!ansTxt){ansTxt=answerBlock();acc='';produced=true;}return ansTxt;}
+  var msgs=[];if(sysd)msgs.push({role:'system',content:sysd});
+  msgs=msgs.concat(CUR.history);
+  // Boîte noire : si la machine a une clé E2E confirmée, on chiffre la requête et
+  // on déchiffre chaque événement → le relais ne voit que de l'opaque.
+  var sess=null;try{sess=await e2eFor(MACHINES.find(function(x){return x.id===CUR.agent.machine}));}catch(e){}
+  var reqObj={messages:msgs,tools:!!CUR.agent.tools,skills:!!CUR.agent.skills};
+  try{
+    var r;
+    if(sess){
+      var iv0=crypto.getRandomValues(new Uint8Array(12));
+      var ct0=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv0},sess.key,_te.encode(JSON.stringify(reqObj)));
+      r=await fetch('/m/'+CUR.agent.machine+'/api/e2e/chat',{method:'POST',signal:ABORT.signal,
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({kid:sess.kid,sealedR:sess.sealed,iv:b64e(iv0),ct:b64e(new Uint8Array(ct0))})});
+    }else{
+      // Boîte noire OBLIGATOIRE : aucun repli en clair. Si la session E2E manque,
+      // soit l'agent n'a pas de clé publique, soit l'empreinte n'est pas confirmée.
+      var mm=MACHINES.find(function(x){return x.id===CUR.agent.machine});
+      if(mm&&mm.pubkey){e2eConfirm(mm);
+        throw new Error('boîte noire requise : confirme l\'empreinte E2E puis renvoie ton message');}
+      throw new Error('boîte noire indisponible (agent sans clé E2E) — mets à jour Jean côté serveur');
+    }
+    var reader=r.body.getReader(),dec=new TextDecoder(),buf='';CREADER=reader;
+    while(true){var rd=await reader.read();if(rd.done)break;buf+=dec.decode(rd.value,{stream:true});
+      var idx;while((idx=buf.indexOf('\n\n'))>=0){var chunk=buf.slice(0,idx).trim();buf=buf.slice(idx+2);
+        if(chunk.indexOf('data:')!==0)continue;var data=chunk.slice(5).trim();
+        if(!data||data==='[DONE]')continue;
+        try{var payload=data;
+          if(sess){var rawev=b64d(data),nc=rawev.slice(0,12),cc=rawev.slice(12);
+            var ptev=await crypto.subtle.decrypt({name:'AES-GCM',iv:nc},sess.key,cc);payload=_td.decode(ptev);}
+          var o=JSON.parse(payload);var dl=o.choices&&o.choices[0]&&o.choices[0].delta;if(!dl)continue;
+          if(dl.tool_used){killTyping();var t=dl.tool_used;
+            // Nouvelle phase : fige la réflexion / réponse précédentes pour que
+            // ce qui suit l'outil reparte sur un bloc neuf, plus bas dans le fil.
+            collapseReason(reasonEl);reasonEl=null;ansTxt=null;
+            if(!curTool){curTool=toolBlock();produced=true;}
+            curTool.querySelector('.thead').textContent='🔧 '+(t.label||t.name||'outil');
+            if(t.result){var pre=curTool.querySelector('.tres');pre.textContent=t.result;pre.style.display='';}
+            if(t.done)curTool=null;
+            scrollDown();}
+          if(dl.reasoning_content){killTyping();
+            // Une réflexion qui reprend après un outil/une réponse = nouveau bloc.
+            curTool=null;ansTxt=null;
+            if(!reasonEl){reasonEl=reasonBlock();rea='';produced=true;}
+            rea+=dl.reasoning_content;reasonEl.querySelector('.rbody').textContent=rea;scrollDown();}
+          if(dl.content){killTyping();collapseReason(reasonEl);reasonEl=null;curTool=null;
+            var c=ans();acc+=dl.content;fullAns+=dl.content;c.innerHTML=md(acc);scrollDown();}
+          if(dl.error){killTyping();var ce=ans();acc+='\n\n⚠️ '+dl.error;ce.innerHTML=md(acc);}
+        }catch(e){}}}
+  }catch(e){killTyping();if(e&&e.name==='AbortError'){if(ansTxt){acc+=' …';ansTxt.innerHTML=md(acc);}}else{ans().textContent='⚠️ erreur réseau : '+e;}}
+  killTyping();collapseReason(reasonEl);
+  if(!produced)answerBlock().textContent='(pas de réponse)';
+  CUR.history.push({role:'assistant',content:fullAns});
+  ABORT=null;CREADER=null;BUSY=false;setSend(false);}
+function setSend(busy){var s=document.getElementById('cSend');
+  if(busy){s.textContent='■';s.classList.add('stop');s.title='Arrêter';s.onclick=stopGen;}
+  else{s.textContent='↑';s.classList.remove('stop');s.title='Envoyer';s.onclick=sendMsg;}}
+function stopGen(){if(CREADER){try{CREADER.cancel();}catch(e){}}if(ABORT){try{ABORT.abort();}catch(e){}}}
+
+async function boot(){await me();await load();await loadKey();}
+boot();
+setInterval(function(){if(document.getElementById('chat').classList.contains('show')||document.getElementById('editor').classList.contains('show')||document.querySelector('.modal.show'))return;load();},15000);
+</script></body></html>
