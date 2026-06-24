@@ -363,6 +363,14 @@ header .sp{flex:1}
     <button class="btn primary" onclick="cfResolve(true)" id="cfYes">Continuer</button></div>
 </div></div>
 
+<div class="modal" id="promptModal"><div class="sheet">
+  <h3 id="pmTitle">Saisir</h3>
+  <p class="muted" id="pmMsg"></p>
+  <div class="field"><input id="pmInput" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')pmResolve(true)"></div>
+  <div class="row"><button class="btn" onclick="pmResolve(false)" id="pmNo">Annuler</button>
+    <button class="btn primary" onclick="pmResolve(true)" id="pmYes">Valider</button></div>
+</div></div>
+
 <div id="toast"></div>
 <script src="/marked.min.js"></script>
 <script src="/wasm_exec.js"></script>
@@ -428,25 +436,55 @@ async function e2eRoot(){var raw=localStorage.getItem('ajk');if(!raw)return null
 async function fpOfPub(pubHex){var b=new Uint8Array(pubHex.match(/../g).map(function(h){return parseInt(h,16)}));
   var s=hexOf((await sha256b(b)).slice(0,8)).toUpperCase(),p=[];
   for(var i=0;i<s.length;i+=4)p.push(s.slice(i,i+4));return p.join('-');}
-// e2eFor : session E2E pour une machine (clé chat + sceau), si clé publique connue
-// ET empreinte confirmée. Renvoie null sinon → repli sur le chat clair.
+// e2eFor : session du canal AUTHENTIFIÉ pour une machine. Exige (1) empreinte de
+// l'agent confirmée (anti-MITM) ET (2) navigateur appairé (anti-injection par un
+// relais compromis). La clé = SHA256(ECDH(uPriv, agentPub) || "authchan") : seul ce
+// navigateur (qui détient uPriv dérivé du mot de passe) peut la calculer.
 async function e2eFor(m){if(!m||!m.pubkey)return null;
   var fp=await fpOfPub(m.pubkey);if(localStorage.getItem('fp:'+m.id)!==fp)return null;
+  if(localStorage.getItem('pair:'+m.id)!=='1')return null;
   if(E2E[m.id]&&E2E[m.id].pub===m.pubkey)return E2E[m.id];
   try{await e2eInit();}catch(e){return null;}
   var R=await e2eRoot();if(!R)return null;
-  var sealed=e2eSeal(m.pubkey,b64e(R));if(!sealed.ok)return null;
-  var kb=await sha256b(concatB(R,_te.encode('ajean-chat-v1')));
-  var key=await crypto.subtle.importKey('raw',kb,{name:'AES-GCM'},false,['encrypt','decrypt']);
-  var kid=hexOf((await sha256b(R)).slice(0,8));
-  E2E[m.id]={pub:m.pubkey,kid:kid,sealed:sealed.sealed,key:key};return E2E[m.id];}
-// Demande la confirmation de l'empreinte (une fois par machine).
+  var res=e2eAuthKey(m.pubkey,b64e(R));if(!res||!res.ok)return null;
+  var key=await crypto.subtle.importKey('raw',b64d(res.key),{name:'AES-GCM'},false,['encrypt','decrypt']);
+  E2E[m.id]={pub:m.pubkey,upub:res.upub,key:key};return E2E[m.id];}
+
+// e2ePair : appaire CE navigateur à l'agent. Scelle {upub, code} vers la clé
+// publique de l'agent (le relais ne peut ni l'ouvrir ni connaître le code, affiché
+// seulement dans le log « jean link »). En cas de succès l'agent autorise uPub.
+async function e2ePair(m,code){
+  await e2eInit();
+  var R=await e2eRoot();if(!R)throw new Error('clé absente (reconnecte-toi)');
+  var up=e2eUserPub(b64e(R));if(!up||!up.ok)throw new Error('identité');
+  var payload=_te.encode(JSON.stringify({upub:up.upub,code:code}));
+  var sealed=e2eSeal(m.pubkey,b64e(payload));if(!sealed||!sealed.ok)throw new Error('scellement');
+  var r=await fetch('/m/'+m.id+'/api/e2e/pair',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({sealed:sealed.sealed})});
+  if(r.status===401){location.href='/login.html';throw new Error('session');}
+  if(!r.ok)throw new Error(r.status===403?'code incorrect':('erreur '+r.status));}
+
+// e2eConfirm : active la boîte noire en 2 temps (empreinte + appairage). Une fois
+// par machine ; ne fait rien si déjà active.
 async function e2eConfirm(m){if(!m||!m.pubkey)return;
-  var fp=await fpOfPub(m.pubkey);if(localStorage.getItem('fp:'+m.id)===fp)return;
-  var ok=await askConfirm({title:'Vérifier l\'empreinte E2E',
-    msg:'Pour activer la boîte noire, confirme que cette empreinte est bien celle affichée par « jean link » sur ton serveur : '+fp,
-    yes:'Elle correspond',no:'Plus tard'});
-  if(ok){localStorage.setItem('fp:'+m.id,fp);toast('Boîte noire activée 🔒');}}
+  var fp=await fpOfPub(m.pubkey);
+  var fpOk=localStorage.getItem('fp:'+m.id)===fp;
+  if(fpOk&&localStorage.getItem('pair:'+m.id)==='1')return;
+  if(!fpOk){
+    var ok=await askConfirm({title:'Activer la boîte noire (1/2)',
+      msg:'Vérifie que cette empreinte est bien celle affichée par « jean link » sur ton serveur : '+fp,
+      yes:'Elle correspond',no:'Plus tard'});
+    if(!ok)return;
+    localStorage.setItem('fp:'+m.id,fp);
+  }
+  if(localStorage.getItem('pair:'+m.id)!=='1'){
+    var code=await askPrompt({title:'Activer la boîte noire (2/2)',
+      msg:'Saisis le code d\'appairage affiché par « jean link » sur ton serveur (juste sous l\'empreinte).',
+      placeholder:'ex: K7QZ9F2A',yes:'Appairer',no:'Plus tard'});
+    if(!code)return;
+    try{await e2ePair(m,code);localStorage.setItem('pair:'+m.id,'1');toast('Boîte noire activée 🔒');}
+    catch(e){toast('Appairage échoué : '+(e&&e.message||e));}
+  }}
 
 // e2ecall : appel d'API de CONTRÔLE chiffré de bout en bout (presets, VRAM, skills,
 // service…). Même boîte noire que le chat : le relais ne voit que de l'opaque. Lance
@@ -456,10 +494,12 @@ async function e2ecall(mid,method,path,body){
   var sess=await e2eFor(MACHINES.find(function(x){return x.id===mid;}));
   if(!sess)throw new Error('e2e-unconfirmed');
   var reqObj={method:method,path:path,body:(body===undefined?null:body)};
+  var ts=Date.now();
   var iv=crypto.getRandomValues(new Uint8Array(12));
-  var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},sess.key,_te.encode(JSON.stringify(reqObj)));
+  var aad=_te.encode(sess.upub+'|'+ts);
+  var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:aad},sess.key,_te.encode(JSON.stringify(reqObj)));
   var r=await fetch('/m/'+mid+'/api/e2e/req',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({kid:sess.kid,sealedR:sess.sealed,iv:b64e(iv),ct:b64e(new Uint8Array(ct))})});
+    body:JSON.stringify({upub:sess.upub,ts:ts,iv:b64e(iv),ct:b64e(new Uint8Array(ct))})});
   if(r.status===401){location.href='/login.html';return null;}
   if(!r.ok)throw new Error('e2e-req '+r.status);
   var raw=b64d((await r.text()).trim()),nc=raw.slice(0,12),cc=raw.slice(12);
@@ -783,6 +823,17 @@ function askConfirm(opt){opt=opt||{};
   document.getElementById('confirmModal').classList.add('show');
   return new Promise(function(r){_cf=r;});}
 function cfResolve(v){document.getElementById('confirmModal').classList.remove('show');if(_cf){var f=_cf;_cf=null;f(v);}}
+var _pm=null;
+function askPrompt(opt){opt=opt||{};
+  document.getElementById('pmTitle').textContent=opt.title||'Saisir';
+  document.getElementById('pmMsg').textContent=opt.msg||'';
+  document.getElementById('pmYes').textContent=opt.yes||'Valider';
+  document.getElementById('pmNo').textContent=opt.no||'Annuler';
+  var inp=document.getElementById('pmInput');inp.value='';inp.placeholder=opt.placeholder||'';
+  document.getElementById('promptModal').classList.add('show');setTimeout(function(){inp.focus();},50);
+  return new Promise(function(r){_pm=r;});}
+function pmResolve(ok){document.getElementById('promptModal').classList.remove('show');
+  var v=ok?document.getElementById('pmInput').value.trim():'';if(_pm){var f=_pm;_pm=null;f(v);}}
 function editCurAgent(){if(CUR&&CUR.agent){EDIT_FROM='chat';editAgent(CUR.agent.id);}}
 function closeChat(){document.getElementById('chat').classList.remove('show');
   document.getElementById('home').style.display='';
@@ -815,11 +866,13 @@ async function sendMsg(){if(BUSY||!CUR)return;var inp=document.getElementById('c
   try{
     var r;
     if(sess){
+      var ts0=Date.now();
       var iv0=crypto.getRandomValues(new Uint8Array(12));
-      var ct0=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv0},sess.key,_te.encode(JSON.stringify(reqObj)));
+      var aad0=_te.encode(sess.upub+'|'+ts0);
+      var ct0=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv0,additionalData:aad0},sess.key,_te.encode(JSON.stringify(reqObj)));
       r=await fetch('/m/'+CUR.agent.machine+'/api/e2e/chat',{method:'POST',signal:ABORT.signal,
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({kid:sess.kid,sealedR:sess.sealed,iv:b64e(iv0),ct:b64e(new Uint8Array(ct0))})});
+        body:JSON.stringify({upub:sess.upub,ts:ts0,iv:b64e(iv0),ct:b64e(new Uint8Array(ct0))})});
     }else{
       // Boîte noire OBLIGATOIRE : aucun repli en clair. Si la session E2E manque,
       // soit l'agent n'a pas de clé publique, soit l'empreinte n'est pas confirmée.
