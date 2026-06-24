@@ -427,7 +427,9 @@ async function j(u,opt){var r=await fetch(u,opt);if(r.status===401){location.hre
    scellée vers la clé publique X25519 de l'agent (vérifiée par empreinte). */
 var _wasm=null,_te=new TextEncoder(),_td=new TextDecoder();
 function e2eInit(){if(_wasm)return _wasm;if(typeof Go==='undefined')return Promise.reject('wasm indisponible');
-  var go=new Go();_wasm=WebAssembly.instantiateStreaming(fetch('/opaque.wasm'),go.importObject).then(function(res){go.run(res.instance);});return _wasm;}
+  // ?v= versionne le wasm : un nouveau déploiement = nouvelle URL = pas de vieux
+  // cache (sinon un opaque.wasm périmé manque les exports récents → « not defined »).
+  var go=new Go();_wasm=WebAssembly.instantiateStreaming(fetch('/opaque.wasm?v=20260624-authchan'),go.importObject).then(function(res){go.run(res.instance);});return _wasm;}
 async function sha256b(bytes){return new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));}
 function concatB(a,b){var o=new Uint8Array(a.length+b.length);o.set(a,0);o.set(b,a.length);return o;}
 function hexOf(bytes){return Array.from(bytes).map(function(x){return x.toString(16).padStart(2,'0')}).join('');}
