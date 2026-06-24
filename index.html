@@ -206,6 +206,20 @@ header .sp{flex:1}
 #toast.show{opacity:1}
 /* iOS zoome au focus sur tout champ < 16px → on force 16px sur tactile. */
 @media (hover:none) and (pointer:coarse){input,select,textarea,.field input,.field select,.field textarea,.cbar textarea{font-size:16px}}
+/* Vue « Gérer le serveur » */
+#manage{display:none}
+#manage.show{display:block}
+.msec{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.msec>h3{margin:0 0 10px;font-size:14px;color:var(--accent)}
+.mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mhead h3{margin:0;font-size:14px;color:var(--accent)}
+.vbar{height:6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin:4px 0}
+.vbar>div{height:100%;background:var(--accent)}
+.prow{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer}
+.prow.active{border-color:var(--accent)}
+.prow .pn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .qtag{font-size:10px;border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--dim)}
+.prow .btag{font-size:10px;color:var(--dim)}
 </style></head><body>
 
 <header>
@@ -222,6 +236,11 @@ header .sp{flex:1}
   <div class="hg" id="hEdit" style="display:none">
     <button class="iconbtn" onclick="closeEditor()" title="Retour" aria-label="Retour"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="brandcol" style="flex:1;min-width:0"><div class="name" id="eTitle" style="font-weight:600;color:var(--accent)">Créer un agent</div></div>
+  </div>
+  <div class="hg" id="hManage" style="display:none">
+    <button class="iconbtn" onclick="closeManage()" title="Retour" aria-label="Retour"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="brandcol" style="flex:1;min-width:0"><div class="name" id="mTitle" style="font-weight:600;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Serveur</div><div class="email">Gestion · hors chat (boîte noire préservée)</div></div>
+    <button class="iconbtn" onclick="loadManage()" title="Rafraîchir" aria-label="Rafraîchir"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
   </div>
 </header>
 
@@ -260,6 +279,44 @@ header .sp{flex:1}
       <button class="btn primary" onclick="saveAgent()">Enregistrer</button></div>
   </div>
 </div>
+
+<div id="manage"><div class="wrap" id="mWrap">
+  <div class="msec"><h3>Statut</h3><div id="mStatus" class="muted">…</div></div>
+  <div class="msec"><h3>GPU</h3><div id="mVram" class="muted">…</div></div>
+  <div class="msec"><h3>Config active</h3><div id="mCfg" class="muted">…</div></div>
+  <div class="msec"><div class="mhead"><h3>Presets</h3><button class="btn subtle" onclick="openSrvItem('preset','')">+ Preset</button></div><div id="mPresets"></div></div>
+  <div class="msec"><h3>Accès machine</h3>
+    <label class="tgl"><span class="tgl-txt"><b>Accès au shell</b><small>L'IA peut exécuter des commandes sur le serveur (timeout 30s)</small></span><input type="checkbox" id="mTools" onchange="toggleSrvTools()"><span class="sw"></span></label></div>
+  <div class="msec"><div class="mhead"><h3>Skills</h3><button class="btn subtle" onclick="openSrvItem('skill','')">+ Skill</button></div>
+    <label class="tgl"><span class="tgl-txt"><b>Activer les skills</b><small>Guides réutilisables</small></span><input type="checkbox" id="mSkills" onchange="toggleSrvSkills()"><span class="sw"></span></label>
+    <div id="mSkillsList" style="margin-top:8px"></div></div>
+  <div class="msec"><h3>Service</h3><div class="row">
+    <button class="btn" onclick="srvAct('start')">Démarrer</button>
+    <button class="btn" onclick="srvAct('restart')">Redémarrer</button>
+    <button class="btn" onclick="srvAct('stop')">Arrêter</button></div></div>
+  <div class="msec"><div class="mhead"><h3>Benchmark</h3><button class="btn subtle" id="mBenchBtn" onclick="runSrvBench()">⚡ Lancer</button></div><div id="mBench" class="muted">prompt 2000 tok + 300 decode · ~10 s</div></div>
+</div></div>
+
+<div class="modal" id="itemModal"><div class="sheet" style="max-width:640px">
+  <h3 id="itTitle">Preset</h3>
+  <input type="hidden" id="itKind"><input type="hidden" id="itKey">
+  <div class="field"><label>Nom</label><input id="itName" placeholder="ex : Studio Q4"></div>
+  <div id="itModelRow" style="display:none">
+    <div class="field"><label>Backend <span class="muted">(ligne BIN=)</span></label><select id="itBackend" onchange="itPickBackend()"></select></div>
+    <div class="field"><label>Modèle <span class="muted">(ligne MODEL=)</span></label><select id="itModel" onchange="itPickModel()"></select></div>
+    <div class="field"><label>Télécharger un .gguf <span class="muted">(lien Hugging Face)</span></label>
+      <div class="reveal"><input id="itHf" placeholder="https://huggingface.co/…/model.gguf" style="flex:1;min-width:0"><button class="btn" type="button" id="itHfBtn" onclick="itDownload()">⬇</button></div>
+      <div id="itHfProg" class="hint" style="display:none"></div></div>
+    <div class="field"><label>Quantization <span class="muted">(vide = auto)</span></label><input id="itQuant" oninput="itApplyQuant()" placeholder="ex: Q4_K_M, IQ3_XXS…"></div>
+  </div>
+  <div class="field"><label>Contenu</label><textarea id="itContent" spellcheck="false" style="min-height:240px;font-family:ui-monospace,monospace"></textarea></div>
+  <div class="row">
+    <button class="btn danger" id="itDel" onclick="delSrvItem()" style="margin-right:auto;display:none">Supprimer</button>
+    <label id="itDelModelWrap" style="display:none;align-items:center;gap:5px;font-size:11px;color:var(--dim)"><input type="checkbox" id="itDelModel"> + le .gguf</label>
+    <button class="btn" onclick="closeItem()">Annuler</button>
+    <button class="btn primary" onclick="saveSrvItem()">Enregistrer</button>
+  </div>
+</div></div>
 
 <div class="modal" id="srvModal"><div class="sheet">
   <h3>Éditer le serveur</h3>
@@ -390,6 +447,26 @@ async function e2eConfirm(m){if(!m||!m.pubkey)return;
     msg:'Pour activer la boîte noire, confirme que cette empreinte est bien celle affichée par « jean link » sur ton serveur : '+fp,
     yes:'Elle correspond',no:'Plus tard'});
   if(ok){localStorage.setItem('fp:'+m.id,fp);toast('Boîte noire activée 🔒');}}
+
+// e2ecall : appel d'API de CONTRÔLE chiffré de bout en bout (presets, VRAM, skills,
+// service…). Même boîte noire que le chat : le relais ne voit que de l'opaque. Lance
+// « e2e-unconfirmed » si l'empreinte de la machine n'a pas été confirmée. Renvoie
+// directement le corps JSON déchiffré de la réponse de l'agent.
+async function e2ecall(mid,method,path,body){
+  var sess=await e2eFor(MACHINES.find(function(x){return x.id===mid;}));
+  if(!sess)throw new Error('e2e-unconfirmed');
+  var reqObj={method:method,path:path,body:(body===undefined?null:body)};
+  var iv=crypto.getRandomValues(new Uint8Array(12));
+  var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},sess.key,_te.encode(JSON.stringify(reqObj)));
+  var r=await fetch('/m/'+mid+'/api/e2e/req',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({kid:sess.kid,sealedR:sess.sealed,iv:b64e(iv),ct:b64e(new Uint8Array(ct))})});
+  if(r.status===401){location.href='/login.html';return null;}
+  if(!r.ok)throw new Error('e2e-req '+r.status);
+  var raw=b64d((await r.text()).trim()),nc=raw.slice(0,12),cc=raw.slice(12);
+  var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:nc},sess.key,cc);
+  var env=JSON.parse(_td.decode(pt)); // {status, body}
+  return env.body;}
+
 function jsonPost(u,b){return j(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});}
 function machineName(id){var m=MACHINES.find(function(x){return x.id===id});return m?m.name:id;}
 function isOnline(id){var m=MACHINES.find(function(x){return x.id===id});return m&&m.online;}
@@ -452,10 +529,14 @@ async function revokeKey(id,names){var msg=names?('⚠️ Cette clé est utilis�
   if(!confirm(msg))return;
   await jsonPost('/app/key/remove',{id:id});toast('Clé révoquée');loadKeys();}
 
-async function probe(id){var base='/m/'+id+'/api/',out={};
-  try{var s=await(await fetch(base+'status')).json();out.health=s.health;out.ctx=s.ctx;}catch(e){}
-  try{var ps=await(await fetch(base+'presets')).json();var a=(ps||[]).find(function(p){return p.active});if(a){out.model=a.name;out.quant=a.quant;}}catch(e){}
-  try{var g=await(await fetch(base+'vram')).json();if(g&&g.length)out.gpus=g;}catch(e){}
+// Toutes les métadonnées de carte passent par la boîte noire (e2ecall). Si
+// l'empreinte de la machine n'est pas confirmée, e2ecall lève → la carte reste
+// minimale et `locked` est vrai (on affiche alors « confirmer pour voir »).
+async function probe(id){var out={};
+  try{var s=await e2ecall(id,'GET','/api/status');out.health=s.health;out.ctx=s.ctx;}
+  catch(e){if(String(e).indexOf('e2e-unconfirmed')>=0)out.locked=true;return out;}
+  try{var ps=await e2ecall(id,'GET','/api/presets');var a=(ps||[]).find(function(p){return p.active});if(a){out.model=a.name;out.quant=a.quant;}}catch(e){}
+  try{var g=await e2ecall(id,'GET','/api/vram');if(g&&g.length)out.gpus=g;}catch(e){}
   return out;}
 
 // Squelette stable du corps : on ne remplace JAMAIS ce DOM ensuite, on met juste
@@ -494,7 +575,9 @@ function toggleDet(e,b){e.stopPropagation();var det=b.closest('.body').querySele
   b.textContent=open?'masquer ▴':'détails ▾';}
 
 // fillProbe met à jour la carte EN PLACE — l'état déplié et le DOM sont préservés.
-function fillProbe(id,card){probe(id).then(function(p){PROBE[id]=p;updateProbe(card,p);});}
+function fillProbe(id,card){probe(id).then(function(p){PROBE[id]=p;updateProbe(card,p);
+  if(p.locked){var st=card.querySelector('.st-t');if(st){st.textContent='🔒 confirmer la boîte noire';st.style.cursor='pointer';st.title='Vérifier l\'empreinte E2E pour voir l\'état';
+    st.onclick=function(){e2eConfirm(MACHINES.find(function(x){return x.id===id})).then(function(){fillProbe(id,card);});};}}});}
 
 function serverCard(m){var d=document.createElement('div');d.className='tile srv'+(m.online?'':' off');
   var body=m.online?probeSkeleton():'<div class="body"><div class="sumline"><span class="stat"><span class="sdot"></span><span class="st-t">hors ligne</span></span></div></div>';
@@ -505,7 +588,7 @@ function serverCard(m){var d=document.createElement('div');d.className='tile srv
     body+
     '<div class="acts">'+
     '<button onclick="editServer(\''+m.id+'\',\''+esc(m.name)+'\')">Éditer</button>'+
-    (m.online?'<a class="open" href="'+API+'/m/'+m.id+'/" target="_blank">Ouvrir</a>':'')+'</div>';
+    (m.online?'<button class="open" onclick="manageServer(\''+m.id+'\')">Gérer</button>':'')+'</div>';
   if(m.online&&PROBE[m.id])updateProbe(d,PROBE[m.id]);
   return d;}
 
@@ -559,7 +642,8 @@ async function onMachine(presetSel){var mid=document.getElementById('aMachine').
   var ps=document.getElementById('aPreset');ps.innerHTML='<option value="">Modèle actuellement chargé</option>';
   document.getElementById('presetHint').textContent='';
   if(!mid)return;
-  try{var list=await(await fetch('/m/'+mid+'/api/presets')).json();
+  try{await e2eConfirm(MACHINES.find(function(x){return x.id===mid;}));
+    var list=await e2ecall(mid,'GET','/api/presets');
     (list||[]).forEach(function(p){var o=document.createElement('option');o.value=p.id;
       var lbl=p.name;if(p.quant)lbl+=' · '+p.quant;if(p.active)lbl+=' ✓';
       o.textContent=lbl;if(p.id===presetSel)o.selected=true;ps.appendChild(o);});
@@ -670,7 +754,10 @@ async function openChat(id){var a=AGENTS.find(function(x){return x.id===id});if(
   document.getElementById('hMain').style.display='none';
   document.getElementById('hChat').style.display='flex';
   document.getElementById('chat').classList.add('show');banner('');
-  if(a.preset){try{var ps=await(await fetch('/m/'+a.machine+'/api/presets')).json();
+  // Boîte noire d'abord : on confirme l'empreinte AVANT tout appel de contrôle,
+  // pour que preset/switch/status/toggles passent eux aussi chiffrés (e2ecall).
+  try{await e2eConfirm(MACHINES.find(function(x){return x.id===a.machine}));}catch(e){}
+  if(a.preset){try{var ps=await e2ecall(a.machine,'GET','/api/presets');
     var idx=(ps||[]).findIndex(function(p){return p.id===a.preset});
     if(idx>=0 && !ps[idx].active){
       var ok=await askConfirm({title:'Changer de modèle ?',
@@ -678,16 +765,14 @@ async function openChat(id){var a=AGENTS.find(function(x){return x.id===id});if(
         yes:'Charger le modèle',no:'Annuler'});
       if(!ok){closeChat();return;}
       banner('Chargement du modèle '+(a.presetName||'')+'…');
-      await jsonPost('/m/'+a.machine+'/api/switch',{n:idx+1});
+      await e2ecall(a.machine,'POST','/api/switch',{n:idx+1});
       for(var i=0;i<90;i++){await new Promise(function(r){setTimeout(r,2000)});
-        try{var s=await(await fetch('/m/'+a.machine+'/api/status')).json();if(s.health)break;}catch(e){}}
+        try{var s=await e2ecall(a.machine,'GET','/api/status');if(s.health)break;}catch(e){}}
       banner('');}
   }catch(e){}}
   // Applique les capacités de l'agent (skills / shell) à l'état du serveur.
-  try{await jsonPost('/m/'+a.machine+'/api/skills/toggle',{on:!!a.skills});}catch(e){}
-  try{await jsonPost('/m/'+a.machine+'/api/tools/toggle',{on:!!a.tools});}catch(e){}
-  // Boîte noire : propose de confirmer l'empreinte E2E du serveur (une fois).
-  try{await e2eConfirm(MACHINES.find(function(x){return x.id===a.machine}));}catch(e){}}
+  try{await e2ecall(a.machine,'POST','/api/skills/toggle',{on:!!a.skills});}catch(e){}
+  try{await e2ecall(a.machine,'POST','/api/tools/toggle',{on:!!a.tools});}catch(e){}}
 
 var _cf=null;
 function askConfirm(opt){opt=opt||{};
@@ -780,7 +865,168 @@ function setSend(busy){var s=document.getElementById('cSend');
   else{s.textContent='↑';s.classList.remove('stop');s.title='Envoyer';s.onclick=sendMsg;}}
 function stopGen(){if(CREADER){try{CREADER.cancel();}catch(e){}}if(ABORT){try{ABORT.abort();}catch(e){}}}
 
+/* ===== Gérer le serveur (parité jean web, hors boîte noire = métadonnées de
+   contrôle uniquement, jamais de contenu de chat — celui-ci reste E2E) ======= */
+var MID=null,_dlPoll=null;
+function mget(p){return e2ecall(MID,'GET',p,null);}
+function mpost(p,b){return e2ecall(MID,'POST',p,b);}
+function fmtSize(b){if(b>1e9)return (b/1e9).toFixed(1)+' GB';if(b>1e6)return (b/1e6).toFixed(0)+' MB';if(b>1e3)return (b/1e3).toFixed(0)+' KB';return b+' B';}
+
+async function manageServer(id){MID=id;
+  document.getElementById('mTitle').textContent=machineName(id);
+  document.getElementById('home').style.display='none';
+  document.getElementById('hMain').style.display='none';
+  document.getElementById('hManage').style.display='flex';
+  document.getElementById('manage').classList.add('show');
+  window.scrollTo(0,0);
+  // La gestion passe par la boîte noire (e2ecall) → empreinte requise une fois.
+  try{await e2eConfirm(MACHINES.find(function(x){return x.id===id}));}catch(e){}
+  await loadManage();}
+function closeManage(){if(_dlPoll){clearInterval(_dlPoll);_dlPoll=null;}
+  document.getElementById('manage').classList.remove('show');
+  document.getElementById('home').style.display='';
+  document.getElementById('hManage').style.display='none';
+  document.getElementById('hMain').style.display='flex';
+  MID=null;load();}
+
+async function loadManage(){if(!MID)return;
+  await Promise.all([mLoadStatus(),mLoadVram(),mLoadCfg(),mLoadPresets(),mLoadSkills(),mLoadTools()]);}
+
+async function mLoadStatus(){try{var s=await mget('/api/status');if(!s)return;
+  var tag=s.active?'<span style="color:var(--ok,#3a7)">● active</span>':'<span style="color:var(--err,#c44)">○ '+esc(s.state||'arrêté')+'</span>';
+  document.getElementById('mStatus').innerHTML='<div class="kv"><span>Service</span><b>'+tag+'</b></div>'+
+    '<div class="kv"><span>Port</span><b>'+esc(String(s.port||'—'))+'</b></div>'+
+    (s.ctx?'<div class="kv"><span>Contexte max</span><b>'+s.ctx+' tok</b></div>':'');
+  }catch(e){document.getElementById('mStatus').textContent='indisponible';}}
+
+async function mLoadVram(){try{var g=await mget('/api/vram');
+  document.getElementById('mVram').innerHTML=(g||[]).map(function(x){var pct=Math.round(x.used*100/x.total);
+    return '<div style="margin:6px 0"><div style="font-size:12px">'+esc(x.name)+'</div>'+
+      '<div class="vbar"><div style="width:'+pct+'%"></div></div>'+
+      '<div class="muted" style="font-size:11px">'+(x.used/1024).toFixed(1)+' / '+(x.total/1024).toFixed(1)+' GiB · GPU '+x.util+'% · '+x.temp+'°C</div></div>';
+  }).join('')||'<span class="muted">(pas de GPU)</span>';}catch(e){document.getElementById('mVram').textContent='indisponible';}}
+
+async function mLoadCfg(){try{var c=await mget('/api/config');var keys=['BIN','MODEL','CTX','BATCH','UBATCH','NGL','PORT'];
+  document.getElementById('mCfg').innerHTML=keys.filter(function(k){return c&&c[k];}).map(function(k){
+    var v=c[k];if(k==='MODEL')v=v.split('/').pop();
+    return '<div class="kv"><span>'+k+'</span><span title="'+esc(c[k])+'">'+esc(v)+'</span></div>';}).join('')||'<span class="muted">—</span>';
+  }catch(e){document.getElementById('mCfg').textContent='indisponible';}}
+
+async function mLoadPresets(){try{var p=await mget('/api/presets')||[];var cont=document.getElementById('mPresets');cont.innerHTML='';
+  if(!p.length){cont.innerHTML='<span class="muted">(aucun preset)</span>';return;}
+  p.forEach(function(x,i){var row=document.createElement('div');row.className='prow'+(x.active?' active':'');
+    row.onclick=function(){srvSwitch(i+1,x.name);};
+    var nm=document.createElement('div');nm.className='pn';nm.textContent=(x.active?'● ':'')+x.name;nm.title=x.name;
+    var meta=document.createElement('div');meta.style.display='flex';meta.style.gap='6px';meta.style.alignItems='center';
+    if(x.quant){var q=document.createElement('span');q.className='qtag';q.textContent=x.quant;meta.appendChild(q);}
+    if(x.bench){var b=document.createElement('span');b.className='btag';b.textContent=x.bench.prefill.toFixed(0)+'-'+x.bench.decode.toFixed(0)+' t/s';meta.appendChild(b);}
+    var ed=document.createElement('button');ed.className='btn subtle';ed.style.padding='4px 10px';ed.textContent='✎';ed.title='éditer';
+    ed.onclick=function(e){e.stopPropagation();openSrvItem('preset',x.id);};
+    row.appendChild(nm);if(meta.children.length)row.appendChild(meta);row.appendChild(ed);cont.appendChild(row);});
+  }catch(e){document.getElementById('mPresets').textContent='indisponible';}}
+
+async function srvSwitch(n,name){var ok=await askConfirm({title:'Changer de preset ?',
+    msg:'Basculer vers « '+name+' » redémarre le modèle sur le serveur (1–2 min).',yes:'Basculer',no:'Annuler'});
+  if(!ok)return;toast('bascule…');await mpost('/api/switch',{n:n});setTimeout(loadManage,2500);}
+
+async function mLoadSkills(){try{var s=await mget('/api/skills');if(!s)return;
+  document.getElementById('mSkills').checked=!!s.enabled;
+  var list=document.getElementById('mSkillsList');
+  list.innerHTML=(s.skills||[]).length?s.skills.map(function(x){
+    return '<div class="prow" onclick="openSrvItem(\'skill\',\''+esc(x.name)+'\')"><div class="pn"><b>'+esc(x.name)+'</b> <span class="muted">— '+esc(x.desc||'')+'</span></div><button class="btn subtle" style="padding:4px 10px" onclick="event.stopPropagation();openSrvItem(\'skill\',\''+esc(x.name)+'\')">✎</button></div>';
+  }).join(''):'<span class="muted">(aucun skill)</span>';}catch(e){}}
+async function toggleSrvSkills(){await mpost('/api/skills/toggle',{on:document.getElementById('mSkills').checked});mLoadSkills();}
+
+async function mLoadTools(){try{var t=await mget('/api/tools');if(t)document.getElementById('mTools').checked=!!t.enabled;}catch(e){}}
+async function toggleSrvTools(){var cb=document.getElementById('mTools');
+  if(cb.checked){var ok=await askConfirm({title:'Activer l\'accès shell ?',
+    msg:'L\'IA aura un accès shell complet au serveur (inspection, scripts, commandes). À n\'activer que si tu sais ce que tu fais.',yes:'Activer',no:'Annuler'});
+    if(!ok){cb.checked=false;return;}}
+  await mpost('/api/tools/toggle',{on:cb.checked});mLoadTools();}
+
+async function srvAct(a){toast(a+'…');await mpost('/api/'+a,{});setTimeout(loadManage,1800);}
+
+async function runSrvBench(){var btn=document.getElementById('mBenchBtn'),out=document.getElementById('mBench');
+  btn.disabled=true;btn.textContent='⏳…';out.textContent='benchmark en cours (~10 s)…';
+  try{var r=await mget('/api/bench');
+    if(!r||!r.ok){out.innerHTML='<span style="color:var(--err,#c44)">erreur : '+esc((r&&r.error)||'')+'</span>';return;}
+    var x=r.result;
+    out.innerHTML='<div class="kv"><span>Prefill</span><b>'+x.prompt_per_second.toFixed(0)+' tok/s</b></div>'+
+      '<div class="kv"><span>Decode</span><b>'+x.predicted_per_second.toFixed(1)+' tok/s</b></div>'+
+      '<div class="kv"><span>Total</span><b>'+x.elapsed_sec.toFixed(2)+' s</b></div>';
+  }catch(e){out.textContent='erreur';}finally{btn.disabled=false;btn.textContent='⚡ Lancer';mLoadPresets();}}
+
+/* ---- Éditeur preset / skill -------------------------------------------------*/
+var IT_KIND={preset:{label:'Preset',param:'id',get:'/api/preset',save:'/api/preset/save',del:'/api/preset/delete',reload:mLoadPresets},
+             skill:{label:'Skill',param:'name',get:'/api/skill',save:'/api/skill/save',del:'/api/skill/delete',reload:mLoadSkills}};
+function itTxtMatch(re){var m=document.getElementById('itContent').value.match(re);return m?m[1].trim():'';}
+function itCurModel(){return (itTxtMatch(/^\s*MODEL\s*=\s*"?([^"\n]*)"?\s*$/m).split('/').pop()||'').trim();}
+function itCurBin(){return itTxtMatch(/^\s*BIN\s*=\s*"?([^"\n]*)"?\s*$/m);}
+function itCurQuant(){return itTxtMatch(/^\s*#?\s*QUANT\s*=\s*"?([^"\n]*)"?\s*$/mi);}
+async function openSrvItem(kind,key){var K=IT_KIND[kind];
+  var d=await mget(K.get+'?'+K.param+'='+encodeURIComponent(key||''))||{};
+  document.getElementById('itKind').value=kind;document.getElementById('itKey').value=key||'';
+  var disp=d.name||key||'';
+  document.getElementById('itTitle').textContent=key?(K.label+' · '+disp):('Nouveau '+K.label.toLowerCase());
+  document.getElementById('itName').value=disp;document.getElementById('itContent').value=d.content||'';
+  document.getElementById('itDel').style.display=key?'inline-block':'none';
+  var row=document.getElementById('itModelRow'),dmw=document.getElementById('itDelModelWrap');
+  if(kind==='preset'){row.style.display='block';
+    document.getElementById('itHf').value='';document.getElementById('itHfProg').style.display='none';
+    document.getElementById('itDelModel').checked=false;document.getElementById('itQuant').value=itCurQuant();
+    dmw.style.display=key?'inline-flex':'none';await Promise.all([itFillBackends(),itFillModels()]);}
+  else{row.style.display='none';dmw.style.display='none';}
+  document.getElementById('itemModal').classList.add('show');}
+function closeItem(){if(_dlPoll){clearInterval(_dlPoll);_dlPoll=null;}document.getElementById('itemModal').classList.remove('show');}
+
+async function itFillModels(){var sel=document.getElementById('itModel');var list=await mget('/api/models')||[];var cur=itCurModel();
+  var html='<option value="">— choisir un modèle —</option>',matched=false;
+  list.forEach(function(m){var s=(m.name===cur);if(s)matched=true;html+='<option value="'+esc(m.name)+'"'+(s?' selected':'')+'>'+esc(m.name)+'  ('+fmtSize(m.size)+')</option>';});
+  if(cur&&!matched)html+='<option value="" disabled selected>('+esc(cur)+' — introuvable)</option>';
+  sel.innerHTML=html;}
+function itPickModel(){var v=document.getElementById('itModel').value;if(!v)return;var ta=document.getElementById('itContent');
+  if(/^\s*MODEL\s*=.*$/m.test(ta.value))ta.value=ta.value.replace(/^\s*MODEL\s*=.*$/m,'MODEL="'+v+'"');else ta.value='MODEL="'+v+'"\n'+ta.value;toast('MODEL='+v);}
+async function itFillBackends(){var sel=document.getElementById('itBackend');var list=await mget('/api/backends')||[];var cur=itCurBin();
+  var html='<option value="">— choisir un backend —</option>',matched=false;
+  list.forEach(function(b){var s=(b.path===cur);if(s)matched=true;html+='<option value="'+esc(b.path)+'"'+(s?' selected':'')+'>'+esc(b.name)+'</option>';});
+  if(cur&&!matched)html+='<option value="" disabled selected>('+esc(cur)+' — hors backends)</option>';
+  sel.innerHTML=html;}
+function itPickBackend(){var v=document.getElementById('itBackend').value;if(!v)return;var ta=document.getElementById('itContent');
+  if(/^\s*BIN\s*=.*$/m.test(ta.value))ta.value=ta.value.replace(/^\s*BIN\s*=.*$/m,'BIN="'+v+'"');else ta.value='BIN="'+v+'"\n'+ta.value;toast('BIN='+v);}
+function itApplyQuant(){var v=document.getElementById('itQuant').value.trim();var ta=document.getElementById('itContent');var re=/^\s*#?\s*QUANT\s*=.*$/mi;
+  if(v){if(re.test(ta.value))ta.value=ta.value.replace(re,'QUANT="'+v+'"');else ta.value=ta.value.replace(/\s*$/,'')+'\nQUANT="'+v+'"\n';}
+  else ta.value=ta.value.replace(re,'').replace(/\n{3,}/g,'\n\n');}
+
+async function itDownload(){var url=document.getElementById('itHf').value.trim();if(!url){toast('colle un lien .gguf');return;}
+  var btn=document.getElementById('itHfBtn'),prog=document.getElementById('itHfProg');
+  btn.disabled=true;prog.style.display='block';prog.textContent='démarrage…';
+  var r=await mpost('/api/models/download',{url:url});
+  if(!r||!r.ok){prog.innerHTML='<span style="color:var(--err,#c44)">erreur : '+esc((r&&r.error)||'')+'</span>';btn.disabled=false;return;}
+  var fname=r.filename;if(_dlPoll)clearInterval(_dlPoll);
+  _dlPoll=setInterval(async function(){var list=await mget('/api/models/download/status')||[];var st=list.find(function(d){return d.filename===fname;});
+    if(!st)return;
+    if(st.error){prog.innerHTML='<span style="color:var(--err,#c44)">erreur : '+esc(st.error)+'</span>';clearInterval(_dlPoll);_dlPoll=null;btn.disabled=false;return;}
+    if(st.finished){prog.innerHTML='<span style="color:var(--ok,#3a7)">✓ '+esc(fname)+' ('+fmtSize(st.done)+')</span>';clearInterval(_dlPoll);_dlPoll=null;btn.disabled=false;
+      await itFillModels();document.getElementById('itModel').value=fname;itPickModel();return;}
+    var pct=st.total>0?Math.round(st.done*100/st.total):0;prog.textContent='⬇ '+fmtSize(st.done)+(st.total>0?' / '+fmtSize(st.total)+' ('+pct+'%)':'')+' — '+fname;
+  },900);}
+
+async function saveSrvItem(){var kind=document.getElementById('itKind').value,key=document.getElementById('itKey').value,K=IT_KIND[kind];
+  var name=document.getElementById('itName').value.trim(),content=document.getElementById('itContent').value;
+  if(!name){toast('nom requis');return;}
+  var payload=kind==='preset'?{id:key,name:name,content:content}:{name:name,old:key,content:content};
+  var r=await mpost(K.save,payload);if(!r||!r.ok){toast('erreur : '+((r&&r.error)||''));return;}
+  toast('enregistré ✓');closeItem();K.reload();}
+async function delSrvItem(){var kind=document.getElementById('itKind').value,key=document.getElementById('itKey').value,K=IT_KIND[kind];if(!key)return;
+  var name=document.getElementById('itName').value.trim()||key;
+  var delModel=kind==='preset'&&document.getElementById('itDelModel').checked;
+  var msg='Supprimer le '+K.label.toLowerCase()+' « '+name+' » ?';if(delModel)msg+='\n\n⚠️ Le fichier .gguf sera AUSSI supprimé (irréversible).';
+  var ok=await askConfirm({title:'Supprimer ?',msg:msg,yes:'Supprimer',no:'Annuler'});if(!ok)return;
+  var payload=kind==='preset'?{id:key,deleteModel:delModel}:{name:key};
+  var r=await mpost(K.del,payload);if(!r||!r.ok){toast('erreur : '+((r&&r.error)||''));return;}
+  toast('supprimé');closeItem();K.reload();}
+
 async function boot(){await me();await load();await loadKey();}
 boot();
-setInterval(function(){if(document.getElementById('chat').classList.contains('show')||document.getElementById('editor').classList.contains('show')||document.querySelector('.modal.show'))return;load();},15000);
+setInterval(function(){if(document.getElementById('chat').classList.contains('show')||document.getElementById('editor').classList.contains('show')||document.getElementById('manage').classList.contains('show')||document.querySelector('.modal.show'))return;load();},15000);
 </script></body></html>
