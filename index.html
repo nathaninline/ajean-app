@@ -61,10 +61,12 @@ header .sp{flex:1}
 .sumline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
 .sumline .sp{flex:1}
 .stat{display:inline-flex;align-items:center;gap:7px;font-weight:600;color:var(--text)}
-.modelrow{min-width:0}
-.mbadge{display:inline-block;max-width:100%;font-size:11px;color:var(--accent);background:var(--bg);
-  border:1px solid var(--border);border-radius:6px;padding:2px 9px;overflow:hidden;text-overflow:ellipsis;
-  white-space:nowrap;vertical-align:bottom}
+.modelrow{display:flex;align-items:center;gap:8px;min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 11px}
+.modelrow .mi{font-size:15px;flex:none;opacity:.9}
+.mbadge{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.vram{display:flex;align-items:center;gap:9px;margin-top:2px}
+.vram .gbar{flex:1}
+.vlabel{font-size:11px;color:var(--dim);flex:none}
 .dettog{flex:none;background:none;border:none;color:var(--dim);font:inherit;font-size:11px;cursor:pointer;padding:2px 4px;border-radius:5px}
 .dettog:hover{color:var(--accent);background:var(--bg)}
 .det{margin-top:6px;animation:fade .14s ease}
@@ -589,14 +591,10 @@ async function probe(id){var out={};
 // Squelette stable du corps : on ne remplace JAMAIS ce DOM ensuite, on met juste
 // à jour le texte/les valeurs in place (cf. updateProbe) → zéro clignotement.
 function probeSkeleton(){return '<div class="body">'+
-  '<div class="sumline">'+
-    '<span class="stat"><span class="sdot wait"></span><span class="st-t">connexion…</span></span>'+
-    '<span class="sp"></span>'+
-    '<button class="dettog" onclick="toggleDet(event,this)" style="display:none">détails ▾</button>'+
-  '</div>'+
-  '<div class="modelrow" style="display:none"><span class="mbadge"></span></div>'+
+  '<div class="sumline"><span class="stat"><span class="sdot wait"></span><span class="st-t">connexion…</span></span></div>'+
+  '<div class="modelrow" style="display:none"><span class="mi">🧠</span><span class="mbadge"></span></div>'+
+  '<div class="vram" style="display:none"><div class="gbar"><i style="width:0"></i></div><span class="vlabel"></span></div>'+
   '<div class="chips"></div>'+
-  '<div class="det" hidden></div>'+
 '</div>';}
 
 function updateProbe(card,p){var b=card.querySelector('.body');if(!b)return;
@@ -605,34 +603,22 @@ function updateProbe(card,p){var b=card.querySelector('.body');if(!b)return;
   if(st)st.textContent=p.health?'prêt':'démarrage';
   var mr=b.querySelector('.modelrow'),mb=b.querySelector('.mbadge');
   if(mr){if(p.model){mb.textContent=p.model+(p.quant?' · '+p.quant:'');mr.style.display='';}else mr.style.display='none';}
-  // Puces toujours visibles : un coup d'œil suffit (contexte, VRAM, charge, temp).
+  // VRAM agrégée → barre + libellé (GiB · %).
+  var u=0,t=0,tmp=0,ut=0,ng=0;
+  if(p.gpus&&p.gpus.length){ng=p.gpus.length;p.gpus.forEach(function(g){u+=g.used;t+=g.total;tmp=Math.max(tmp,g.temp);ut=Math.max(ut,g.util);});}
+  var vr=b.querySelector('.vram');
+  if(vr){if(t){var vp=Math.round(100*u/t);vr.style.display='';
+      vr.querySelector('i').style.width=vp+'%';
+      vr.querySelector('.vlabel').textContent=(u/1024).toFixed(1)+'/'+(t/1024).toFixed(0)+' GiB · '+vp+'%';}
+    else vr.style.display='none';}
+  // Puces : contexte, charge GPU, température (la VRAM est sur la barre ci-dessus).
   var ch=b.querySelector('.chips');
   if(ch){var chips='';
     if(p.ctx)chips+='<span class="chip">📏 '+(p.ctx>=1000?Math.round(p.ctx/1000)+'k':p.ctx)+' tok</span>';
-    if(p.gpus&&p.gpus.length){var u=0,t=0,tmp=0,ut=0;p.gpus.forEach(function(g){u+=g.used;t+=g.total;tmp=Math.max(tmp,g.temp);ut=Math.max(ut,g.util);});
-      var vp=t?Math.round(100*u/t):0;
-      chips+='<span class="chip">🎛️ VRAM '+vp+'%</span>';
-      chips+='<span class="chip">'+(u/1024).toFixed(1)+'/'+(t/1024).toFixed(0)+' GiB</span>';
-      if(ut)chips+='<span class="chip">⚡ '+ut+'%</span>';
-      if(tmp)chips+='<span class="chip">🌡️ '+tmp+'°C</span>';}
-    if(ch.innerHTML!==chips)ch.innerHTML=chips;}
-  var det='';
-  if(p.gpus&&p.gpus.length)p.gpus.forEach(function(g){var pct=g.total?Math.round(100*g.used/g.total):0;
-    det+='<div class="gpu"><div class="grow"><span class="gn">'+esc(g.name||'GPU')+'</span>'+
-      '<span class="gv">'+g.used+' / '+g.total+' Mo</span></div>'+
-      '<div class="gbar"><i style="width:'+pct+'%"></i></div>'+
-      '<div class="gmeta">'+pct+'% · charge '+g.util+'% · '+g.temp+'°C</div></div>';});
-  var dEl=b.querySelector('.det'),tog=b.querySelector('.dettog');
-  if(tog)tog.style.display=det?'':'none';
-  // N'écrit le DOM des détails QUE s'il a réellement changé (évite tout reflow).
-  if(dEl&&dEl.innerHTML!==det)dEl.innerHTML=det;}
+    if(ng){if(ut)chips+='<span class="chip">⚡ '+ut+'%</span>';if(tmp)chips+='<span class="chip">🌡️ '+tmp+'°C</span>';}
+    if(ch.innerHTML!==chips)ch.innerHTML=chips;}}
 
-function toggleDet(e,b){e.stopPropagation();var det=b.closest('.body').querySelector('.det');
-  if(!det)return;var open=det.hasAttribute('hidden');
-  if(open)det.removeAttribute('hidden');else det.setAttribute('hidden','');
-  b.textContent=open?'masquer ▴':'détails ▾';}
-
-// fillProbe met à jour la carte EN PLACE — l'état déplié et le DOM sont préservés.
+// fillProbe met à jour la carte EN PLACE (le DOM stable est préservé, zéro reflow).
 function fillProbe(id,card){probe(id).then(function(p){PROBE[id]=p;updateProbe(card,p);
   if(p.locked){var st=card.querySelector('.st-t');if(st){st.textContent='🔒 confirmer la boîte noire';st.style.cursor='pointer';st.title='Vérifier l\'empreinte E2E pour voir l\'état';
     st.onclick=function(e){e.stopPropagation();e2eConfirm(MACHINES.find(function(x){return x.id===id})).then(function(){fillProbe(id,card);});};}}});}
