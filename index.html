@@ -206,6 +206,11 @@ label.tgl:last-child{margin-bottom:0}
 .dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
 @keyframes bb{0%,60%,100%{opacity:.3}30%{opacity:1}}
 .composer{position:sticky;bottom:0;z-index:10;border-top:1px solid var(--border);background:var(--bg);padding:12px 18px}
+.ctxrow{max-width:960px;margin:0 auto 9px;display:flex;align-items:center;gap:10px;font-size:11px}
+.ctxbar{flex:0 1 240px;height:5px;border-radius:99px;background:var(--panel);border:1px solid var(--border);overflow:hidden}
+.ctxbar i{display:block;height:100%;width:0;border-radius:99px;background:var(--ok,#3a7);transition:width .3s,background .3s}
+#ctxText{white-space:nowrap}
+#ctxCompact{margin-left:auto;padding:3px 11px;font-size:11px;flex:none}
 .cbar{max-width:960px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
 .cbar textarea{flex:1;border:1px solid var(--border);background:var(--panel);color:var(--text);font:inherit;font-size:14px;border-radius:6px;resize:none;max-height:160px;padding:11px;outline:none}
 .cbar textarea:focus{border-color:var(--accent)}
@@ -270,7 +275,13 @@ label.tgl:last-child{margin-bottom:0}
 <div id="chat">
   <div class="banner" id="cBanner" style="display:none"></div>
   <div class="msgs"><div class="thread" id="cMsgs"></div></div>
-  <div class="composer"><div class="cbar">
+  <div class="composer">
+    <div class="ctxrow" id="ctxRow" style="display:none">
+      <div class="ctxbar"><i id="ctxFill"></i></div>
+      <span id="ctxText" class="muted">contexte 0 / 0</span>
+      <button class="btn subtle" id="ctxCompact" style="display:none" onclick="compactContext()" title="Résumer la conversation et repartir d'un contexte propre">🗜️ compacter</button>
+    </div>
+    <div class="cbar">
     <textarea id="cInput" rows="1" placeholder="Écris à ton agent…" oninput="grow(this)" onkeydown="chatKey(event)"></textarea>
     <button class="send" id="cSend" onclick="sendMsg()">↑</button>
   </div></div>
@@ -400,6 +411,7 @@ var API='https://ajean.link';
     }
     return _f(u,opt);};})();
 var TOKEN='',MACHINES=[],AGENTS=[],CUR=null,BUSY=false,PROBE={},SCARDS={},SIG_M='',SIG_A='',ABORT=null,CREADER=null,EDIT_FROM='home',E2E={};
+var CTX_MAX=0,CTX_USED=0; // compteur de contexte (tokens cumulés / contexte max du modèle)
 if(window.marked&&marked.setOptions)marked.setOptions({gfm:true,breaks:false});
 function md(src){if(!src)return '';try{return window.marked?marked.parse(src.replace(/\n{3,}/g,'\n\n')):src;}catch(e){return src;}}
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
@@ -797,6 +809,7 @@ function scrollDown(){if(_scrTimer)return;
 async function openChat(id){var a=AGENTS.find(function(x){return x.id===id});if(!a)return;
   CUR={agent:a,history:[]};document.getElementById('cAgent').textContent=a.name;
   document.getElementById('cModel').textContent=machineName(a.machine)+(a.presetName?' · '+a.presetName:'');
+  CTX_MAX=0;setCtxUsed(0); // nouveau chat → compteur de contexte remis à zéro
   document.getElementById('cMsgs').innerHTML='';document.getElementById('cInput').value='';
   document.getElementById('home').style.display='none';
   document.getElementById('hMain').style.display='none';
@@ -820,7 +833,10 @@ async function openChat(id){var a=AGENTS.find(function(x){return x.id===id});if(
   }catch(e){}}
   // Applique les capacités de l'agent (skills / shell) à l'état du serveur.
   try{await e2ecall(a.machine,'POST','/api/skills/toggle',{on:!!a.skills});}catch(e){}
-  try{await e2ecall(a.machine,'POST','/api/tools/toggle',{on:!!a.tools});}catch(e){}}
+  try{await e2ecall(a.machine,'POST','/api/tools/toggle',{on:!!a.tools});}catch(e){}
+  // Contexte max du modèle chargé → alimente le compteur de contexte.
+  try{var s0=await e2ecall(a.machine,'GET','/api/status');CTX_MAX=(s0&&s0.ctx)||0;}catch(e){}
+  setCtxUsed(0);}
 
 var _cf=null;
 function askConfirm(opt){opt=opt||{};
@@ -847,7 +863,7 @@ function closeChat(){document.getElementById('chat').classList.remove('show');
   document.getElementById('home').style.display='';
   document.getElementById('hChat').style.display='none';
   document.getElementById('hMain').style.display='flex';
-  CUR=null;load();}
+  CTX_MAX=0;updateCtxMeter();CUR=null;load();}
 function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
 
 function collapseReason(el){if(!el)return;el.querySelector('.reason').classList.add('col');
@@ -872,16 +888,7 @@ async function sendMsg(){if(BUSY||!CUR)return;var inp=document.getElementById('c
   var sess=null;try{sess=await e2eFor(MACHINES.find(function(x){return x.id===CUR.agent.machine}));}catch(e){}
   var reqObj={messages:msgs,tools:!!CUR.agent.tools,skills:!!CUR.agent.skills};
   try{
-    var r;
-    if(sess){
-      var ts0=Date.now();
-      var iv0=crypto.getRandomValues(new Uint8Array(12));
-      var aad0=_te.encode(sess.upub+'|'+ts0);
-      var ct0=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv0,additionalData:aad0},sess.key,_te.encode(JSON.stringify(reqObj)));
-      r=await fetch('/m/'+CUR.agent.machine+'/api/e2e/chat',{method:'POST',signal:ABORT.signal,
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({upub:sess.upub,ts:ts0,iv:b64e(iv0),ct:b64e(new Uint8Array(ct0))})});
-    }else{
+    if(!sess){
       // Boîte noire OBLIGATOIRE : aucun repli en clair. Si la session E2E manque,
       // soit l'agent n'a pas de clé publique, soit l'empreinte n'est pas confirmée.
       var mm=MACHINES.find(function(x){return x.id===CUR.agent.machine});
@@ -889,33 +896,27 @@ async function sendMsg(){if(BUSY||!CUR)return;var inp=document.getElementById('c
         throw new Error('boîte noire requise : confirme l\'empreinte E2E puis renvoie ton message');}
       throw new Error('boîte noire indisponible (agent sans clé E2E) — mets à jour Jean côté serveur');
     }
-    var reader=r.body.getReader(),dec=new TextDecoder(),buf='';CREADER=reader;
-    while(true){var rd=await reader.read();if(rd.done)break;buf+=dec.decode(rd.value,{stream:true});
-      var idx;while((idx=buf.indexOf('\n\n'))>=0){var chunk=buf.slice(0,idx).trim();buf=buf.slice(idx+2);
-        if(chunk.indexOf('data:')!==0)continue;var data=chunk.slice(5).trim();
-        if(!data||data==='[DONE]')continue;
-        try{var payload=data;
-          if(sess){var rawev=b64d(data),nc=rawev.slice(0,12),cc=rawev.slice(12);
-            var ptev=await crypto.subtle.decrypt({name:'AES-GCM',iv:nc},sess.key,cc);payload=_td.decode(ptev);}
-          var o=JSON.parse(payload);var dl=o.choices&&o.choices[0]&&o.choices[0].delta;if(!dl)continue;
-          if(dl.tool_used){killTyping();var t=dl.tool_used;
-            // Nouvelle phase : fige la réflexion / réponse précédentes pour que
-            // ce qui suit l'outil reparte sur un bloc neuf, plus bas dans le fil.
-            collapseReason(reasonEl);reasonEl=null;ansTxt=null;
-            if(!curTool){curTool=toolBlock();produced=true;}
-            curTool.querySelector('.thead').textContent='🔧 '+(t.label||t.name||'outil');
-            if(t.result){var pre=curTool.querySelector('.tres');pre.textContent=t.result;pre.style.display='';}
-            if(t.done)curTool=null;
-            scrollDown();}
-          if(dl.reasoning_content){killTyping();
-            // Une réflexion qui reprend après un outil/une réponse = nouveau bloc.
-            curTool=null;ansTxt=null;
-            if(!reasonEl){reasonEl=reasonBlock();rea='';produced=true;}
-            rea+=dl.reasoning_content;reasonEl.querySelector('.rbody').textContent=rea;scrollDown();}
-          if(dl.content){killTyping();collapseReason(reasonEl);reasonEl=null;curTool=null;
-            var c=ans();acc+=dl.content;fullAns+=dl.content;c.innerHTML=md(acc);scrollDown();}
-          if(dl.error){killTyping();var ce=ans();acc+='\n\n⚠️ '+dl.error;ce.innerHTML=md(acc);}
-        }catch(e){}}}
+    await streamE2E(CUR.agent.machine,sess,reqObj,function(dl){
+      if(dl.tool_used){killTyping();var t=dl.tool_used;
+        // Nouvelle phase : fige la réflexion / réponse précédentes pour que
+        // ce qui suit l'outil reparte sur un bloc neuf, plus bas dans le fil.
+        collapseReason(reasonEl);reasonEl=null;ansTxt=null;
+        if(!curTool){curTool=toolBlock();produced=true;}
+        curTool.querySelector('.thead').textContent='🔧 '+(t.label||t.name||'outil');
+        if(t.result){var pre=curTool.querySelector('.tres');pre.textContent=t.result;pre.style.display='';}
+        if(t.done)curTool=null;
+        scrollDown();}
+      if(dl.reasoning_content){killTyping();
+        // Une réflexion qui reprend après un outil/une réponse = nouveau bloc.
+        curTool=null;ansTxt=null;
+        if(!reasonEl){reasonEl=reasonBlock();rea='';produced=true;}
+        rea+=dl.reasoning_content;reasonEl.querySelector('.rbody').textContent=rea;scrollDown();}
+      if(dl.content){killTyping();collapseReason(reasonEl);reasonEl=null;curTool=null;
+        var c=ans();acc+=dl.content;fullAns+=dl.content;c.innerHTML=md(acc);scrollDown();}
+      // Stats de fin de tour → compteur de contexte (KV cumulé = prefill + decode).
+      if(dl.stats){setCtxUsed(CTX_USED+((dl.stats.prompt_tokens||0)+(dl.stats.gen_tokens||0)));}
+      if(dl.error){killTyping();var ce=ans();acc+='\n\n⚠️ '+dl.error;ce.innerHTML=md(acc);}
+    });
   }catch(e){killTyping();if(e&&e.name==='AbortError'){if(ansTxt){acc+=' …';ansTxt.innerHTML=md(acc);}}else{ans().textContent='⚠️ erreur réseau : '+e;}}
   killTyping();collapseReason(reasonEl);
   if(!produced)answerBlock().textContent='(pas de réponse)';
@@ -925,6 +926,75 @@ function setSend(busy){var s=document.getElementById('cSend');
   if(busy){s.textContent='■';s.classList.add('stop');s.title='Arrêter';s.onclick=stopGen;}
   else{s.textContent='↑';s.classList.remove('stop');s.title='Envoyer';s.onclick=sendMsg;}}
 function stopGen(){if(CREADER){try{CREADER.cancel();}catch(e){}}if(ABORT){try{ABORT.abort();}catch(e){}}}
+
+// streamE2E : envoie une requête chat chiffrée (canal authentifié) et invoque
+// onDelta pour chaque événement déchiffré. Partagé par le chat et la compaction —
+// le relais ne voit que de l'opaque.
+async function streamE2E(machine,sess,reqObj,onDelta){
+  var ts0=Date.now();
+  var iv0=crypto.getRandomValues(new Uint8Array(12));
+  var aad0=_te.encode(sess.upub+'|'+ts0);
+  var ct0=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv0,additionalData:aad0},sess.key,_te.encode(JSON.stringify(reqObj)));
+  var r=await fetch('/m/'+machine+'/api/e2e/chat',{method:'POST',signal:ABORT.signal,
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({upub:sess.upub,ts:ts0,iv:b64e(iv0),ct:b64e(new Uint8Array(ct0))})});
+  var reader=r.body.getReader(),dec=new TextDecoder(),buf='';CREADER=reader;
+  while(true){var rd=await reader.read();if(rd.done)break;buf+=dec.decode(rd.value,{stream:true});
+    var idx;while((idx=buf.indexOf('\n\n'))>=0){var chunk=buf.slice(0,idx).trim();buf=buf.slice(idx+2);
+      if(chunk.indexOf('data:')!==0)continue;var data=chunk.slice(5).trim();
+      if(!data||data==='[DONE]')continue;
+      try{var rawev=b64d(data),nc=rawev.slice(0,12),cc=rawev.slice(12);
+        var ptev=await crypto.subtle.decrypt({name:'AES-GCM',iv:nc},sess.key,cc);
+        var o=JSON.parse(_td.decode(ptev));var dl=o.choices&&o.choices[0]&&o.choices[0].delta;if(!dl)continue;
+        onDelta(dl);
+      }catch(e){}}}
+}
+
+/* ---- Compteur de contexte + compaction (comme jean web, via la boîte noire) ---*/
+function setCtxUsed(n){CTX_USED=n||0;updateCtxMeter();}
+function updateCtxMeter(){var row=document.getElementById('ctxRow');if(!row)return;
+  if(!CTX_MAX){row.style.display='none';return;}
+  var pct=Math.min(100,Math.round(CTX_USED*100/CTX_MAX));
+  row.style.display='flex';
+  var fill=document.getElementById('ctxFill');fill.style.width=pct+'%';
+  fill.style.background=pct>=90?'var(--err,#c44)':pct>=70?'var(--warn,#c93)':'var(--ok,#3a7)';
+  document.getElementById('ctxText').textContent='contexte '+CTX_USED.toLocaleString()+' / '+CTX_MAX.toLocaleString()+' ('+pct+'%)';
+  document.getElementById('ctxCompact').style.display=(CUR&&CUR.history&&CUR.history.length&&pct>=60)?'inline-flex':'none';
+}
+
+// compactContext : demande à l'IA un résumé complet de la conversation, puis repart
+// d'un historique propre seedé avec ce résumé → contexte fortement réduit, fil gardé.
+async function compactContext(){
+  if(BUSY||!CUR)return;
+  if(!CUR.history.length){toast('rien à compacter');return;}
+  var ok=await askConfirm({title:'Compacter le contexte ?',
+    msg:'L\'IA va résumer la conversation puis repartir d\'une session propre basée sur ce résumé. Réduit fortement les tokens en gardant le fil.',
+    yes:'Compacter',no:'Annuler'});
+  if(!ok)return;
+  var sess=null;try{sess=await e2eFor(MACHINES.find(function(x){return x.id===CUR.agent.machine}));}catch(e){}
+  if(!sess){toast('boîte noire requise : confirme l\'empreinte');return;}
+  BUSY=true;setSend(true);ABORT=new AbortController();
+  var btn=document.getElementById('ctxCompact'),lbl=btn.textContent;btn.textContent='compaction…';btn.disabled=true;
+  banner('Compaction du contexte…');
+  var sysd='';if(CUR.agent.system){try{sysd=await decStr(CUR.agent.system);}catch(e){}}
+  var instr='Résume de façon structurée et complète TOUTE notre conversation jusqu\'ici, dans le but de poursuivre le travail dans une nouvelle session sans rien perdre d\'important : objectifs, décisions prises, état actuel, fichiers/commandes/éléments clés, et ce qu\'il reste à faire. Écris uniquement le résumé, sans préambule.';
+  var msgs=[];if(sysd)msgs.push({role:'system',content:sysd});
+  msgs=msgs.concat(CUR.history,[{role:'user',content:instr}]);
+  var summary='';
+  try{await streamE2E(CUR.agent.machine,sess,{messages:msgs,tools:false,skills:false},function(dl){if(dl.content)summary+=dl.content;});}
+  catch(e){banner('');btn.textContent=lbl;btn.disabled=false;BUSY=false;setSend(false);ABORT=null;
+    toast(e&&e.name==='AbortError'?'compaction annulée':'échec compaction : '+e);return;}
+  banner('');summary=summary.trim();
+  btn.textContent=lbl;btn.disabled=false;BUSY=false;setSend(false);ABORT=null;
+  if(!summary){toast('résumé vide');return;}
+  CUR.history=[{role:'user',content:'Résumé de notre session précédente (reprends le travail à partir de là) :\n\n'+summary},
+               {role:'assistant',content:'Compris, je reprends à partir de ce résumé.'}];
+  document.getElementById('cMsgs').innerHTML='';
+  var note=toolBlock();note.querySelector('.thead').textContent='🗜️ contexte compacté';
+  var pre=note.querySelector('.tres');pre.textContent=summary;pre.style.display='';
+  setCtxUsed(0);
+  toast('contexte compacté');
+}
 
 /* ===== Gérer le serveur (parité jean web, hors boîte noire = métadonnées de
    contrôle uniquement, jamais de contenu de chat — celui-ci reste E2E) ======= */
