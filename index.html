@@ -57,7 +57,7 @@ header .sp{flex:1}
 .offhint{font-size:11px;color:var(--dim);margin-top:6px}
 .hcol{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
 .hcol .name{flex:none}
-.hcol .pill{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hcol .pill{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:none;border:none;padding:0}
 .sumline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
 .sumline .sp{flex:1}
 .stat{display:inline-flex;align-items:center;gap:7px;font-weight:600;color:var(--text)}
@@ -139,7 +139,8 @@ header .sp{flex:1}
 #editor.show{display:flex}
 .formwrap{width:100%;max-width:620px;margin:0 auto;padding:22px 20px 48px}
 .erow{display:flex;gap:8px;justify-content:flex-end;margin-top:22px}
-.field label.tgl{display:flex;align-items:center;gap:14px;padding:13px 15px;border:1px solid var(--border);border-radius:9px;background:var(--panel);cursor:pointer;margin-bottom:10px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text)}
+label.tgl{display:flex;align-items:center;gap:14px;padding:13px 15px;border:1px solid var(--border);border-radius:9px;background:var(--panel);cursor:pointer;margin-bottom:10px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text)}
+label.tgl:last-child{margin-bottom:0}
 .tgl input{display:none}
 .tgl .tgl-txt{flex:1;display:flex;flex-direction:column;gap:3px}
 .tgl .tgl-txt b{font-size:13px;color:var(--text);font-weight:600}
@@ -220,7 +221,8 @@ header .sp{flex:1}
 .mhead h3{margin:0;font-size:14px;color:var(--accent)}
 .vbar{height:6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin:4px 0}
 .vbar>div{height:100%;background:var(--accent)}
-.prow{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer}
+.prow{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:border-color .12s}
+.prow:hover{border-color:var(--accent)}
 .prow.active{border-color:var(--accent)}
 .prow .pn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prow .qtag{font-size:10px;border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--dim)}
