@@ -67,9 +67,10 @@ header .sp{flex:1}
 .stat{display:inline-flex;align-items:center;gap:7px;font-weight:600;color:var(--text)}
 .modelrow{display:flex;align-items:center;min-width:0;margin-top:1px}
 .mbadge{font-size:14px;font-weight:600;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.vram{display:flex;align-items:center;gap:9px;margin-top:2px}
-.vram .gbar{flex:1}
-.vlabel{font-size:11px;color:var(--dim);flex:none}
+.vram{display:flex;flex-direction:column;gap:7px;margin-top:2px}
+.gline{display:flex;align-items:center;gap:9px;min-width:0}
+.gline .gbar{flex:1}
+.vlabel{font-size:11px;color:var(--dim);flex:none;white-space:nowrap}
 .dettog{flex:none;background:none;border:none;color:var(--dim);font:inherit;font-size:11px;cursor:pointer;padding:2px 4px;border-radius:5px}
 .dettog:hover{color:var(--accent);background:var(--bg)}
 .det{margin-top:6px;animation:fade .14s ease}
@@ -597,8 +598,7 @@ async function probe(id){var out={};
 // à jour le texte/les valeurs in place (cf. updateProbe) → zéro clignotement.
 function probeSkeleton(){return '<div class="body">'+
   '<div class="modelrow" style="display:none"><span class="mbadge"></span></div>'+
-  '<div class="vram" style="display:none"><div class="gbar"><i style="width:0"></i></div><span class="vlabel"></span></div>'+
-  '<div class="chips"></div>'+
+  '<div class="vram" style="display:none"></div>'+
 '</div>';}
 
 function updateProbe(card,p){var b=card.querySelector('.body');if(!b)return;
@@ -606,20 +606,18 @@ function updateProbe(card,p){var b=card.querySelector('.body');if(!b)return;
   if(st)st.textContent=p.health?'prêt':'démarrage';
   var mr=b.querySelector('.modelrow'),mb=b.querySelector('.mbadge');
   if(mr){if(p.model){mb.textContent=p.model+(p.quant?' · '+p.quant:'');mr.style.display='';}else mr.style.display='none';}
-  // VRAM agrégée → barre + libellé (GiB · %).
-  var u=0,t=0,tmp=0,ut=0,ng=0;
-  if(p.gpus&&p.gpus.length){ng=p.gpus.length;p.gpus.forEach(function(g){u+=g.used;t+=g.total;tmp=Math.max(tmp,g.temp);ut=Math.max(ut,g.util);});}
+  // Une barre VRAM par GPU (plusieurs lignes si plusieurs cartes). Mise à jour en
+  // place : on ne reconstruit le DOM que si le nombre de cartes change.
   var vr=b.querySelector('.vram');
-  if(vr){if(t){var vp=Math.round(100*u/t);vr.style.display='';
-      vr.querySelector('i').style.width=vp+'%';
-      vr.querySelector('.vlabel').textContent=(u/1024).toFixed(1)+'/'+(t/1024).toFixed(0)+' GiB · '+vp+'%';}
-    else vr.style.display='none';}
-  // Puces : contexte, charge GPU, température (la VRAM est sur la barre ci-dessus).
-  var ch=b.querySelector('.chips');
-  if(ch){var chips='';
-    if(p.ctx)chips+='<span class="chip">📏 '+(p.ctx>=1000?Math.round(p.ctx/1000)+'k':p.ctx)+' tok</span>';
-    if(ng){if(ut)chips+='<span class="chip">⚡ '+ut+'%</span>';if(tmp)chips+='<span class="chip">🌡️ '+tmp+'°C</span>';}
-    if(ch.innerHTML!==chips)ch.innerHTML=chips;}}
+  if(vr){var gs=p.gpus||[];
+    if(vr.children.length!==gs.length)
+      vr.innerHTML=gs.map(function(){return '<div class="gline"><div class="gbar"><i style="width:0"></i></div><span class="vlabel"></span></div>';}).join('');
+    gs.forEach(function(g,i){var ln=vr.children[i];if(!ln)return;
+      var pct=g.total?Math.round(100*g.used/g.total):0;
+      ln.querySelector('i').style.width=pct+'%';
+      var nm=(gs.length>1&&g.name)?(g.name.replace(/NVIDIA |GeForce /g,'')+' · '):'';
+      ln.querySelector('.vlabel').textContent=nm+(g.used/1024).toFixed(1)+'/'+(g.total/1024).toFixed(0)+' GiB · '+pct+'%'+(g.util?' · ⚡'+g.util+'%':'');});
+    vr.style.display=gs.length?'':'none';}}
 
 // fillProbe met à jour la carte EN PLACE (le DOM stable est préservé, zéro reflow).
 function fillProbe(id,card){probe(id).then(function(p){PROBE[id]=p;updateProbe(card,p);
