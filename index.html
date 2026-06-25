@@ -58,6 +58,10 @@ header .sp{flex:1}
 .hcol{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
 .hcol .name{flex:none}
 .hcol .pill{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:none;border:none;padding:0}
+.subln{display:flex;align-items:center;min-width:0;font-size:12px;color:var(--dim)}
+.subln .host{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.subln .st-t{flex:none;white-space:nowrap}
+.subln .st-t::before{content:'·';margin:0 6px;opacity:.55}
 .sumline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
 .sumline .sp{flex:1}
 .stat{display:inline-flex;align-items:center;gap:7px;font-weight:600;color:var(--text)}
@@ -592,15 +596,13 @@ async function probe(id){var out={};
 // Squelette stable du corps : on ne remplace JAMAIS ce DOM ensuite, on met juste
 // à jour le texte/les valeurs in place (cf. updateProbe) → zéro clignotement.
 function probeSkeleton(){return '<div class="body">'+
-  '<div class="sumline"><span class="stat"><span class="st-t">connexion…</span></span></div>'+
   '<div class="modelrow" style="display:none"><span class="mbadge"></span></div>'+
   '<div class="vram" style="display:none"><div class="gbar"><i style="width:0"></i></div><span class="vlabel"></span></div>'+
   '<div class="chips"></div>'+
 '</div>';}
 
 function updateProbe(card,p){var b=card.querySelector('.body');if(!b)return;
-  var sd=b.querySelector('.sdot'),st=b.querySelector('.st-t');
-  if(sd)sd.className='sdot '+(p.health?'on':'wait');
+  var st=card.querySelector('.st-t');
   if(st)st.textContent=p.health?'prêt':'démarrage';
   var mr=b.querySelector('.modelrow'),mb=b.querySelector('.mbadge');
   if(mr){if(p.model){mb.textContent=p.model+(p.quant?' · '+p.quant:'');mr.style.display='';}else mr.style.display='none';}
@@ -625,10 +627,11 @@ function fillProbe(id,card){probe(id).then(function(p){PROBE[id]=p;updateProbe(c
     st.onclick=function(e){e.stopPropagation();e2eConfirm(MACHINES.find(function(x){return x.id===id})).then(function(){fillProbe(id,card);});};}}});}
 
 function serverCard(m){var d=document.createElement('div');d.className='tile srv'+(m.online?'':' off');
-  var body=m.online?probeSkeleton():'<div class="body"><div class="sumline"><span class="stat"><span class="st-t">hors ligne</span></span></div><div class="offhint">Clique pour renommer ou retirer</div></div>';
+  var body=m.online?probeSkeleton():'<div class="body"><div class="offhint">Clique pour renommer ou retirer</div></div>';
+  var status=m.online?'connexion…':'hors ligne';
   d.innerHTML='<div class="top">'+
       '<span class="hcol"><span class="name">'+esc(m.name)+'</span>'+
-      '<span class="pill">'+esc(m.hostname||m.id.slice(0,8))+'</span></span>'+
+      '<span class="subln"><span class="host">'+esc(m.hostname||m.id.slice(0,8))+'</span><span class="st-t">'+status+'</span></span></span>'+
       '<span class="dot '+(m.online?'on':'')+'"></span></div>'+
     body;
   // Un simple clic sur la carte ouvre « Gérer » (ou l'éditeur si hors ligne).
