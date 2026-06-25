@@ -246,6 +246,38 @@ var API='https://ajean.link';
 <script src="/wasm_exec.js"></script>
 <script src="/e2e.js"></script>
 <script>
+// Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
+// portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
+// e2e.js (e2eConfirm) utilise window.askConfirm / window.askPrompt si présents.
+(function(){
+  function mk(inner){var o=document.createElement('div');
+    o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);display:grid;place-items:center;z-index:2147483647;padding:16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
+    var box=document.createElement('div');
+    box.style.cssText='background:#161b22;border:1px solid #30363d;border-radius:10px;padding:22px;max-width:440px;width:100%;color:#e6edf3;box-shadow:0 10px 40px rgba(0,0,0,.5)';
+    box.innerHTML=inner;o.appendChild(box);document.body.appendChild(o);return o;}
+  var BTN='border:1px solid #30363d;background:#161b22;color:#e6edf3;border-radius:6px;padding:9px 15px;cursor:pointer;font:inherit;font-size:13px;font-weight:600';
+  var BTNP='border:1px solid #1f6feb;background:#1f6feb;color:#fff;border-radius:6px;padding:9px 15px;cursor:pointer;font:inherit;font-size:13px;font-weight:600';
+  function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  window.askConfirm=function(opt){opt=opt||{};return new Promise(function(res){
+    var o=mk('<h3 style="margin:0 0 12px;color:#58a6ff;font-size:15px">'+esc(opt.title||'Confirmer')+'</h3>'+
+      '<p style="margin:0 0 18px;color:#adbac7;font-size:13px;line-height:1.55;word-break:break-word">'+esc(opt.msg||'')+'</p>'+
+      '<div style="display:flex;gap:8px;justify-content:flex-end"><button id="_no" style="'+BTN+'">'+esc(opt.no||'Annuler')+'</button>'+
+      '<button id="_yes" style="'+BTNP+'">'+esc(opt.yes||'Continuer')+'</button></div>');
+    o.querySelector('#_yes').onclick=function(){o.remove();res(true);};
+    o.querySelector('#_no').onclick=function(){o.remove();res(false);};});};
+  window.askPrompt=function(opt){opt=opt||{};return new Promise(function(res){
+    var o=mk('<h3 style="margin:0 0 12px;color:#58a6ff;font-size:15px">'+esc(opt.title||'Saisir')+'</h3>'+
+      '<p style="margin:0 0 12px;color:#adbac7;font-size:13px;line-height:1.55;word-break:break-word">'+esc(opt.msg||'')+'</p>'+
+      '<input id="_in" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="'+esc(opt.placeholder||'')+'" '+
+      'style="width:100%;padding:11px 12px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font:inherit;font-size:16px;margin-bottom:16px">'+
+      '<div style="display:flex;gap:8px;justify-content:flex-end"><button id="_no" style="'+BTN+'">'+esc(opt.no||'Annuler')+'</button>'+
+      '<button id="_yes" style="'+BTNP+'">'+esc(opt.yes||'Valider')+'</button></div>');
+    var inp=o.querySelector('#_in');setTimeout(function(){inp.focus();},60);
+    function ok(){var v=inp.value.trim();o.remove();res(v);}
+    inp.onkeydown=function(e){if(e.key==='Enter')ok();};
+    o.querySelector('#_yes').onclick=ok;
+    o.querySelector('#_no').onclick=function(){o.remove();res('');};});};
+})();
 // Machine cible (?m=<id>) résolue depuis le compte, puis garde-fou boîte noire
 // (empreinte + appairage) demandé UNE fois (partagé avec le portail, même origine).
 var MACHINE=null;
