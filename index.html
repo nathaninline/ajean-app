@@ -51,6 +51,10 @@ header .sp{flex:1}
 .tile.srv .top{align-items:center}
 .tile.srv .av{background:linear-gradient(160deg,var(--panel2),var(--bg));font-size:17px}
 .tile.srv.off{opacity:.62}
+.tile.srv{cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:11px;color:var(--dim);background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.offhint{font-size:11px;color:var(--dim);margin-top:6px}
 .hcol{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
 .hcol .name{flex:none}
 .hcol .pill{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -240,6 +244,7 @@ header .sp{flex:1}
   <div class="hg" id="hManage" style="display:none">
     <button class="iconbtn" onclick="closeManage()" title="Retour" aria-label="Retour"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="brandcol" style="flex:1;min-width:0"><div class="name" id="mTitle" style="font-weight:600;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Serveur</div><div class="email">Gestion · hors chat (boîte noire préservée)</div></div>
+    <button class="iconbtn" onclick="editServer(MID,machineName(MID))" title="Éditer (nom, endpoint, retirer)" aria-label="Éditer"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
     <button class="iconbtn" onclick="loadManage()" title="Rafraîchir" aria-label="Rafraîchir"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
   </div>
 </header>
@@ -590,6 +595,7 @@ function probeSkeleton(){return '<div class="body">'+
     '<button class="dettog" onclick="toggleDet(event,this)" style="display:none">détails ▾</button>'+
   '</div>'+
   '<div class="modelrow" style="display:none"><span class="mbadge"></span></div>'+
+  '<div class="chips"></div>'+
   '<div class="det" hidden></div>'+
 '</div>';}
 
@@ -599,8 +605,18 @@ function updateProbe(card,p){var b=card.querySelector('.body');if(!b)return;
   if(st)st.textContent=p.health?'prêt':'démarrage';
   var mr=b.querySelector('.modelrow'),mb=b.querySelector('.mbadge');
   if(mr){if(p.model){mb.textContent=p.model+(p.quant?' · '+p.quant:'');mr.style.display='';}else mr.style.display='none';}
+  // Puces toujours visibles : un coup d'œil suffit (contexte, VRAM, charge, temp).
+  var ch=b.querySelector('.chips');
+  if(ch){var chips='';
+    if(p.ctx)chips+='<span class="chip">📏 '+(p.ctx>=1000?Math.round(p.ctx/1000)+'k':p.ctx)+' tok</span>';
+    if(p.gpus&&p.gpus.length){var u=0,t=0,tmp=0,ut=0;p.gpus.forEach(function(g){u+=g.used;t+=g.total;tmp=Math.max(tmp,g.temp);ut=Math.max(ut,g.util);});
+      var vp=t?Math.round(100*u/t):0;
+      chips+='<span class="chip">🎛️ VRAM '+vp+'%</span>';
+      chips+='<span class="chip">'+(u/1024).toFixed(1)+'/'+(t/1024).toFixed(0)+' GiB</span>';
+      if(ut)chips+='<span class="chip">⚡ '+ut+'%</span>';
+      if(tmp)chips+='<span class="chip">🌡️ '+tmp+'°C</span>';}
+    if(ch.innerHTML!==chips)ch.innerHTML=chips;}
   var det='';
-  if(p.ctx)det+='<div class="ctx"><span>Contexte</span><b>'+p.ctx.toLocaleString()+' tok</b></div>';
   if(p.gpus&&p.gpus.length)p.gpus.forEach(function(g){var pct=g.total?Math.round(100*g.used/g.total):0;
     det+='<div class="gpu"><div class="grow"><span class="gn">'+esc(g.name||'GPU')+'</span>'+
       '<span class="gv">'+g.used+' / '+g.total+' Mo</span></div>'+
@@ -619,18 +635,17 @@ function toggleDet(e,b){e.stopPropagation();var det=b.closest('.body').querySele
 // fillProbe met à jour la carte EN PLACE — l'état déplié et le DOM sont préservés.
 function fillProbe(id,card){probe(id).then(function(p){PROBE[id]=p;updateProbe(card,p);
   if(p.locked){var st=card.querySelector('.st-t');if(st){st.textContent='🔒 confirmer la boîte noire';st.style.cursor='pointer';st.title='Vérifier l\'empreinte E2E pour voir l\'état';
-    st.onclick=function(){e2eConfirm(MACHINES.find(function(x){return x.id===id})).then(function(){fillProbe(id,card);});};}}});}
+    st.onclick=function(e){e.stopPropagation();e2eConfirm(MACHINES.find(function(x){return x.id===id})).then(function(){fillProbe(id,card);});};}}});}
 
 function serverCard(m){var d=document.createElement('div');d.className='tile srv'+(m.online?'':' off');
-  var body=m.online?probeSkeleton():'<div class="body"><div class="sumline"><span class="stat"><span class="sdot"></span><span class="st-t">hors ligne</span></span></div></div>';
+  var body=m.online?probeSkeleton():'<div class="body"><div class="sumline"><span class="stat"><span class="sdot"></span><span class="st-t">hors ligne</span></span></div><div class="offhint">Clique pour renommer ou retirer</div></div>';
   d.innerHTML='<div class="top"><span class="av">🖥️</span>'+
       '<span class="hcol"><span class="name">'+esc(m.name)+'</span>'+
       '<span class="pill">'+esc(m.hostname||m.id.slice(0,8))+'</span></span>'+
       '<span class="dot '+(m.online?'on':'')+'"></span></div>'+
-    body+
-    '<div class="acts">'+
-    '<button onclick="editServer(\''+m.id+'\',\''+esc(m.name)+'\')">Éditer</button>'+
-    (m.online?'<button class="open" onclick="manageServer(\''+m.id+'\')">Gérer</button>':'')+'</div>';
+    body;
+  // Un simple clic sur la carte ouvre « Gérer » (ou l'éditeur si hors ligne).
+  d.onclick=function(){if(m.online)manageServer(m.id);else editServer(m.id,m.name);};
   if(m.online&&PROBE[m.id])updateProbe(d,PROBE[m.id]);
   return d;}
 
@@ -663,17 +678,20 @@ async function load(){
 }
 
 function editServer(id,name){document.getElementById('sId').value=id;document.getElementById('sName').value=name;
-  document.getElementById('sOai').textContent=location.origin+'/oai/'+id+'/v1';
+  document.getElementById('sOai').textContent=API+'/oai/'+id+'/v1';
   document.getElementById('srvModal').classList.add('show');}
 function copyOai(){var t=document.getElementById('sOai').textContent;
   if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){toast('Endpoint copié ✓')});else toast('Copie manuelle');}
 function closeSrv(){document.getElementById('srvModal').classList.remove('show');}
 async function saveServer(){var id=document.getElementById('sId').value,name=document.getElementById('sName').value.trim();
   if(!name){toast('Donne un nom');return;}
-  await jsonPost('/app/machine/rename',{id:id,name:name});closeSrv();toast('Enregistré ✓');load();}
+  await jsonPost('/app/machine/rename',{id:id,name:name});
+  if(MID===id)document.getElementById('mTitle').textContent=name; // si on édite depuis « Gérer »
+  closeSrv();toast('Enregistré ✓');load();}
 async function delServer(){var id=document.getElementById('sId').value,name=document.getElementById('sName').value;
   if(!confirm('Retirer « '+name+' » du compte ?'))return;
-  await jsonPost('/app/machine/remove',{id:id});closeSrv();toast('Retiré');load();}
+  await jsonPost('/app/machine/remove',{id:id});closeSrv();toast('Retiré');
+  if(MID===id)closeManage();else load();} // retirée depuis « Gérer » → on quitte la vue
 
 function fillMachines(sel){var s=document.getElementById('aMachine');s.innerHTML='';
   MACHINES.filter(function(m){return m.online}).forEach(function(m){
