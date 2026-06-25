@@ -14,6 +14,7 @@ $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $src  = Join-Path $here '..\jean\ui\index.html'
 $dst  = Join-Path $here 'server.html'
+$ver  = Get-Date -Format 'yyyyMMddHHmmss'   # anti-cache : tamponné sur les assets/URLs
 
 if (-not (Test-Path $src)) { throw "introuvable : $src" }
 $html = Get-Content -Raw -Encoding UTF8 $src
@@ -135,8 +136,20 @@ $marker = '<script src="marked.min.js"></script>'
 if (-not $html.Contains($marker)) { throw "marqueur '$marker' introuvable dans jean web." }
 $html = $html.Replace($marker, $bootstrap + "`r`n" + $marker)
 
+# anti-cache : versionne e2e.js (chargé par server.html)
+$html = $html.Replace('src="/e2e.js"', 'src="/e2e.js?v=' + $ver + '"')
+
 # --- écriture (UTF-8 sans BOM) --------------------------------------------------
 [System.IO.File]::WriteAllText($dst, $html, (New-Object System.Text.UTF8Encoding($false)))
+
+# anti-cache : retamponne index.html (e2e.js + var BUILD = la version de navigation
+# vers server.html?...&v=). URL versionnée = Safari/CDN ne peuvent plus resservir l'ancien.
+$idx = Join-Path $here 'index.html'
+$ih  = [System.IO.File]::ReadAllText($idx)
+$ih  = [regex]::Replace($ih, 'src="/e2e\.js\?v=[^"]*"', 'src="/e2e.js?v=' + $ver + '"')
+$ih  = [regex]::Replace($ih, "var BUILD='[^']*';", "var BUILD='" + $ver + "';")
+[System.IO.File]::WriteAllText($idx, $ih, (New-Object System.Text.UTF8Encoding($false)))
+Write-Host "version anti-cache = $ver"
 
 # marked.min.js doit exister côté Pages (jean web le charge en relatif).
 $mkSrc = Join-Path $here '..\jean\ui\marked.min.js'

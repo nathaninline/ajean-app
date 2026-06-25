@@ -165,8 +165,9 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js"></script>
+<script src="/e2e.js?v=20260625201643"></script>
 <script>
+var BUILD='20260625201643'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
 function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
@@ -294,7 +295,7 @@ function serverCard(m){var d=document.createElement('div');d.className='tile srv
       '<span class="subln"><span class="host">'+esc(m.hostname||m.id.slice(0,8))+'</span><span class="st-t">'+status+'</span></span></span>'+
       '<span class="dot '+(m.online?'on':'')+'"></span></div>'+body;
   // Serveur en ligne → on l'ouvre dans la vraie UI jean web (boîte noire). Hors ligne → édition.
-  d.onclick=function(){if(m.online)location.href='server.html?m='+encodeURIComponent(m.id);else editServer(m.id,m.name);};
+  d.onclick=function(){if(m.online)location.href='server.html?m='+encodeURIComponent(m.id)+'&v='+BUILD;else editServer(m.id,m.name);};
   if(m.online&&PROBE[m.id])updateProbe(d,PROBE[m.id]);
   return d;}
 
