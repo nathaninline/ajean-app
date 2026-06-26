@@ -33,9 +33,7 @@ body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background
 h1{margin:0;font-size:18px;color:var(--accent)}
 #brand{display:inline-flex;align-items:baseline}
 .sidehead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
-.sidehead-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
-/* nom du modèle, sous la pastille d'état */
-.headmodel{font-size:10px;color:var(--dim);font-weight:500;max-width:175px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.sidehead-r{display:flex;flex-direction:column;align-items:flex-end;gap:5px;min-width:0}
 /* pastille d'état service, en haut à droite de la barre latérale */
 .statuspill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--dim);font-weight:600;white-space:nowrap}
 .statuspill.ok{color:var(--ok);border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.10)}
@@ -176,10 +174,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
     <h1 id="brand"><span id="brand-a">a</span>jean</h1>
     <div class="sidehead-r">
       <span id="status-svc" class="statuspill">…</span>
-      <span id="status-model" class="headmodel"></span>
+      <span id="status-preset"></span>
     </div>
   </div>
-  <div id="statusline" class="muted"><span id="status-preset"></span></div>
   <details open><summary>GPU</summary>
     <div id="vram" class="muted">…</div>
   </details>
@@ -296,7 +293,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626114135"></script>
+<script src="/e2e.js?v=20260626114420"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -448,8 +445,6 @@ async function loadVram(){
 }
 async function loadCfg(){
   const c=await jget('/api/config');
-  const mdl=document.getElementById('status-model');
-  if(mdl){ const m=c.MODEL?c.MODEL.split('/').pop():''; mdl.textContent=m; mdl.title=m; }
   const keys=['BIN','MODEL','CTX','BATCH','UBATCH','NGL','PORT'];
   document.getElementById('cfg').innerHTML = keys.filter(k=>c[k]).map(k=>{
     let v=c[k]; if(k==='MODEL') v=v.split('/').pop();
