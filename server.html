@@ -116,9 +116,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
    peut « dépasser ». overflow:hidden clippe le contenu pendant tout le repli.
    width revient à auto SANS délai à l'ouverture (pas de saut), et passe à 0
    APRÈS le fold (width 0s .3s) à la fermeture pour rétrécir la bulle au label. */
-.msg.collapsible .bodywrap{overflow:hidden;transition:height .42s cubic-bezier(.4,0,.2,1),opacity .3s ease,margin-top .42s cubic-bezier(.4,0,.2,1),width 0s linear;opacity:1;margin-top:4px}
+/* height ET width sont animées (en px, pilotées en JS via scrollHeight/scrollWidth)
+   → repli/dépli fluide en diagonale. overflow:hidden clippe pendant l'animation. */
+.msg.collapsible .bodywrap{overflow:hidden;transition:height .42s cubic-bezier(.4,0,.2,1),width .42s cubic-bezier(.4,0,.2,1),opacity .3s ease,margin-top .42s cubic-bezier(.4,0,.2,1);opacity:1;margin-top:4px}
 .msg.collapsible .bodywrap>.body{min-width:0}
-.msg.collapsible.collapsed .bodywrap{opacity:0;margin-top:0;width:0;transition:height .42s cubic-bezier(.4,0,.2,1),opacity .3s ease,margin-top .42s cubic-bezier(.4,0,.2,1),width 0s linear .42s}
+.msg.collapsible.collapsed .bodywrap{opacity:0;margin-top:0}
 #inputbar{border-top:1px solid var(--border);padding:12px;display:flex;gap:8px}
 #input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font:inherit;resize:none;min-height:44px;max-height:200px}
 #input:focus{outline:none;border-color:var(--accent)}
@@ -257,7 +259,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626102728"></script>
+<script src="/e2e.js?v=20260626103047"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -790,16 +792,22 @@ function addMsg(role, text){
 // (ouverture), sans jamais dépasser. overflow:hidden clippe pendant l'animation.
 function collapseBody(el){
   const bw=el.querySelector('.bodywrap'); if(!bw || el.classList.contains('collapsed')) return;
-  bw.style.height = bw.scrollHeight+'px';   // fige la hauteur courante
+  bw.style.height = bw.scrollHeight+'px';   // fige les dimensions courantes
+  bw.style.width  = bw.scrollWidth+'px';
   void bw.offsetHeight;                      // reflow pour que la transition parte de là
   el.classList.add('collapsed');
-  bw.style.height = '0px';
+  bw.style.height = '0px';                    // → anime height ET width vers 0
+  bw.style.width  = '0px';
 }
 function expandBody(el){
   const bw=el.querySelector('.bodywrap'); if(!bw) return;
-  el.classList.remove('collapsed');          // width repasse à auto immédiatement
-  bw.style.height = bw.scrollHeight+'px';     // anime 0 → hauteur réelle (largeur correcte)
-  const done=e=>{ if(e.propertyName!=='height') return; bw.style.height=''; bw.removeEventListener('transitionend',done); };
+  el.classList.remove('collapsed');
+  bw.style.height=''; bw.style.width='';      // mesure les dimensions naturelles…
+  const h=bw.scrollHeight, w=bw.scrollWidth;
+  bw.style.height='0px'; bw.style.width='0px';// …repart de 0 (pas de flash, même frame)
+  void bw.offsetHeight;
+  bw.style.height=h+'px'; bw.style.width=w+'px';
+  const done=e=>{ if(e.propertyName!=='height') return; bw.style.height=''; bw.style.width=''; bw.removeEventListener('transitionend',done); };
   bw.addEventListener('transitionend',done);
 }
 function toggleCollapse(el){ el.classList.contains('collapsed') ? expandBody(el) : collapseBody(el); }
