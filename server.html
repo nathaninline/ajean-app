@@ -106,6 +106,15 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .msg.tool .tool-wait{font-size:12px;color:var(--dim);margin-top:8px;animation:toolblink 1.2s ease-in-out infinite}
 @keyframes toolblink{0%,100%{opacity:.45}50%{opacity:1}}
 .msg .label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;display:block}
+/* Bulles repliables (reasoning / tool) : une fois la réponse arrivée, on les
+   replie en douceur pour désencombrer le fil, tout en gardant le label (et son
+   compteur de tokens) cliquable pour redéplier. */
+.msg.collapsible .label{cursor:pointer;user-select:none;margin-bottom:0}
+.msg.collapsible .label::before{content:'▾';display:inline-block;margin-right:6px;transition:transform .25s ease;color:var(--accent)}
+.msg.collapsible.collapsed .label::before{transform:rotate(-90deg)}
+.msg.collapsible .bodywrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .3s ease,opacity .25s ease,margin-top .3s ease;opacity:1;margin-top:4px}
+.msg.collapsible .bodywrap>.body{overflow:hidden;min-height:0}
+.msg.collapsible.collapsed .bodywrap{grid-template-rows:0fr;opacity:0;margin-top:0}
 #inputbar{border-top:1px solid var(--border);padding:12px;display:flex;gap:8px}
 #input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font:inherit;resize:none;min-height:44px;max-height:200px}
 #input:focus{outline:none;border-color:var(--accent)}
@@ -244,7 +253,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260625212538"></script>
+<script src="/e2e.js?v=20260626100726"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -758,13 +767,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
 function addMsg(role, text){
   const el=document.createElement('div');
   el.className='msg '+role;
+  const collapsible = (role==='reasoning' || role==='tool');
   // .body must be a real block so <p>/<pre>/<ul> margins behave properly.
-  el.innerHTML='<span class="label">'+role+'</span><div class="body"></div>';
+  if(collapsible){
+    el.classList.add('collapsible');
+    el.innerHTML='<span class="label">'+role+'</span><div class="bodywrap"><div class="body"></div></div>';
+    el.querySelector('.label').onclick=()=>el.classList.toggle('collapsed');
+  } else {
+    el.innerHTML='<span class="label">'+role+'</span><div class="body"></div>';
+  }
   el.querySelector('.body').textContent=text;
   chatEl().appendChild(el);
   scrollMaybe();
   return el;
 }
+// Replie en douceur les bulles reasoning/tool d'un tour une fois la réponse
+// finale entamée. Reste dépliable au clic sur le label.
+function collapseAll(list){ for(const el of list){ if(el) el.classList.add('collapsed'); } list.length=0; }
 function setLabel(el, text){ el.querySelector('.label').textContent = text; }
 function bodyOf(el){ return el.querySelector('.body'); }
 // Render markdown into a message body in place; safe because md() escapes HTML.
@@ -773,7 +792,10 @@ function renderBody(el, text){ const b=bodyOf(el); b.innerHTML = md(text); addCo
 // wrote, then the response it got back. textContent keeps it injection-safe.
 function renderToolMsg(el, tu){
   const isShell = tu.name==='run_shell';
-  setLabel(el, isShell ? 'terminal' : 'skill');
+  let lbl = isShell ? 'terminal' : 'skill';
+  // Indication du volume de la réponse de l'outil (~tokens, estimation 1 tok ≈ 4 car).
+  if(tu.result){ lbl += '  ·  ~' + Math.max(1, Math.round(tu.result.length/4)) + ' tok'; }
+  setLabel(el, lbl);
   const body=bodyOf(el); body.innerHTML='';
   const head=document.createElement('div'); head.className='tool-head';
   head.textContent = isShell ? '⚙️ commande' : '📚 skill';
@@ -891,6 +913,7 @@ async function send(){
   addMsg('user', text);
   msgs.push({role:'user',content:text}); saveChat();
   let reasonEl=null, contentEl=null, pendingToolEl=null, fullContent='', fullReason='', toolMsgs=null;
+  let turnCollapsibles=[]; // bulles reasoning/tool à replier dès la réponse finale
   let tokCount=0, reasonTokCount=0, t0=performance.now(), firstTok=0, statsTimer=null;
   let serverStats=null;
   const updateStats=(final)=>{
@@ -948,7 +971,7 @@ async function send(){
               const tu=d.tool_used;
               // One bubble per call: the live "typing" updates, the "en cours"
               // spinner, and the final result all re-render the SAME element.
-              if(!pendingToolEl) pendingToolEl=addMsg('tool','');
+              if(!pendingToolEl){ pendingToolEl=addMsg('tool',''); turnCollapsibles.push(pendingToolEl); }
               renderToolMsg(pendingToolEl, tu);
               if(tu.done){
                 pendingToolEl=null;
@@ -961,13 +984,13 @@ async function send(){
               // Start a fresh buffer per bubble — otherwise a reasoning block that
               // follows a tool call re-renders ALL previously accumulated reasoning
               // into the new bubble (duplicated dozens of times over a turn).
-              if(!reasonEl){ reasonEl=addMsg('reasoning',''); fullReason=''; }
+              if(!reasonEl){ reasonEl=addMsg('reasoning',''); fullReason=''; turnCollapsibles.push(reasonEl); }
               if(!firstTok) firstTok=performance.now();
               reasonTokCount++;
               fullReason+=d.reasoning_content; renderBody(reasonEl, fullReason);
             }
             if(d.content){
-              if(!contentEl){ contentEl=addMsg('assistant',''); fullContent=''; firstTok=performance.now(); }
+              if(!contentEl){ collapseAll(turnCollapsibles); contentEl=addMsg('assistant',''); fullContent=''; firstTok=performance.now(); }
               tokCount++;
               fullContent+=d.content; renderBody(contentEl, fullContent);
             }
