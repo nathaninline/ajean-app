@@ -32,14 +32,15 @@ body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background
 }
 h1{margin:0;font-size:18px;color:var(--accent)}
 #brand{display:inline-flex;align-items:baseline}
-.sidehead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.sidehead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.sidehead-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
+/* nom du modèle, sous la pastille d'état */
+.headmodel{font-size:10px;color:var(--dim);font-weight:500;max-width:175px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
 /* pastille d'état service, en haut à droite de la barre latérale */
 .statuspill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--dim);font-weight:600;white-space:nowrap}
 .statuspill.ok{color:var(--ok);border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.10)}
 .statuspill.err{color:var(--err);border-color:rgba(248,81,73,.45);background:rgba(248,81,73,.10)}
-.statuspill .dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
-.statuspill.ok .dot{animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.statuspill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
 .statuspill .port{opacity:.6;font-weight:400}
 /* en-tête + bouton d'ajout de skill (toujours visible) */
 .skillshead{display:flex;align-items:center;justify-content:space-between;margin:12px 0 5px}
@@ -173,7 +174,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div class="side" id="side">
   <div class="sidehead">
     <h1 id="brand"><span id="brand-a">a</span>jean</h1>
-    <span id="status-svc" class="statuspill">…</span>
+    <div class="sidehead-r">
+      <span id="status-svc" class="statuspill">…</span>
+      <span id="status-model" class="headmodel"></span>
+    </div>
   </div>
   <div id="statusline" class="muted"><span id="status-preset"></span></div>
   <details open><summary>GPU</summary>
@@ -292,7 +296,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626113819"></script>
+<script src="/e2e.js?v=20260626114135"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -444,6 +448,8 @@ async function loadVram(){
 }
 async function loadCfg(){
   const c=await jget('/api/config');
+  const mdl=document.getElementById('status-model');
+  if(mdl){ const m=c.MODEL?c.MODEL.split('/').pop():''; mdl.textContent=m; mdl.title=m; }
   const keys=['BIN','MODEL','CTX','BATCH','UBATCH','NGL','PORT'];
   document.getElementById('cfg').innerHTML = keys.filter(k=>c[k]).map(k=>{
     let v=c[k]; if(k==='MODEL') v=v.split('/').pop();
