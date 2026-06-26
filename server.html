@@ -116,9 +116,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
    peut « dépasser ». overflow:hidden clippe le contenu pendant tout le repli.
    width revient à auto SANS délai à l'ouverture (pas de saut), et passe à 0
    APRÈS le fold (width 0s .3s) à la fermeture pour rétrécir la bulle au label. */
-.msg.collapsible .bodywrap{overflow:hidden;transition:height .3s ease,opacity .25s ease,margin-top .3s ease,width 0s linear;opacity:1;margin-top:4px}
+.msg.collapsible .bodywrap{overflow:hidden;transition:height .42s cubic-bezier(.4,0,.2,1),opacity .3s ease,margin-top .42s cubic-bezier(.4,0,.2,1),width 0s linear;opacity:1;margin-top:4px}
 .msg.collapsible .bodywrap>.body{min-width:0}
-.msg.collapsible.collapsed .bodywrap{opacity:0;margin-top:0;width:0;transition:height .3s ease,opacity .25s ease,margin-top .3s ease,width 0s linear .3s}
+.msg.collapsible.collapsed .bodywrap{opacity:0;margin-top:0;width:0;transition:height .42s cubic-bezier(.4,0,.2,1),opacity .3s ease,margin-top .42s cubic-bezier(.4,0,.2,1),width 0s linear .42s}
 #inputbar{border-top:1px solid var(--border);padding:12px;display:flex;gap:8px}
 #input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font:inherit;resize:none;min-height:44px;max-height:200px}
 #input:focus{outline:none;border-color:var(--accent)}
@@ -257,7 +257,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626101911"></script>
+<script src="/e2e.js?v=20260626102728"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -947,7 +947,10 @@ async function send(){
       const s = serverStats;
       const totalSec = (performance.now() - t0) / 1000;
       const parts = [role];
-      if(s.prompt_tokens) parts.push('prefill ' + s.prompt_tokens + ' tok · ' + s.prompt_per_second.toFixed(0) + ' tok/s');
+      // prompt_tokens_total = taille réelle du prompt (system inclus, même si en
+      // cache) ; repli sur prompt_tokens (neuf traité) si le backend n'envoie pas l'usage.
+      const pt = s.prompt_tokens_total || s.prompt_tokens;
+      if(pt) parts.push('prefill ' + pt + ' tok · ' + (s.prompt_per_second||0).toFixed(0) + ' tok/s');
       if(s.gen_tokens) parts.push('decode ' + s.gen_tokens + ' tok · ' + s.gen_per_second.toFixed(1) + ' tok/s');
       parts.push('total ' + totalSec.toFixed(1) + 's');
       setLabel(el, parts.join('  ·  '));
@@ -1024,7 +1027,14 @@ async function send(){
     // Le KV cache s'accumule : chaque tour ajoute les tokens NOUVELLEMENT traités
     // (prompt_tokens, le préfixe caché n'est pas recompté) + ceux générés. La
     // taille réelle du contexte = somme cumulée, donc monotone croissante.
-    if(serverStats){ setCtxUsed(CTX_USED + (serverStats.prompt_tokens||0) + (serverStats.gen_tokens||0)); try{ localStorage.setItem('jean.ctxused', CTX_USED); }catch(e){} }
+    if(serverStats){
+      // prompt_tokens_total (usage) = taille TOTALE du prompt ce tour (system +
+      // historique, préfixe caché compris) → contexte ABSOLU et exact. Sinon repli
+      // sur l'ancienne accumulation (prompt_tokens = seulement le neuf traité).
+      if(serverStats.prompt_tokens_total){ setCtxUsed((serverStats.prompt_tokens_total||0) + (serverStats.gen_tokens||0)); }
+      else { setCtxUsed(CTX_USED + (serverStats.prompt_tokens||0) + (serverStats.gen_tokens||0)); }
+      try{ localStorage.setItem('jean.ctxused', CTX_USED); }catch(e){}
+    }
   }catch(e){
     if(e.name==='AbortError'){
       if(contentEl) setLabel(contentEl, 'assistant  ·  '+tokCount+' tok  ·  interrompu');
