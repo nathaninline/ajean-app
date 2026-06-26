@@ -112,14 +112,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .msg.collapsible .label{cursor:pointer;user-select:none;margin-bottom:0}
 .msg.collapsible .label::before{content:'▾';display:inline-block;margin-right:6px;transition:transform .25s ease;color:var(--accent)}
 .msg.collapsible.collapsed .label::before{transform:rotate(-90deg)}
-/* À l'ouverture, width revient à auto SANS délai (height s'anime sur du contenu
-   déjà à sa vraie largeur → pas de saut). */
-.msg.collapsible .bodywrap{display:grid;grid-template-rows:1fr;overflow:hidden;transition:grid-template-rows .3s ease,opacity .25s ease,margin-top .3s ease,width 0s linear;opacity:1;margin-top:4px}
-.msg.collapsible .bodywrap>.body{overflow:hidden;min-height:0;min-width:0}
-/* Replié : on replie d'abord en hauteur, PUIS (width 0s .3s = après le fold) on
-   met width:0 pour rétrécir la bulle au label. Différer évite que le contenu se
-   re-wrappe en colonne très haute pendant l'animation. */
-.msg.collapsible.collapsed .bodywrap{grid-template-rows:0fr;opacity:0;margin-top:0;width:0;transition:grid-template-rows .3s ease,opacity .25s ease,margin-top .3s ease,width 0s linear .3s}
+/* Hauteur animée en JS (mesure scrollHeight → 0) plutôt que grid 1fr→0fr qui
+   peut « dépasser ». overflow:hidden clippe le contenu pendant tout le repli.
+   width revient à auto SANS délai à l'ouverture (pas de saut), et passe à 0
+   APRÈS le fold (width 0s .3s) à la fermeture pour rétrécir la bulle au label. */
+.msg.collapsible .bodywrap{overflow:hidden;transition:height .3s ease,opacity .25s ease,margin-top .3s ease,width 0s linear;opacity:1;margin-top:4px}
+.msg.collapsible .bodywrap>.body{min-width:0}
+.msg.collapsible.collapsed .bodywrap{opacity:0;margin-top:0;width:0;transition:height .3s ease,opacity .25s ease,margin-top .3s ease,width 0s linear .3s}
 #inputbar{border-top:1px solid var(--border);padding:12px;display:flex;gap:8px}
 #input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font:inherit;resize:none;min-height:44px;max-height:200px}
 #input:focus{outline:none;border-color:var(--accent)}
@@ -258,7 +257,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626101452"></script>
+<script src="/e2e.js?v=20260626101911"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -777,7 +776,7 @@ function addMsg(role, text){
   if(collapsible){
     el.classList.add('collapsible');
     el.innerHTML='<span class="label">'+role+'</span><div class="bodywrap"><div class="body"></div></div>';
-    el.querySelector('.label').onclick=()=>el.classList.toggle('collapsed');
+    el.querySelector('.label').onclick=()=>toggleCollapse(el);
   } else {
     el.innerHTML='<span class="label">'+role+'</span><div class="body"></div>';
   }
@@ -786,9 +785,26 @@ function addMsg(role, text){
   scrollMaybe();
   return el;
 }
-// Replie en douceur les bulles reasoning/tool d'un tour une fois la réponse
-// finale entamée. Reste dépliable au clic sur le label.
-function collapseAll(list){ for(const el of list){ if(el) el.classList.add('collapsed'); } list.length=0; }
+// Replie/déplie en douceur les bulles reasoning/tool. Hauteur animée en JS :
+// on fige scrollHeight puis on va à 0 (fermeture) ou de 0 vers scrollHeight
+// (ouverture), sans jamais dépasser. overflow:hidden clippe pendant l'animation.
+function collapseBody(el){
+  const bw=el.querySelector('.bodywrap'); if(!bw || el.classList.contains('collapsed')) return;
+  bw.style.height = bw.scrollHeight+'px';   // fige la hauteur courante
+  void bw.offsetHeight;                      // reflow pour que la transition parte de là
+  el.classList.add('collapsed');
+  bw.style.height = '0px';
+}
+function expandBody(el){
+  const bw=el.querySelector('.bodywrap'); if(!bw) return;
+  el.classList.remove('collapsed');          // width repasse à auto immédiatement
+  bw.style.height = bw.scrollHeight+'px';     // anime 0 → hauteur réelle (largeur correcte)
+  const done=e=>{ if(e.propertyName!=='height') return; bw.style.height=''; bw.removeEventListener('transitionend',done); };
+  bw.addEventListener('transitionend',done);
+}
+function toggleCollapse(el){ el.classList.contains('collapsed') ? expandBody(el) : collapseBody(el); }
+// Replie toutes les bulles d'un tour une fois la réponse finale entamée.
+function collapseAll(list){ for(const el of list){ if(el) collapseBody(el); } list.length=0; }
 function setLabel(el, text){ el.querySelector('.label').textContent = text; }
 function bodyOf(el){ return el.querySelector('.body'); }
 // Render markdown into a message body in place; safe because md() escapes HTML.
