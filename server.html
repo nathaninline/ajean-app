@@ -110,8 +110,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
    replie en douceur pour désencombrer le fil, tout en gardant le label (et son
    compteur de tokens) cliquable pour redéplier. */
 .msg.collapsible .label{cursor:pointer;user-select:none;margin-bottom:0}
-.msg.collapsible .label::before{content:'▾';display:inline-block;margin-right:6px;transition:transform .25s ease;color:var(--accent)}
-.msg.collapsible.collapsed .label::before{transform:rotate(-90deg)}
 /* Hauteur animée en JS (mesure scrollHeight → 0) plutôt que grid 1fr→0fr qui
    peut « dépasser ». overflow:hidden clippe le contenu pendant tout le repli.
    width revient à auto SANS délai à l'ouverture (pas de saut), et passe à 0
@@ -121,7 +119,15 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .msg.collapsible .bodywrap{overflow:hidden;transition:height .42s cubic-bezier(.4,0,.2,1),width .42s cubic-bezier(.4,0,.2,1),opacity .3s ease,margin-top .42s cubic-bezier(.4,0,.2,1);opacity:1;margin-top:4px}
 .msg.collapsible .bodywrap>.body{min-width:0}
 .msg.collapsible.collapsed .bodywrap{opacity:0;margin-top:0}
-#inputbar{border-top:1px solid var(--border);padding:12px;display:flex;gap:8px}
+/* Composer = un seul bloc cohérent : barre de contexte intégrée en tête (fine
+   ligne de progression pleine largeur affleurant le bord) + zone de saisie. */
+#composer{border-top:1px solid var(--border);background:var(--panel-2,rgba(255,255,255,.02))}
+#ctxtrack{height:3px;width:100%;background:var(--panel);overflow:hidden}
+#ctx-fill{height:100%;width:0%;background:var(--ok,#3a7);transition:width .3s,background .3s}
+#ctxmeta{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:5px 12px 0}
+#ctx-text{font-size:10px;letter-spacing:.03em;white-space:nowrap}
+#ctx-compact{display:none;margin:0;padding:2px 10px;font-size:10px;background:#3d2f1f;border-color:var(--warn,#c93)}
+#inputbar{padding:8px 12px;display:flex;gap:8px}
 #input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font:inherit;resize:none;min-height:44px;max-height:200px}
 #input:focus{outline:none;border-color:var(--accent)}
 #send{padding:0 20px}
@@ -179,19 +185,19 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div class="main" style="position:relative">
   <div id="chat"></div>
   <button id="scrollbtn" onclick="jumpBottom()" title="aller en bas">↓</button>
-  <div id="ctxbar" style="padding:4px 12px 0;font-size:11px;display:flex;align-items:center;gap:8px">
-    <div style="flex:1;height:6px;background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden">
-      <div id="ctx-fill" style="height:100%;width:0%;background:var(--ok,#3a7);transition:width .3s,background .3s"></div>
+  <div id="composer">
+    <div id="ctxtrack"><div id="ctx-fill"></div></div>
+    <div id="ctxmeta">
+      <span id="ctx-text" class="muted">contexte 0 / 0</span>
+      <button id="ctx-compact" onclick="compactContext()">compacter</button>
     </div>
-    <span id="ctx-text" class="muted" style="white-space:nowrap">contexte 0 / 0</span>
-    <button id="ctx-compact" onclick="compactContext()" style="display:none;margin:0;padding:2px 10px;font-size:11px;background:#3d2f1f;border-color:var(--warn,#c93)">compacter</button>
+    <div id="inputbar">
+      <textarea id="input" placeholder="message…" onkeydown="onKey(event)"></textarea>
+      <button id="send" onclick="send()">send</button>
+      <button id="stop" onclick="stopGen()" style="display:none;background:#3d1f23;border-color:var(--err);color:var(--err)">stop</button>
+    </div>
+    <div class="muted" style="padding:0 12px 6px;font-size:10px;text-align:center;opacity:.7">Entrée pour envoyer · Maj+Entrée = nouvelle ligne</div>
   </div>
-  <div id="inputbar">
-    <textarea id="input" placeholder="message…" onkeydown="onKey(event)"></textarea>
-    <button id="send" onclick="send()">send</button>
-    <button id="stop" onclick="stopGen()" style="display:none;background:#3d1f23;border-color:var(--err);color:var(--err)">stop</button>
-  </div>
-  <div class="muted" style="padding:2px 12px 6px;font-size:10px;text-align:center;opacity:.7">Entrée pour envoyer · Maj+Entrée = nouvelle ligne</div>
 </div>
 <div id="toast"></div>
 <div id="bench-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeBenchModal()">
@@ -259,7 +265,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626103047"></script>
+<script src="/e2e.js?v=20260626103457"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
