@@ -31,8 +31,18 @@ body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background
   .preset-meta .qtag svg,.preset-meta .rtag svg,.preset-meta .btag svg{width:11px;height:11px}
 }
 h1{margin:0 0 4px;font-size:18px;color:var(--accent)}
-#brand-a{display:inline-block;max-width:0;opacity:0;overflow:hidden;color:#fff;vertical-align:baseline;transition:max-width .35s ease,opacity .35s ease}
-#brand.agent #brand-a{max-width:1ch;opacity:1}
+#brand{display:inline-flex;align-items:baseline}
+#brand-a{display:inline-block;line-height:1;max-width:0;opacity:0;overflow:hidden;color:#fff;transition:max-width .35s ease,opacity .35s ease}
+#brand.agent #brand-a{max-width:.62ch;opacity:1}
+/* interrupteur (switch) */
+.switchrow{display:flex;align-items:center;gap:9px;font-size:12px;padding:6px 0;cursor:pointer;user-select:none}
+.switch{position:relative;display:inline-block;width:36px;height:20px;flex:none}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.switch .slider{position:absolute;inset:0;background:var(--border);border-radius:999px;transition:background .25s ease}
+.switch .slider::before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .25s ease;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.switch input:checked + .slider{background:var(--accent)}
+.switch input:checked + .slider::before{transform:translateX(16px)}
+.switch input:focus-visible + .slider{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
 h2{margin:20px 0 8px;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
 details{margin:8px 0;border-top:1px solid var(--border);padding-top:6px}
 details>summary{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:600;cursor:pointer;padding:4px 0;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
@@ -159,7 +169,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
     <div id="presets"></div>
   </details>
   <details><summary>Mode agent <span id="agent-badge" style="margin-left:auto;font-size:10px"></span></summary>
-    <label style="display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 0"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"> activer le mode agent</label>
+    <label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent</label>
     <div class="muted" style="font-size:11px">⚠️ active l'<b>accès machine</b> (shell complet sur le serveur) <b>et</b> les <b>skills</b> — l'IA peut inspecter, lancer des scripts et exécuter ses skills (timeout 30s, max 300s)</div>
     <div style="display:flex;align-items:center;gap:6px;margin:10px 0 2px"><span class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em">Skills</span><button class="preset-add" style="margin-left:auto" onclick="event.preventDefault();event.stopPropagation();openSkill('')" title="ajouter">+</button></div>
     <div id="skills-list" class="muted" style="font-size:12px"></div>
@@ -265,7 +275,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626112404"></script>
+<script src="/e2e.js?v=20260626113121"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
