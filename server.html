@@ -293,7 +293,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626154610"></script>
+<script src="/e2e.js?v=20260626164000"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1042,6 +1042,14 @@ async function send(){
                 // L'IA gère sa mémoire elle-même : rafraîchir le menu en direct
                 // dès qu'une page est créée/modifiée (pas besoin de F5).
                 if(tu.name==='mem_add' || tu.name==='mem_edit') loadMem();
+              }
+            }
+            if(d.drop_reasoning){
+              // Le modèle a « pensé sans agir » : on relance le tour. Le
+              // raisonnement mort-né est retiré pour ne pas afficher un double bloc.
+              if(reasonEl){
+                const i=turnCollapsibles.indexOf(reasonEl); if(i>=0) turnCollapsibles.splice(i,1);
+                reasonEl.remove(); reasonEl=null; fullReason='';
               }
             }
             if(d.reasoning_content){
