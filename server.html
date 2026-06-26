@@ -30,8 +30,22 @@ body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background
   .preset-meta .qtag,.preset-meta .rtag,.preset-meta .btag{font-size:11px;padding:2px 9px;border-radius:9px}
   .preset-meta .qtag svg,.preset-meta .rtag svg,.preset-meta .btag svg{width:11px;height:11px}
 }
-h1{margin:0 0 4px;font-size:18px;color:var(--accent)}
+h1{margin:0;font-size:18px;color:var(--accent)}
 #brand{display:inline-flex;align-items:baseline}
+.sidehead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+/* pastille d'état service, en haut à droite de la barre latérale */
+.statuspill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--dim);font-weight:600;white-space:nowrap}
+.statuspill.ok{color:var(--ok);border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.10)}
+.statuspill.err{color:var(--err);border-color:rgba(248,81,73,.45);background:rgba(248,81,73,.10)}
+.statuspill .dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
+.statuspill.ok .dot{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.statuspill .port{opacity:.6;font-weight:400}
+/* en-tête + bouton d'ajout de skill (toujours visible) */
+.skillshead{display:flex;align-items:center;justify-content:space-between;margin:12px 0 5px}
+.skillshead>span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.addbtn{font-size:11px;padding:3px 11px 4px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;line-height:1.2}
+.addbtn:hover{border-color:var(--accent);color:var(--accent)}
 #brand-a{display:inline-block;line-height:1;max-width:0;opacity:0;overflow:hidden;color:#fff;transition:max-width .35s ease,opacity .35s ease}
 #brand.agent #brand-a{max-width:1ch;opacity:1;margin-right:.04em}
 /* interrupteur (switch) */
@@ -157,8 +171,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <button id="menubtn" onclick="toggleSide()">☰</button>
 <div id="backdrop" onclick="toggleSide()"></div>
 <div class="side" id="side">
-  <h1 id="brand"><span id="brand-a">a</span>jean</h1>
-  <div id="statusline" class="muted"><span id="status-svc">…</span> <span id="status-preset"></span></div>
+  <div class="sidehead">
+    <h1 id="brand"><span id="brand-a">a</span>jean</h1>
+    <span id="status-svc" class="statuspill">…</span>
+  </div>
+  <div id="statusline" class="muted"><span id="status-preset"></span></div>
   <details open><summary>GPU</summary>
     <div id="vram" class="muted">…</div>
   </details>
@@ -171,7 +188,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <details><summary>Mode agent <span id="agent-badge" style="margin-left:auto;font-size:10px"></span></summary>
     <label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent</label>
     <div class="muted" style="font-size:11px">⚠️ active l'<b>accès machine</b> (shell complet sur le serveur) <b>et</b> les <b>skills</b> — l'IA peut inspecter, lancer des scripts et exécuter ses skills (timeout 30s, max 300s)</div>
-    <div style="display:flex;align-items:center;gap:6px;margin:10px 0 2px"><span class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em">Skills</span><button class="preset-add" style="margin-left:auto" onclick="event.preventDefault();event.stopPropagation();openSkill('')" title="ajouter">+</button></div>
+    <div class="skillshead"><span>Skills</span><button class="addbtn" onclick="event.preventDefault();event.stopPropagation();openSkill('')" title="ajouter un skill">+ ajouter</button></div>
     <div id="skills-list" class="muted" style="font-size:12px"></div>
   </details>
   <details><summary>System prompt</summary>
@@ -275,7 +292,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626113420"></script>
+<script src="/e2e.js?v=20260626113819"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -398,8 +415,9 @@ async function jget(u){ const r=await jfetch(u); return r.json(); }
 async function jpost(u,b){ const r=await jfetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})}); return r.json(); }
 async function loadStatus(){
   const s=await jget('/api/status');
-  const t=s.active?'<span class="tag ok">● active</span>':'<span class="tag err">○ '+s.state+'</span>';
-  document.getElementById('status-svc').innerHTML = t + ' <span class="muted">:'+s.port+'</span>';
+  const el=document.getElementById('status-svc');
+  el.className='statuspill '+(s.active?'ok':'err');
+  el.innerHTML='<span class="dot"></span>'+(s.active?'active':s.state)+' <span class="port">:'+s.port+'</span>';
   if(s.ctx){ CTX_MAX=s.ctx; updateCtxMeter(); }
 }
 // Compteur de contexte : CTX_USED estimé via les stats serveur (prefill+decode
