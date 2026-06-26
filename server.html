@@ -293,7 +293,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626153550"></script>
+<script src="/e2e.js?v=20260626154610"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -850,13 +850,14 @@ function renderBody(el, text){ const b=bodyOf(el); b.innerHTML = md(text); addCo
 // wrote, then the response it got back. textContent keeps it injection-safe.
 function renderToolMsg(el, tu){
   const isShell = tu.name==='bash';
-  let lbl = isShell ? 'terminal' : 'mémoire';
+  const isEdit = tu.name==='edit';
+  let lbl = isShell ? 'terminal' : (isEdit ? 'édition' : 'mémoire');
   // Indication du volume de la réponse de l'outil (~tokens, estimation 1 tok ≈ 4 car).
   if(tu.result){ lbl += '  ·  ~' + Math.max(1, Math.round(tu.result.length/4)) + ' tok'; }
   setLabel(el, lbl);
   const body=bodyOf(el); body.innerHTML='';
   const head=document.createElement('div'); head.className='tool-head';
-  head.textContent = isShell ? '⚙️ commande' : '🧠 mémoire';
+  head.textContent = isShell ? '⚙️ commande' : (isEdit ? '✏️ édition' : '🧠 mémoire');
   body.appendChild(head);
   if(tu.label){
     const pre=document.createElement('pre'); pre.className='tool-cmd';
