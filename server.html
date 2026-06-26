@@ -32,8 +32,7 @@ body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background
 }
 h1{margin:0;font-size:18px;color:var(--accent)}
 #brand{display:inline-flex;align-items:baseline}
-.sidehead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
-.sidehead-r{display:flex;flex-direction:column;align-items:flex-end;gap:5px;min-width:0}
+.sidehead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 /* pastille d'état service, en haut à droite de la barre latérale */
 .statuspill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--dim);font-weight:600;white-space:nowrap}
 .statuspill.ok{color:var(--ok);border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.10)}
@@ -172,10 +171,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div class="side" id="side">
   <div class="sidehead">
     <h1 id="brand"><span id="brand-a">a</span>jean</h1>
-    <div class="sidehead-r">
-      <span id="status-svc" class="statuspill">…</span>
-      <span id="status-preset"></span>
-    </div>
+    <span id="status-svc" class="statuspill">…</span>
   </div>
   <details open><summary>GPU</summary>
     <div id="vram" class="muted">…</div>
@@ -216,8 +212,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <div id="composer">
     <div id="ctxtrack"><div id="ctx-fill"></div></div>
     <div id="ctxmeta">
-      <span id="ctx-text" class="muted">contexte 0 / 0</span>
-      <button id="ctx-compact" onclick="compactContext()">compacter</button>
+      <span id="status-preset" class="muted" style="font-size:10px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+      <span style="display:flex;align-items:center;gap:10px;margin-left:auto">
+        <span id="ctx-text" class="muted">contexte 0 / 0</span>
+        <button id="ctx-compact" onclick="compactContext()">compacter</button>
+      </span>
     </div>
     <div id="inputbar">
       <textarea id="input" placeholder="message…" onkeydown="onKey(event)"></textarea>
@@ -293,7 +292,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626114420"></script>
+<script src="/e2e.js?v=20260626115212"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -457,12 +456,8 @@ async function loadPresets(){
   // Build via DOM (not string concat) so preset names can contain anything —
   // spaces, accents, quotes, < > & — without breaking markup or handlers.
   const sp = document.getElementById('status-preset');
-  sp.innerHTML='';
-  if(act){
-    const tag=document.createElement('span');
-    tag.className='tag'; tag.style.borderColor='var(--accent)'; tag.style.color='var(--accent)';
-    tag.textContent=act.name; sp.appendChild(tag);
-  }
+  sp.textContent = act ? act.name : '';
+  sp.title = act ? 'preset actif' : '';
   const cont=document.getElementById('presets');
   cont.innerHTML='';
   if(!p.length){ cont.innerHTML='<span class="muted">(aucun)</span>'; return; }
