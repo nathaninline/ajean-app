@@ -265,7 +265,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260626103755"></script>
+<script src="/e2e.js?v=20260626105303"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1009,7 +1009,9 @@ async function send(){
               const tu=d.tool_used;
               // One bubble per call: the live "typing" updates, the "en cours"
               // spinner, and the final result all re-render the SAME element.
-              if(!pendingToolEl){ pendingToolEl=addMsg('tool',''); turnCollapsibles.push(pendingToolEl); }
+              // Chaînage : replie les étapes précédentes (reasoning/outils déjà
+              // finis) dès qu'une nouvelle démarre — seule l'étape en cours reste ouverte.
+              if(!pendingToolEl){ collapseAll(turnCollapsibles); pendingToolEl=addMsg('tool',''); turnCollapsibles.push(pendingToolEl); }
               renderToolMsg(pendingToolEl, tu);
               if(tu.done){
                 pendingToolEl=null;
@@ -1022,7 +1024,7 @@ async function send(){
               // Start a fresh buffer per bubble — otherwise a reasoning block that
               // follows a tool call re-renders ALL previously accumulated reasoning
               // into the new bubble (duplicated dozens of times over a turn).
-              if(!reasonEl){ reasonEl=addMsg('reasoning',''); fullReason=''; turnCollapsibles.push(reasonEl); }
+              if(!reasonEl){ collapseAll(turnCollapsibles); reasonEl=addMsg('reasoning',''); fullReason=''; turnCollapsibles.push(reasonEl); }
               if(!firstTok) firstTok=performance.now();
               reasonTokCount++;
               fullReason+=d.reasoning_content; renderBody(reasonEl, fullReason);
