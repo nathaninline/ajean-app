@@ -36,6 +36,7 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
   <form id="sf">
     <input type="email" name="email" id="se" placeholder="email" autocomplete="username" autofocus required>
     <input type="password" name="password" id="sp" placeholder="mot de passe (min. 8 caractères)" autocomplete="new-password" minlength="8" required>
+    <input type="password" name="password2" id="sp2" placeholder="confirmer le mot de passe" autocomplete="new-password" minlength="8" required>
     <button class="btn btn-primary" id="sb" type="submit">Continuer vers le paiement →</button>
   </form>
   <p class="foot">🔒 Ton mot de passe ne quitte jamais ton navigateur (OPAQUE)<br>
@@ -64,10 +65,13 @@ async function opaqueRegisterFlow(pw){
   return rf.exportKey;}
 var sf=document.getElementById('sf');
 sf.onsubmit=async function(e){e.preventDefault();
-  var email=document.getElementById('se').value.trim(),pw=document.getElementById('sp').value;
+  var email=document.getElementById('se').value.trim(),pw=document.getElementById('sp').value,pw2=document.getElementById('sp2').value;
   var er=document.getElementById('jsErr'),b=document.getElementById('sb');
   function show(m){er.textContent=m;er.style.display='';b.disabled=false;b.textContent='Continuer vers le paiement →';}
-  er.style.display='none';b.disabled=true;b.textContent='Création…';
+  er.style.display='none';
+  if(pw.length<8){show('Le mot de passe doit faire au moins 8 caractères.');return;}
+  if(pw!==pw2){show('Les deux mots de passe ne correspondent pas.');return;}
+  b.disabled=true;b.textContent='Création…';
   try{await _wasm;
     // 1) Crée le compte (en attente d'abonnement) + ouvre la session.
     var su=await jpost('/auth/signup',{email:email});
