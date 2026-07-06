@@ -131,6 +131,7 @@ header .sp{flex:1}
   <div class="seshead">Sessions ouvertes</div>
   <div id="acctSessions" class="seslist"></div>
   <div class="row"><button class="btn danger" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
+    <button class="btn" onclick="manageSub()">Gérer l'abonnement</button>
     <button class="btn" onclick="closeAcct()">Fermer</button></div>
 </div></div>
 
@@ -147,6 +148,15 @@ header .sp{flex:1}
   <div class="field"><input id="pmInput" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')pmResolve(true)"></div>
   <div class="row"><button class="btn" onclick="pmResolve(false)" id="pmNo">Annuler</button>
     <button class="btn primary" onclick="pmResolve(true)" id="pmYes">Valider</button></div>
+</div></div>
+
+<div class="modal" id="subModal"><div class="sheet">
+  <h3>Abonnement ajean.link</h3>
+  <p class="muted" id="subMsg">Accède à tes serveurs Jean à distance, partout, chiffré de bout en bout — sans ouvrir de port.</p>
+  <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
+  <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
+  <div class="row"><button class="btn subtle" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
+    <button class="btn primary" id="subBtn" onclick="startCheckout()">S'abonner →</button></div>
 </div></div>
 
 <div id="toast"></div>
@@ -309,7 +319,31 @@ async function load(){
   MACHINES.forEach(function(m){if(m.online&&SCARDS[m.id])fillProbe(m,SCARDS[m.id]);});
 }
 
-async function boot(){await me();await load();}
+/* ---- abonnement Stripe (4,80 €/mois) ---- */
+async function startCheckout(){var b=document.getElementById('subBtn');b.disabled=true;b.textContent='Redirection…';
+  var r=await fetch('/billing/checkout',{method:'POST'});
+  if(!r.ok){b.disabled=false;b.textContent="S'abonner →";toast('Paiement indisponible pour le moment');return;}
+  var d=await r.json();location.href=d.url;}
+function showSubscribe(){
+  if((new URLSearchParams(location.search)).get('sub')==='ok'){
+    document.getElementById('subMsg').textContent='Paiement reçu ✓ Activation en cours…';pollActivation();}
+  document.getElementById('subModal').classList.add('show');}
+async function pollActivation(){for(var i=0;i<12;i++){await new Promise(function(r){setTimeout(r,2000);});
+    var r=await fetch('/billing/status');if(!r.ok)break;var s=await r.json();if(s.active){location.href='/';return;}}
+  document.getElementById('subMsg').textContent='Paiement bien pris en compte. Si l\'accès ne s\'ouvre pas, recharge la page dans une minute.';}
+async function manageSub(){var r=await fetch('/billing/portal',{method:'POST'});
+  if(!r.ok){toast('Gestion indisponible');return;}var d=await r.json();location.href=d.url;}
+
+async function boot(){
+  // /billing/status distingue « non connecté » (401 → login) de « connecté mais
+  // pas encore abonné » (active:false → écran d'abonnement). On NE passe PAS par
+  // j() ici, qui renverrait tout 401 vers login (boucle pour un compte inactif).
+  var st;try{st=await fetch('/billing/status');}catch(e){location.href='/login.html';return;}
+  if(st.status===401){location.href='/login.html';return;}
+  var s={};try{s=await st.json();}catch(e){}
+  EMAIL=s.email||'';
+  if(!s.active){showSubscribe();return;}
+  await load();}
 boot();
 setInterval(function(){if(document.querySelector('.modal.show'))return;load();},15000);
 </script></body></html>
