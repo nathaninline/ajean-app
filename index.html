@@ -150,6 +150,15 @@ header .sp{flex:1}
     <button class="btn primary" onclick="pmResolve(true)" id="pmYes">Valider</button></div>
 </div></div>
 
+<div class="modal" id="welcomeModal"><div class="sheet" style="text-align:center">
+  <div style="font-size:44px;line-height:1;margin-bottom:12px">🎉</div>
+  <h3 style="color:var(--ok)">Bienvenue sur ajean.link !</h3>
+  <p class="muted" style="margin-bottom:16px">Merci — ton abonnement est <b style="color:var(--ok)">actif</b>. Tu peux maintenant accéder à tes serveurs Jean à distance, chiffré de bout en bout.</p>
+  <div class="kv"><span>Formule</span><b>4,80 €/mois · résiliable à tout moment</b></div>
+  <p class="hint" style="text-align:left;margin-top:12px">Prochaine étape : ouvre « Gérer les clés » pour lier un serveur avec <code>jean link</code>.</p>
+  <div class="row"><button class="btn primary" onclick="closeWelcome()" style="margin:0 auto">Commencer →</button></div>
+</div></div>
+
 <div class="modal" id="subModal"><div class="sheet">
   <h3>Abonnement ajean.link</h3>
   <p class="muted" id="subMsg">Accède à tes serveurs Jean à distance, partout, chiffré de bout en bout — sans ouvrir de port.</p>
@@ -329,8 +338,14 @@ function showSubscribe(){
     document.getElementById('subMsg').textContent='Paiement reçu ✓ Activation en cours…';pollActivation();}
   document.getElementById('subModal').classList.add('show');}
 async function pollActivation(){for(var i=0;i<12;i++){await new Promise(function(r){setTimeout(r,2000);});
-    var r=await fetch('/billing/status');if(!r.ok)break;var s=await r.json();if(s.active){location.href='/';return;}}
+    var r=await fetch('/billing/status');if(!r.ok)break;var s=await r.json();
+    if(s.active){document.getElementById('subModal').classList.remove('show');welcome();await load();return;}}
   document.getElementById('subMsg').textContent='Paiement bien pris en compte. Si l\'accès ne s\'ouvre pas, recharge la page dans une minute.';}
+// Écran de remerciement après paiement ; nettoie l'URL (?sub=ok) pour ne pas
+// ré-afficher au rechargement.
+function welcome(){try{history.replaceState({},'',location.pathname);}catch(e){}
+  document.getElementById('welcomeModal').classList.add('show');}
+function closeWelcome(){document.getElementById('welcomeModal').classList.remove('show');}
 async function manageSub(){var r=await fetch('/billing/portal',{method:'POST'});
   if(!r.ok){toast('Gestion indisponible');return;}var d=await r.json();location.href=d.url;}
 
@@ -343,6 +358,7 @@ async function boot(){
   var s={};try{s=await st.json();}catch(e){}
   EMAIL=s.email||'';
   if(!s.active){showSubscribe();return;}
+  if((new URLSearchParams(location.search)).get('sub')==='ok')welcome();
   await load();}
 boot();
 setInterval(function(){if(document.querySelector('.modal.show'))return;load();},15000);
