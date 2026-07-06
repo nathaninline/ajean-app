@@ -324,7 +324,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260706115154"></script>
+<script src="/e2e.js?v=20260706115418"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -437,6 +437,10 @@ function _askKey(e){
   else if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); askResolve(true); }
 }
 function _openAsk(kind, message, opts){
+  // Compat 2 conventions : (message, opts) [UI jean] ET l'objet unique
+  // {title,msg,yes,no,placeholder} passé par e2e.js sur ajean.link (server.html,
+  // où cette fonction remplace le window.askConfirm du bootstrap boîte noire).
+  if(message && typeof message==='object'){ const o=message; opts={title:o.title, okText:o.yes, cancelText:o.no, placeholder:o.placeholder, default:o.default, danger:o.danger}; message=o.msg||''; }
   opts=opts||{};
   _askKind=kind;
   document.getElementById('ask-title').textContent = opts.title || (kind==='alert'?'Info':kind==='prompt'?'Saisie':'Confirmation');
