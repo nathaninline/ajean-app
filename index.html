@@ -188,9 +188,11 @@ var BUILD='20260706115856'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
 function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-function logout(){localStorage.removeItem('ajk');
-  try{fetch('/logout',{method:'POST'});}catch(e){}
-  location.href='/';}
+async function logout(){localStorage.removeItem('ajk');
+  // IMPORTANT : attendre la fin du POST /logout (sinon la navigation l'annule et
+  // le cookie de session n'est pas effacé → on reste connecté).
+  try{await fetch('/logout',{method:'POST'});}catch(e){}
+  location.href='/login.html';}
 async function j(u,opt){var r=await fetch(u,opt);if(r.status===401){location.href='/login.html';return null;}return r;}
 function jsonPost(u,b){return j(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});}
 function machineById(id){return MACHINES.find(function(x){return x.id===id});}
