@@ -142,13 +142,20 @@ $html = $html.Replace('src="/e2e.js"', 'src="/e2e.js?v=' + $ver + '"')
 # --- écriture (UTF-8 sans BOM) --------------------------------------------------
 [System.IO.File]::WriteAllText($dst, $html, (New-Object System.Text.UTF8Encoding($false)))
 
-# anti-cache : retamponne index.html (e2e.js + var BUILD = la version de navigation
+# anti-cache : retamponne app.html (e2e.js + var BUILD = la version de navigation
 # vers server.html?...&v=). URL versionnée = Safari/CDN ne peuvent plus resservir l'ancien.
-$idx = Join-Path $here 'index.html'
+# NB : le PORTAIL vit dans app.html ; index.html n'est qu'un bootstrap stable qui
+# charge app.html?v=<build> (build lu dans version.json). Voir index.html.
+$idx = Join-Path $here 'app.html'
 $ih  = [System.IO.File]::ReadAllText($idx)
 $ih  = [regex]::Replace($ih, 'src="/e2e\.js\?v=[^"]*"', 'src="/e2e.js?v=' + $ver + '"')
 $ih  = [regex]::Replace($ih, "var BUILD='[^']*';", "var BUILD='" + $ver + "';")
 [System.IO.File]::WriteAllText($idx, $ih, (New-Object System.Text.UTF8Encoding($false)))
+
+# version.json = le build courant, lu par le bootstrap index.html pour charger
+# app.html?v=<build>. Écrit à CHAQUE build → propagation immédiate côté CDN.
+$vj = Join-Path $here 'version.json'
+[System.IO.File]::WriteAllText($vj, '{"build":"' + $ver + '"}', (New-Object System.Text.UTF8Encoding($false)))
 Write-Host "version anti-cache = $ver"
 
 # marked.min.js doit exister côté Pages (jean web le charge en relatif).
