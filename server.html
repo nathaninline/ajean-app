@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="fr"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- PWA standalone : "Ajouter à l'écran d'accueil" sur iPhone → app plein écran
+     SANS la barre d'onglets Safari (indispensable pour enregistrer des démos). -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ajean">
 <title>jean</title>
 <style>
 :root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff}
@@ -37,6 +43,9 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .statuspill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--dim);font-weight:600;white-space:nowrap}
 .statuspill.ok{color:var(--ok);border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.10)}
 .statuspill.err{color:var(--err);border-color:rgba(248,81,73,.45);background:rgba(248,81,73,.10)}
+.statuspill.loading{color:var(--warn);border-color:rgba(210,153,34,.45);background:rgba(210,153,34,.10)}
+.statuspill.loading .dot{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 .statuspill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
 .statuspill .port{opacity:.6;font-weight:400}
 /* en-tête + bouton d'ajout de skill (toujours visible) */
@@ -115,6 +124,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .msg.user{align-self:flex-end;background:#1f6feb;color:#fff}
 .msg.user .label{color:rgba(255,255,255,.8)}
 .msg.assistant{align-self:flex-start;background:var(--panel);border:1px solid var(--border)}
+.msg.assistant.errmsg{border-color:rgba(248,81,73,.55);background:rgba(248,81,73,.08);color:var(--err)}
 .msg .body>*{margin:1em 0}
 .msg .body>*:first-child{margin-top:0}
 .msg .body>*:last-child{margin-bottom:0}
@@ -183,8 +193,44 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @media (hover:none) and (pointer:coarse){
   #input,#sysprompt,#modal input,#modal textarea,#modal select{font-size:16px}
 }
+/* Bouton "présentation" : flottant en haut à droite, seulement sur mobile. Sert
+   à enregistrer des démos au téléphone à l'horizontale (masque le menu, compacte
+   l'UI, tente le vrai plein écran là où c'est supporté — iPad/Android). */
+#presbtn{display:none;position:fixed;top:10px;right:calc(10px + env(safe-area-inset-right,0px));z-index:20;background:var(--panel);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:6px;font-size:18px;cursor:pointer}
+/* Bouton « reconnecter » : recharge la page (seul moyen de relancer le canal E2E
+   depuis un PWA iOS, qui n'a ni barre d'adresse ni bouton recharger). z-index très
+   haut pour rester tapable même sous l'overlay « reconnecte-toi » du relais. */
+#reconnectbtn{position:fixed;top:10px;right:calc(58px + env(safe-area-inset-right,0px));z-index:2147483647;background:var(--panel);border:1px solid var(--accent);color:var(--accent);width:40px;height:40px;border-radius:6px;font-size:18px;line-height:1;cursor:pointer}
+@media (min-width:721px){ #reconnectbtn{right:14px;top:auto;bottom:14px} }
+@media (max-width:920px) and (orientation:landscape),(max-width:720px){
+  #presbtn{display:block}
+  #reconnectbtn{width:34px;height:34px;font-size:16px;top:8px}
+}
+/* Mode présentation : menu latéral escamoté, chat pleine largeur, plus de
+   distractions. Combiné à la compaction paysage ci-dessous. */
+body.presentation #menubtn,body.presentation #presbtn{opacity:.25}
+body.presentation #presbtn{color:var(--accent);border-color:var(--accent);opacity:1}
+/* Paysage sur mobile OU mode présentation : on réduit tout pour gagner de la
+   place à l'écran (interface « un peu grosse » en horizontal). */
+@media (max-width:920px) and (orientation:landscape){
+  body{font-size:12.5px}
+  #chat{padding:52px 10px 8px;gap:9px}
+  .msg{padding:7px 11px;border-radius:8px}
+  #inputbar{padding:6px 8px}
+  #input{min-height:38px;padding:7px 9px}
+  #composer .muted{display:none}
+  #ctxmeta{padding:3px 10px 0}
+  h1{font-size:16px}
+  #menubtn,#presbtn{width:34px;height:34px;font-size:16px;top:8px}
+}
+/* En présentation on pousse la compaction plus loin et on planque le chrome. */
+body.presentation #chat{padding-top:16px}
+body.presentation #menubtn{display:none}
+body.presentation #scrollbtn{display:none!important}
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()">☰</button>
+<button id="presbtn" onclick="togglePresentation()" title="mode présentation (plein écran)">⛶</button>
+<button id="reconnectbtn" onclick="location.reload()" title="reconnecter (recharge la page)">⟳</button>
 <div id="backdrop" onclick="toggleSide()"></div>
 <div class="side" id="side">
   <div class="sidehead">
@@ -324,7 +370,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260706115856"></script>
+<script src="/e2e.js?v=20260707095142"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -416,6 +462,22 @@ function md(src){ return src ? marked.parse(fixMd(src)) : ''; }
 let msgs = [];
 let busy = false;
 function toggleSide(){ document.getElementById('side').classList.toggle('open'); document.getElementById('backdrop').classList.toggle('open'); document.body.classList.toggle('drawer-open'); }
+// Mode présentation : compacte l'UI + ferme le menu + tente le vrai plein écran.
+// Sur iPhone/Safari requestFullscreen n'existe pas → le mode reste utile (UI
+// compacte) et le vrai fix « barre d'onglets » passe par l'ajout à l'écran
+// d'accueil (mode standalone, cf. les meta apple-mobile-web-app-*).
+function togglePresentation(){
+  const on = document.body.classList.toggle('presentation');
+  if(on){
+    document.getElementById('side').classList.remove('open');
+    document.getElementById('backdrop').classList.remove('open');
+    document.body.classList.remove('drawer-open');
+    const el=document.documentElement;
+    (el.requestFullscreen||el.webkitRequestFullscreen||(()=>{})).call(el).catch(()=>{});
+  } else if(document.fullscreenElement||document.webkitFullscreenElement){
+    (document.exitFullscreen||document.webkitExitFullscreen||(()=>{})).call(document).catch(()=>{});
+  }
+}
 function saveSys(){ localStorage.setItem('jean.sys', document.getElementById('sysprompt').value); }
 document.addEventListener('DOMContentLoaded', ()=>{ document.getElementById('sysprompt').value = localStorage.getItem('jean.sys') || ''; restoreChat(); });
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
@@ -490,13 +552,19 @@ async function jpost(u,b){ const r=await jfetch(u,{method:'POST',headers:{'Conte
 async function loadStatus(){
   const s=await jget('/api/status');
   const el=document.getElementById('status-svc');
-  el.className='statuspill '+(s.active?'ok':'err');
-  el.innerHTML='<span class="dot"></span>'+(s.active?'active':s.state)+' <span class="port">:'+s.port+'</span>';
+  // Trois états : service coupé (err) · service actif mais modèle pas encore
+  // chargé (loading, llama-server renvoie 503) · modèle prêt (ok).
+  let cls='err', txt=s.state;
+  if(s.active && s.health){ cls='ok'; txt='prêt'; }
+  else if(s.active){ cls='loading'; txt='chargement…'; }
+  el.className='statuspill '+cls;
+  el.innerHTML='<span class="dot"></span>'+txt+' <span class="port">:'+s.port+'</span>';
+  MODEL_READY = !!(s.active && s.health);
   if(s.ctx){ CTX_MAX=s.ctx; updateCtxMeter(); }
 }
 // Compteur de contexte : CTX_USED estimé via les stats serveur (prefill+decode
 // du dernier tour ≈ taille du prochain prompt). À 90% on propose de compacter.
-let CTX_MAX=0, CTX_USED=0;
+let CTX_MAX=0, CTX_USED=0, MODEL_READY=false;
 function setCtxUsed(n){ CTX_USED=n||0; updateCtxMeter(); }
 function updateCtxMeter(){
   if(!CTX_MAX) return;
@@ -1083,7 +1151,7 @@ async function send(){
   let reasonEl=null, contentEl=null, pendingToolEl=null, fullContent='', fullReason='', toolMsgs=null;
   let turnCollapsibles=[]; // bulles reasoning/tool à replier dès la réponse finale
   let tokCount=0, reasonTokCount=0, t0=performance.now(), firstTok=0, statsTimer=null;
-  let serverStats=null;
+  let serverStats=null, streamErr=false;
   const updateStats=(final)=>{
     if(!contentEl && !reasonEl) return;
     const el = contentEl || reasonEl;
@@ -1128,6 +1196,19 @@ async function send(){
           try{
             const o=JSON.parse(data);
             const d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{};
+            if(d.error){
+              // Erreur serveur (ex : modèle en cours de chargement → 503). On
+              // l'affiche, on retire le message user de l'historique et on le
+              // remet dans l'input pour renvoyer d'un clic une fois prêt.
+              contentEl=null; reasonEl=null;
+              const eb=addMsg('assistant',''); eb.classList.add('errmsg');
+              renderBody(eb, d.error);
+              if(msgs.length && msgs[msgs.length-1].role==='user'){ ta.value=msgs[msgs.length-1].content; msgs.pop(); }
+              saveChat();
+              streamErr=true;
+              try{ reader.cancel(); }catch(_){}
+              break;
+            }
             if(d.stats){ serverStats = d.stats; }
             // Tool-turn messages (assistant tool_calls + tool results) sent at the
             // end of the stream. On les garde pour les réinjecter dans msgs AVANT
@@ -1177,10 +1258,14 @@ async function send(){
             }
           }catch(e){}
         }
+        if(streamErr) break;
       }
+      if(streamErr) break;
     }
-    if(toolMsgs) msgs.push(...toolMsgs);
-    msgs.push({role:'assistant',content:fullContent}); saveChat();
+    if(!streamErr){
+      if(toolMsgs) msgs.push(...toolMsgs);
+      msgs.push({role:'assistant',content:fullContent}); saveChat();
+    }
     // Le KV cache s'accumule : chaque tour ajoute les tokens NOUVELLEMENT traités
     // (prompt_tokens, le préfixe caché n'est pas recompté) + ceux générés. La
     // taille réelle du contexte = somme cumulée, donc monotone croissante.
