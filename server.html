@@ -193,19 +193,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @media (hover:none) and (pointer:coarse){
   #input,#sysprompt,#modal input,#modal textarea,#modal select{font-size:16px}
 }
-/* Bouton "présentation" : flottant en haut à droite, seulement sur mobile. Sert
-   à enregistrer des démos au téléphone à l'horizontale (masque le menu, compacte
-   l'UI, tente le vrai plein écran là où c'est supporté — iPad/Android). */
-#presbtn{display:none;position:fixed;top:10px;right:calc(10px + env(safe-area-inset-right,0px));z-index:20;background:var(--panel);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:6px;font-size:18px;cursor:pointer}
-@media (max-width:920px) and (orientation:landscape),(max-width:720px){
-  #presbtn{display:block}
-}
-/* Mode présentation : menu latéral escamoté, chat pleine largeur, plus de
-   distractions. Combiné à la compaction paysage ci-dessous. */
-body.presentation #menubtn,body.presentation #presbtn{opacity:.25}
-body.presentation #presbtn{color:var(--accent);border-color:var(--accent);opacity:1}
-/* Paysage sur mobile OU mode présentation : on réduit tout pour gagner de la
-   place à l'écran (interface « un peu grosse » en horizontal). */
+/* Paysage sur mobile : on réduit tout pour gagner de la place à l'écran
+   (interface « un peu grosse » en horizontal, utile pour enregistrer des démos). */
 @media (max-width:920px) and (orientation:landscape){
   body{font-size:12.5px}
   #chat{padding:52px 10px 8px;gap:9px}
@@ -215,15 +204,10 @@ body.presentation #presbtn{color:var(--accent);border-color:var(--accent);opacit
   #composer .muted{display:none}
   #ctxmeta{padding:3px 10px 0}
   h1{font-size:16px}
-  #menubtn,#presbtn{width:34px;height:34px;font-size:16px;top:8px}
+  #menubtn{width:34px;height:34px;font-size:16px;top:8px}
 }
-/* En présentation on pousse la compaction plus loin et on planque le chrome. */
-body.presentation #chat{padding-top:16px}
-body.presentation #menubtn{display:none}
-body.presentation #scrollbtn{display:none!important}
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()">☰</button>
-<button id="presbtn" onclick="togglePresentation()" title="mode présentation (plein écran)">⛶</button>
 <div id="backdrop" onclick="toggleSide()"></div>
 <div class="side" id="side">
   <div class="sidehead">
@@ -363,7 +347,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260707095400"></script>
+<script src="/e2e.js?v=20260707095800"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -455,22 +439,6 @@ function md(src){ return src ? marked.parse(fixMd(src)) : ''; }
 let msgs = [];
 let busy = false;
 function toggleSide(){ document.getElementById('side').classList.toggle('open'); document.getElementById('backdrop').classList.toggle('open'); document.body.classList.toggle('drawer-open'); }
-// Mode présentation : compacte l'UI + ferme le menu + tente le vrai plein écran.
-// Sur iPhone/Safari requestFullscreen n'existe pas → le mode reste utile (UI
-// compacte) et le vrai fix « barre d'onglets » passe par l'ajout à l'écran
-// d'accueil (mode standalone, cf. les meta apple-mobile-web-app-*).
-function togglePresentation(){
-  const on = document.body.classList.toggle('presentation');
-  if(on){
-    document.getElementById('side').classList.remove('open');
-    document.getElementById('backdrop').classList.remove('open');
-    document.body.classList.remove('drawer-open');
-    const el=document.documentElement;
-    (el.requestFullscreen||el.webkitRequestFullscreen||(()=>{})).call(el).catch(()=>{});
-  } else if(document.fullscreenElement||document.webkitFullscreenElement){
-    (document.exitFullscreen||document.webkitExitFullscreen||(()=>{})).call(document).catch(()=>{});
-  }
-}
 function saveSys(){ localStorage.setItem('jean.sys', document.getElementById('sysprompt').value); }
 document.addEventListener('DOMContentLoaded', ()=>{ document.getElementById('sysprompt').value = localStorage.getItem('jean.sys') || ''; restoreChat(); });
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
