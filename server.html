@@ -197,22 +197,28 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @media (hover:none) and (pointer:coarse){
   #input,#sysprompt,#modal input,#modal textarea,#modal select{font-size:16px}
 }
-/* Téléphone en PAYSAGE : on réduit tout pour gagner de la place (interface
-   « un peu grosse » en horizontal, utile pour enregistrer des démos). On cible
-   sur la HAUTEUR (un téléphone couché est court, ~375-430px de haut) plutôt que
-   sur la largeur : les iPhone Pro Max font 932px de large en paysage, ce qui
-   dépassait l'ancien seuil max-width:920px et désactivait la compaction. Le
-   max-height écarte aussi les tablettes (iPad paysage ≥ 768px de haut). */
-@media (orientation:landscape) and (max-height:540px){
-  body{font-size:12.5px}
-  #chat{padding:52px 10px 8px;gap:9px}
-  .msg{padding:7px 11px;border-radius:8px}
-  #inputbar{padding:6px 8px}
-  #input{min-height:38px;padding:7px 9px}
+/* Appareil TACTILE en PAYSAGE : on réduit nettement tout pour gagner de la place
+   (interface « un peu grosse » en horizontal, utile pour enregistrer des démos).
+   Détection par (hover:none)+(pointer:coarse)+landscape : infaillible sur tout
+   téléphone couché, sans dépendre d'un seuil de largeur/hauteur en pixels (les
+   iPhone Pro Max font 932px de large et ~430px de haut, ce qui piégeait les
+   seuils précédents). Le desktop (souris) n'est jamais touché.
+   NB : la règle iOS 16px anti-zoom plus haut est surchargée ici volontairement
+   pour #input — on garde une saisie compacte (le pinch-zoom manuel reste dispo). */
+@media (hover:none) and (pointer:coarse) and (orientation:landscape){
+  body{font-size:11.5px}
+  #chat{padding:48px 10px 6px;gap:7px}
+  .msg{padding:6px 10px;border-radius:8px;max-width:78%}
+  #chat .msg.assistant,#chat .msg.reasoning{max-width:88%}
+  #inputbar{padding:5px 8px;gap:6px}
+  #input{min-height:34px;max-height:120px;padding:6px 9px;font-size:13px}
+  #send,#stop{padding:0 14px}
   #composer .muted{display:none}
   #ctxmeta{padding:3px 10px 0}
-  h1{font-size:16px}
-  #menubtn{width:34px;height:34px;font-size:16px;top:calc(8px + env(safe-area-inset-top))}
+  #ctx-text{font-size:9px}
+  h1{font-size:15px}
+  h2,details>summary{font-size:10px}
+  #menubtn{width:32px;height:32px;font-size:15px;top:calc(6px + env(safe-area-inset-top))}
 }
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()">☰</button>
@@ -355,7 +361,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260707113048"></script>
+<script src="/e2e.js?v=20260707113810"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
