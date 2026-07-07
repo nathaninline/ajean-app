@@ -197,9 +197,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @media (hover:none) and (pointer:coarse){
   #input,#sysprompt,#modal input,#modal textarea,#modal select{font-size:16px}
 }
-/* Paysage sur mobile : on réduit tout pour gagner de la place à l'écran
-   (interface « un peu grosse » en horizontal, utile pour enregistrer des démos). */
-@media (max-width:920px) and (orientation:landscape){
+/* Téléphone en PAYSAGE : on réduit tout pour gagner de la place (interface
+   « un peu grosse » en horizontal, utile pour enregistrer des démos). On cible
+   sur la HAUTEUR (un téléphone couché est court, ~375-430px de haut) plutôt que
+   sur la largeur : les iPhone Pro Max font 932px de large en paysage, ce qui
+   dépassait l'ancien seuil max-width:920px et désactivait la compaction. Le
+   max-height écarte aussi les tablettes (iPad paysage ≥ 768px de haut). */
+@media (orientation:landscape) and (max-height:540px){
   body{font-size:12.5px}
   #chat{padding:52px 10px 8px;gap:9px}
   .msg{padding:7px 11px;border-radius:8px}
@@ -208,7 +212,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   #composer .muted{display:none}
   #ctxmeta{padding:3px 10px 0}
   h1{font-size:16px}
-  #menubtn{width:34px;height:34px;font-size:16px;top:8px}
+  #menubtn{width:34px;height:34px;font-size:16px;top:calc(8px + env(safe-area-inset-top))}
 }
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()">☰</button>
@@ -351,7 +355,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260707111959"></script>
+<script src="/e2e.js?v=20260707113048"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
