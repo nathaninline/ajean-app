@@ -215,7 +215,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
   .msg{padding:6px 10px;border-radius:8px;max-width:78%}
   #chat .msg.assistant,#chat .msg.reasoning{max-width:88%}
   #inputbar{padding:5px 8px;gap:6px}
-  #input{min-height:34px;max-height:120px;padding:6px 9px;font-size:13px}
+  /* PAS de font-size < 16px ici : iOS Safari zoome à la sélection du champ. On
+     garde 16px (hérité de la règle anti-zoom) et on compacte via hauteur/padding. */
+  #input{min-height:34px;max-height:120px;padding:6px 9px}
   #send,#stop{padding:0 14px}
   #composer .muted{display:none}
   #ctxmeta{padding:3px 10px 0}
@@ -365,7 +367,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260707120053"></script>
+<script src="/e2e.js?v=20260707122512"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
