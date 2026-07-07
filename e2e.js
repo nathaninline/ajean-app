@@ -67,6 +67,11 @@ function _toast(m){if(typeof window.toast==='function')window.toast(m);}
 // e2eConfirm : active la boîte noire en 2 temps (empreinte + appairage). Une fois par
 // machine ; ne fait rien si déjà active. Renvoie true si la boîte noire est active.
 async function e2eConfirm(m){if(!m||!m.pubkey)return false;
+  // Clé racine E2E (ajk) dérivée du mot de passe AU LOGIN. Absente = localStorage
+  // vidé (typiquement PWA iOS au stockage isolé/évincé) alors que le cookie de
+  // session est encore valide → sceller est impossible et le code d'appairage
+  // échoue en « clé absente » sans issue. On renvoie au login pour re-dériver ajk.
+  if(!localStorage.getItem('ajk')){location.href='/login.html';return false;}
   var fp=await fpOfPub(m.pubkey);
   var fpOk=localStorage.getItem('fp:'+m.id)===fp;
   if(fpOk&&localStorage.getItem('pair:'+m.id)==='1')return true;

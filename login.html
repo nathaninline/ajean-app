@@ -51,9 +51,12 @@ var API='https://ajean.link';
       u=API+u;opt=Object.assign({credentials:'include'},opt||{});
     }
     return _f(u,opt);};})();
-// Déjà connecté (cookie de session valide) ? On file directement au dashboard
-// au lieu d'afficher le formulaire — évite de croire qu'on est déconnecté.
-(async function(){try{var r=await fetch('/app/me');if(r&&r.ok)location.replace('/');}catch(e){}})();
+// Déjà connecté (cookie valide) ET clé racine E2E (ajk) présente ? On file au
+// dashboard. Mais si ajk manque (stockage PWA iOS vidé/évincé), on GARDE le
+// formulaire : il faut re-saisir le mot de passe pour re-dériver ajk, sinon on
+// boucle « connecté mais clé absente » sans jamais pouvoir sceller l'appairage.
+(async function(){try{var r=await fetch('/app/me');
+  if(r&&r.ok&&localStorage.getItem('ajk'))location.replace('/');}catch(e){}})();
 function jpost(u,b){return fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(function(r){return r.json();});}
 var _wasm=(function(){var go=new Go();return WebAssembly.instantiateStreaming(fetch('/opaque.wasm'),go.importObject)
   .then(function(res){go.run(res.instance);});})();
