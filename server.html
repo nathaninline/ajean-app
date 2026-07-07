@@ -197,14 +197,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
    à enregistrer des démos au téléphone à l'horizontale (masque le menu, compacte
    l'UI, tente le vrai plein écran là où c'est supporté — iPad/Android). */
 #presbtn{display:none;position:fixed;top:10px;right:calc(10px + env(safe-area-inset-right,0px));z-index:20;background:var(--panel);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:6px;font-size:18px;cursor:pointer}
-/* Bouton « reconnecter » : recharge la page (seul moyen de relancer le canal E2E
-   depuis un PWA iOS, qui n'a ni barre d'adresse ni bouton recharger). z-index très
-   haut pour rester tapable même sous l'overlay « reconnecte-toi » du relais. */
-#reconnectbtn{position:fixed;top:10px;right:calc(58px + env(safe-area-inset-right,0px));z-index:2147483647;background:var(--panel);border:1px solid var(--accent);color:var(--accent);width:40px;height:40px;border-radius:6px;font-size:18px;line-height:1;cursor:pointer}
-@media (min-width:721px){ #reconnectbtn{right:14px;top:auto;bottom:14px} }
 @media (max-width:920px) and (orientation:landscape),(max-width:720px){
   #presbtn{display:block}
-  #reconnectbtn{width:34px;height:34px;font-size:16px;top:8px}
 }
 /* Mode présentation : menu latéral escamoté, chat pleine largeur, plus de
    distractions. Combiné à la compaction paysage ci-dessous. */
@@ -230,7 +224,6 @@ body.presentation #scrollbtn{display:none!important}
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()">☰</button>
 <button id="presbtn" onclick="togglePresentation()" title="mode présentation (plein écran)">⛶</button>
-<button id="reconnectbtn" onclick="location.reload()" title="reconnecter (recharge la page)">⟳</button>
 <div id="backdrop" onclick="toggleSide()"></div>
 <div class="side" id="side">
   <div class="sidehead">
@@ -370,7 +363,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260707095142"></script>
+<script src="/e2e.js?v=20260707095400"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
