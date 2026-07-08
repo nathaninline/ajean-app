@@ -29,15 +29,15 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 </style></head><body class="auth">
 <div class="card"><div class="inner">
   <div class="brand"><span>ajean<span class="tag">.link</span></span></div>
-  <h1>Créer un compte</h1>
+  <h1>Créer un compte gratuit</h1>
   <p>Accès distant chiffré de bout en bout à tes serveurs Jean.</p>
-  <p class="price">4,80 €/mois · sans engagement</p>
+  <p class="price">Gratuit — 100 requêtes/mois · sans carte bancaire</p>
   <p class="err" id="jsErr" style="display:none"></p>
   <form id="sf">
     <input type="email" name="email" id="se" placeholder="email" autocomplete="username" autofocus required>
     <input type="password" name="password" id="sp" placeholder="mot de passe (min. 8 caractères)" autocomplete="new-password" minlength="8" required>
     <input type="password" name="password2" id="sp2" placeholder="confirmer le mot de passe" autocomplete="new-password" minlength="8" required>
-    <button class="btn btn-primary" id="sb" type="submit">Continuer vers le paiement →</button>
+    <button class="btn btn-primary" id="sb" type="submit">Créer mon compte gratuit →</button>
   </form>
   <p class="foot">🔒 Ton mot de passe ne quitte jamais ton navigateur (OPAQUE)<br>
     Déjà un compte ? <a href="/login.html">Se connecter</a> · <a href="/">← Accueil</a></p>
@@ -67,7 +67,7 @@ var sf=document.getElementById('sf');
 sf.onsubmit=async function(e){e.preventDefault();
   var email=document.getElementById('se').value.trim(),pw=document.getElementById('sp').value,pw2=document.getElementById('sp2').value;
   var er=document.getElementById('jsErr'),b=document.getElementById('sb');
-  function show(m){er.textContent=m;er.style.display='';b.disabled=false;b.textContent='Continuer vers le paiement →';}
+  function show(m){er.textContent=m;er.style.display='';b.disabled=false;b.textContent='Créer mon compte gratuit →';}
   er.style.display='none';
   if(pw.length<8){show('Le mot de passe doit faire au moins 8 caractères.');return;}
   if(pw!==pw2){show('Les deux mots de passe ne correspondent pas.');return;}
@@ -80,11 +80,10 @@ sf.onsubmit=async function(e){e.preventDefault();
     var ek=await opaqueRegisterFlow(pw);
     if(!ek){show('Échec de l\'enregistrement du mot de passe.');return;}
     localStorage.setItem('ajk',ek);
-    // 3) Ouvre Stripe Checkout (4,80 €/mois).
-    b.textContent='Redirection vers le paiement…';
-    var r=await fetch('/billing/checkout',{method:'POST'});
-    if(!r.ok){show('Le compte est créé, mais le paiement est indisponible. Connecte-toi pour réessayer.');return;}
-    var d=await r.json();location.href=d.url;
+    // 3) Compte gratuit prêt : direction le tableau de bord (connexion d'un serveur).
+    //    L'abonnement illimité se fait plus tard, depuis le tableau de bord.
+    b.textContent='Compte créé, redirection…';
+    location.href='/';
   }catch(err){show('Erreur : '+err);}
 };
 </script>

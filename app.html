@@ -96,6 +96,14 @@ header .sp{flex:1}
 </header>
 
 <div class="wrap">
+  <div id="freeBanner" style="display:none;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:6px">
+    <div style="flex:1;min-width:200px">
+      <div id="fbMsg" style="font-weight:600">Offre gratuite</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:2px"><b id="fbUsed" style="color:var(--text)">0</b> / <span id="fbLimit">100</span> requêtes ce mois</div>
+    </div>
+    <div id="fbBar" style="width:100%;max-width:220px;height:6px;border-radius:99px;background:var(--bg);overflow:hidden"><i id="fbFill" style="display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--accent),#6aa6ff);transition:width .3s"></i></div>
+    <button class="btn primary sm" onclick="openSub()">Passer en illimité</button>
+  </div>
   <div class="sec"><h2>Mes serveurs</h2><span class="ct" id="srvCt">0</span><span class="sp"></span>
     <button class="btn subtle" onclick="openKeys()">Gérer les clés</button></div>
   <div class="grid" id="grid" style="margin-top:14px"></div>
@@ -131,7 +139,7 @@ header .sp{flex:1}
   <div class="seshead">Sessions ouvertes</div>
   <div id="acctSessions" class="seslist"></div>
   <div class="row"><button class="btn danger" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
-    <button class="btn" onclick="manageSub()">Gérer l'abonnement</button>
+    <button class="btn" id="acctSubBtn" onclick="manageSub()">Gérer l'abonnement</button>
     <button class="btn" onclick="closeAcct()">Fermer</button></div>
 </div></div>
 
@@ -160,12 +168,12 @@ header .sp{flex:1}
 </div></div>
 
 <div class="modal" id="subModal"><div class="sheet">
-  <h3>Abonnement ajean.link</h3>
-  <p class="muted" id="subMsg">Accède à tes serveurs Jean à distance, partout, chiffré de bout en bout — sans ouvrir de port.</p>
+  <h3>Passer en illimité</h3>
+  <p class="muted" id="subMsg">Requêtes illimitées vers tes serveurs Jean, partout, chiffré de bout en bout — sans ouvrir de port. Ton offre gratuite reste dispo tant que tu ne dépasses pas le quota.</p>
   <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
   <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
-  <div class="row"><button class="btn subtle" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
-    <button class="btn primary" id="subBtn" onclick="startCheckout()">S'abonner →</button></div>
+  <div class="row"><button class="btn subtle" onclick="closeSub()" style="margin-right:auto">Plus tard</button>
+    <button class="btn primary" id="subBtn" onclick="startCheckout()">Passer en illimité →</button></div>
 </div></div>
 
 <div id="toast"></div>
@@ -182,10 +190,11 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260708103426"></script>
+<script src="/e2e.js?v=20260708161744"></script>
 <script>
-var BUILD='20260708103426'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20260708161744'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
+var ACTIVE=true,USED=0,LIMIT=100; // tier : abonnement actif ? usage gratuit du mois
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
 function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 async function logout(){localStorage.removeItem('ajk');
@@ -224,6 +233,9 @@ function pmResolve(ok){document.getElementById('promptModal').classList.remove('
 async function me(){var r=await j('/app/me');if(!r)return;var d=await r.json();EMAIL=d.email;}
 function openAccount(){document.getElementById('acctEmail').textContent=EMAIL;
   document.getElementById('acctSrv').textContent=MACHINES.filter(function(m){return m.online}).length+' en ligne · '+MACHINES.length+' au total';
+  var sb=document.getElementById('acctSubBtn');
+  if(ACTIVE){sb.textContent='Gérer l\'abonnement';sb.className='btn';sb.onclick=manageSub;}
+  else{sb.textContent='Passer en illimité';sb.className='btn primary';sb.onclick=function(){closeAcct();openSub();};}
   document.getElementById('acctModal').classList.add('show');loadSessions();}
 function closeAcct(){document.getElementById('acctModal').classList.remove('show');}
 function ago(ts){if(!ts)return 'à l\'instant';var s=Math.floor(Date.now()/1000)-ts;
@@ -325,20 +337,36 @@ function renderServers(){var g=document.getElementById('grid');g.innerHTML='';SC
 async function load(){
   var rm=await j('/app/machines');if(!rm)return;MACHINES=(await rm.json()).machines;
   document.getElementById('srvCt').textContent=MACHINES.length;
+  // rafraîchit le compteur d'usage du tier gratuit (bandeau)
+  try{var ru=await j('/app/usage');if(ru){var u=await ru.json();ACTIVE=u.active;USED=u.used;LIMIT=u.limit;updateUsageUI();}}catch(e){}
   var sigM=JSON.stringify(MACHINES.map(function(m){return [m.id,m.online,m.name,m.hostname]}));
   if(sigM!==SIG_M){SIG_M=sigM;renderServers();}
   MACHINES.forEach(function(m){if(m.online&&SCARDS[m.id])fillProbe(m,SCARDS[m.id]);});
 }
+
+/* ---- tier gratuit : bandeau d'usage + bascule vers l'abonnement ---- */
+function updateUsageUI(){var el=document.getElementById('freeBanner');
+  if(ACTIVE){el.style.display='none';return;}
+  var full=USED>=LIMIT;
+  document.getElementById('fbUsed').textContent=USED;
+  document.getElementById('fbLimit').textContent=LIMIT;
+  document.getElementById('fbMsg').textContent=full
+    ?'Quota gratuit atteint — passez en illimité pour continuer'
+    :'Offre gratuite';
+  document.getElementById('fbMsg').style.color=full?'var(--err)':'var(--text)';
+  el.style.borderColor=full?'var(--err)':'var(--border)';
+  var pct=LIMIT?Math.min(100,Math.round(100*USED/LIMIT)):0;
+  var fill=document.getElementById('fbFill');fill.style.width=pct+'%';
+  if(full)fill.style.background='var(--err)';
+  el.style.display='flex';}
+function openSub(){document.getElementById('subModal').classList.add('show');}
+function closeSub(){document.getElementById('subModal').classList.remove('show');}
 
 /* ---- abonnement Stripe (4,80 €/mois) ---- */
 async function startCheckout(){var b=document.getElementById('subBtn');b.disabled=true;b.textContent='Redirection…';
   var r=await fetch('/billing/checkout',{method:'POST'});
   if(!r.ok){b.disabled=false;b.textContent="S'abonner →";toast('Paiement indisponible pour le moment');return;}
   var d=await r.json();location.href=d.url;}
-function showSubscribe(){
-  if((new URLSearchParams(location.search)).get('sub')==='ok'){
-    document.getElementById('subMsg').textContent='Paiement reçu ✓ Activation en cours…';pollActivation();}
-  document.getElementById('subModal').classList.add('show');}
 async function pollActivation(){for(var i=0;i<12;i++){await new Promise(function(r){setTimeout(r,2000);});
     var r=await fetch('/billing/status');if(!r.ok)break;var s=await r.json();
     if(s.active){document.getElementById('subModal').classList.remove('show');welcome();await load();return;}}
@@ -352,15 +380,16 @@ async function manageSub(){var r=await fetch('/billing/portal',{method:'POST'});
   if(!r.ok){toast('Gestion indisponible');return;}var d=await r.json();location.href=d.url;}
 
 async function boot(){
-  // /billing/status distingue « non connecté » (401 → login) de « connecté mais
-  // pas encore abonné » (active:false → écran d'abonnement). On NE passe PAS par
-  // j() ici, qui renverrait tout 401 vers login (boucle pour un compte inactif).
-  var st;try{st=await fetch('/billing/status');}catch(e){location.href='/login.html';return;}
+  // Tier gratuit : plus de mur d'abonnement au démarrage. Tout compte connecté
+  // (payant OU gratuit) accède au tableau de bord. /app/me renvoie 401 si non
+  // connecté (→ login) et, sinon, l'état d'abonnement + l'usage du mois.
+  var st;try{st=await fetch('/app/me');}catch(e){location.href='/login.html';return;}
   if(st.status===401){location.href='/login.html';return;}
   var s={};try{s=await st.json();}catch(e){}
-  EMAIL=s.email||'';
-  if(!s.active){showSubscribe();return;}
-  if((new URLSearchParams(location.search)).get('sub')==='ok')welcome();
+  EMAIL=s.email||'';ACTIVE=!!s.active;USED=s.used||0;LIMIT=s.limit||100;
+  updateUsageUI();
+  if((new URLSearchParams(location.search)).get('sub')==='ok'){
+    if(!ACTIVE)pollActivation();else welcome();}
   await load();}
 boot();
 setInterval(function(){if(document.querySelector('.modal.show'))return;load();},15000);
