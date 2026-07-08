@@ -376,7 +376,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260707221825"></script>
+<script src="/e2e.js?v=20260708102409"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1041,15 +1041,24 @@ function renderBody(el, text){ const b=bodyOf(el); b.innerHTML = md(text); addCo
 // Render a tool call as its own conversation message: the command the model
 // wrote, then the response it got back. textContent keeps it injection-safe.
 function renderToolMsg(el, tu){
-  const isShell = tu.name==='bash';
-  const isEdit = tu.name==='edit';
-  let lbl = isShell ? 'terminal' : (isEdit ? 'édition' : 'mémoire');
+  // Métadonnées d'affichage par outil : nom court + en-tête avec icône. Les outils
+  // web (web_search/open/read/grep) doivent afficher 🌐, pas le fallback mémoire.
+  const META = {
+    bash:       {lbl:'terminal',  head:'⚙️ commande'},
+    edit:       {lbl:'édition',   head:'✏️ édition'},
+    web_search: {lbl:'recherche', head:'🌐 recherche web'},
+    web_open:   {lbl:'page web',  head:'🌐 ouverture'},
+    web_read:   {lbl:'page web',  head:'🌐 lecture'},
+    web_grep:   {lbl:'page web',  head:'🌐 recherche'},
+  };
+  const meta = META[tu.name] || {lbl:'mémoire', head:'🧠 mémoire'};
+  let lbl = meta.lbl;
   // Indication du volume de la réponse de l'outil (~tokens, estimation 1 tok ≈ 4 car).
   if(tu.result){ lbl += '  ·  ~' + Math.max(1, Math.round(tu.result.length/4)) + ' tok'; }
   setLabel(el, lbl);
   const body=bodyOf(el); body.innerHTML='';
   const head=document.createElement('div'); head.className='tool-head';
-  head.textContent = isShell ? '⚙️ commande' : (isEdit ? '✏️ édition' : '🧠 mémoire');
+  head.textContent = meta.head;
   body.appendChild(head);
   if(tu.label){
     const pre=document.createElement('pre'); pre.className='tool-cmd';
