@@ -252,6 +252,15 @@ button:disabled{opacity:.5;cursor:not-allowed}
     <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="display:none">
     <div id="mem-list" class="mem-list muted" style="font-size:12px"></div>
   </details>
+  <details><summary>Accès internet <span id="internet-badge" style="margin-left:auto;margin-right:12px;font-size:10px"></span></summary>
+    <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA</label>
+    <div class="muted" style="font-size:11px">nécessite le <b>mode agent</b>. Ajoute les outils <b>web_search / web_open / web_read / web_grep</b> via un serveur <b>Crawl4AI</b>. Actifs seulement si le serveur répond.</div>
+    <div class="row" style="margin-top:6px">
+      <input id="crawl-url" type="text" placeholder="http://localhost:11235" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;font:inherit" onchange="saveCrawlUrl()">
+      <button onclick="saveCrawlUrl()">enregistrer</button>
+    </div>
+    <div id="internet-status" class="muted" style="font-size:11px;margin-top:4px"></div>
+  </details>
   <details><summary>System prompt</summary>
     <textarea id="sysprompt" placeholder="(optionnel) ex: tu es un assistant concis en français" oninput="saveSys()" style="width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit;min-height:70px;resize:vertical"></textarea>
   </details>
@@ -367,7 +376,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260707122512"></script>
+<script src="/e2e.js?v=20260707221825"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -678,7 +687,32 @@ async function toggleToolLimit(){
   await jpost('/api/agent/tool-limit',{on});
   loadAgent();
 }
-async function loadAll(){ await Promise.all([loadStatus(),loadVram(),loadCfg(),loadPresets(),loadAgent()]); }
+// Accès internet : serveur Crawl4AI + drapeau. Actif ET fonctionnel = pastille verte.
+let internetOn=false;
+function renderInternet(s){
+  internetOn = !!s.enabled;
+  document.getElementById('internet-toggle').checked = internetOn;
+  if(document.activeElement !== document.getElementById('crawl-url'))
+    document.getElementById('crawl-url').value = s.url || '';
+  document.getElementById('internet-badge').innerHTML = internetOn
+    ? '<span class="tag ok">on</span>' : '<span class="tag" style="opacity:.6">off</span>';
+  const st=document.getElementById('internet-status');
+  if(!s.url){ st.textContent='serveur non configuré'; st.style.color=''; }
+  else if(s.reachable){ st.innerHTML='✅ serveur joignable — outils web actifs'; }
+  else { st.innerHTML='⚠️ serveur injoignable — les outils web ne seront pas proposés'; }
+}
+async function loadInternet(){ renderInternet(await jget('/api/internet')); }
+async function toggleInternet(){
+  const on=document.getElementById('internet-toggle').checked;
+  const url=document.getElementById('crawl-url').value.trim();
+  if(on && !url){ toast('renseigne d\'abord l\'URL du serveur Crawl4AI'); document.getElementById('internet-toggle').checked=false; return; }
+  renderInternet(await jpost('/api/internet',{enabled:on, url}));
+}
+async function saveCrawlUrl(){
+  const url=document.getElementById('crawl-url').value.trim();
+  renderInternet(await jpost('/api/internet',{url}));
+}
+async function loadAll(){ await Promise.all([loadStatus(),loadVram(),loadCfg(),loadPresets(),loadAgent(),loadInternet()]); }
 async function act(a){ toast(a+'…'); await jpost('/api/'+a); setTimeout(loadAll,1500); }
 function openBenchModal(){ document.getElementById('bench-modal').style.display = 'flex'; }
 function closeBenchModal(){ document.getElementById('bench-modal').style.display = 'none'; }
