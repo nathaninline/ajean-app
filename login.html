@@ -7,6 +7,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body.auth{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:22px;background:var(--bg);
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
+.authwrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
 .card{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--border);border-radius:10px}
 .card .inner{padding:32px 28px;text-align:center}
 .brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:18px;margin-bottom:14px}
@@ -27,8 +28,9 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 code{background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.9em;border:1px solid var(--border)}
 @media (hover:none) and (pointer:coarse){input{font-size:16px}}
 </style></head><body class="auth">
-<div class="card"><div class="inner">
+<div class="authwrap">
   <div class="brand"><span>ajean<span class="tag">.link</span></span></div>
+  <div class="card"><div class="inner">
   <h1>Connexion</h1>
   <p>Connecte-toi pour accéder à tes serveurs Jean à distance.</p>
   <p class="err" id="jsErr" style="display:none"></p>
@@ -40,6 +42,7 @@ code{background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.9em;borde
   <p class="foot">Pas encore de compte ? <a href="/signup.html">Créer un compte gratuit</a><br>
     🔒 Aucun log de tes conversations · Chiffrement bout-en-bout · <a href="/">← Accueil</a></p>
 </div></div>
+</div>
 <script src="/wasm_exec.js"></script>
 <script>
 // Boîte noire : ce code vient de GitHub Pages (app.ajean.link). Les appels d'auth

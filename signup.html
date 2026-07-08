@@ -7,6 +7,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body.auth{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:22px;background:var(--bg);
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
+.authwrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
 .card{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--border);border-radius:10px}
 .card .inner{padding:32px 28px;text-align:center}
 .brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:18px;margin-bottom:14px}
@@ -28,8 +29,9 @@ input:focus{outline:none;border-color:var(--accent)}
 a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 @media (hover:none) and (pointer:coarse){input{font-size:16px}}
 </style></head><body class="auth">
-<div class="card"><div class="inner">
+<div class="authwrap">
   <div class="brand"><span>ajean<span class="tag">.link</span></span></div>
+  <div class="card"><div class="inner">
   <h1>Créer un compte gratuit</h1>
   <p>Accès distant chiffré de bout en bout à tes serveurs Jean.</p>
   <p class="price">Gratuit — 100 requêtes/mois · sans carte bancaire</p>
@@ -40,9 +42,9 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
     <input type="password" name="password2" id="sp2" placeholder="confirmer le mot de passe" autocomplete="new-password" minlength="8" required>
     <button class="btn btn-primary" id="sb" type="submit">Créer mon compte gratuit →</button>
   </form>
-  <p class="foot">🔒 Ton mot de passe ne quitte jamais ton navigateur (OPAQUE)<br>
-    Déjà un compte ? <a href="/login.html">Se connecter</a> · <a href="/">← Accueil</a></p>
+  <p class="foot">Déjà un compte ? <a href="/login.html">Se connecter</a> · <a href="/">← Accueil</a></p>
 </div></div>
+</div>
 <script src="/wasm_exec.js"></script>
 <script>
 // Boîte noire : code servi par GitHub Pages ; les appels d'auth/paiement vont au
