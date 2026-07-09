@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ajean">
-<title>jean</title>
+<meta name="apple-mobile-web-app-title" content="Jean">
+<title>Jean</title>
 <!-- Favicon (même marque « ajean » que la landing/portail) + icône PWA (écran d'accueil
      iOS). SVG inline pour le favicon, PNG 180×180 en data-URI pour apple-touch-icon
      (iOS n'accepte pas le SVG pour l'icône d'accueil). Aucun fichier externe requis. -->
@@ -435,7 +435,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260709173649"></script>
+<script src="/e2e.js?v=20260709174248"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -480,7 +480,7 @@ var MACHINE_READY=(async function(){
   var list=((await r.json()).machines)||[];
   MACHINE=list.find(function(x){return x.id===mid;});
   if(!MACHINE){alert('Serveur introuvable sur ton compte.');location.href='/';return;}
-  document.title='jean';
+  document.title='Jean';
 })();
 var _sessP=null;
 function ensureSession(){if(_sessP)return _sessP;
