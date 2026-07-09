@@ -105,7 +105,7 @@ var MACHINE_READY=(async function(){
   var list=((await r.json()).machines)||[];
   MACHINE=list.find(function(x){return x.id===mid;});
   if(!MACHINE){alert('Serveur introuvable sur ton compte.');location.href='/';return;}
-  document.title='jean — '+(MACHINE.name||mid);
+  document.title='jean';
 })();
 var _sessP=null;
 function ensureSession(){if(_sessP)return _sessP;
