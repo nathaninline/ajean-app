@@ -78,6 +78,9 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 #brand.agent #brand-a{max-width:1ch;opacity:1;margin-right:.04em}
 /* interrupteur (switch) */
 .switchrow{position:relative;display:flex;align-items:center;gap:9px;font-size:12px;padding:6px 0;cursor:pointer;user-select:none}
+/* Sous-réglage du mode agent inaccessible quand l'agent est off : grisé + inerte. */
+.gated-block{margin-top:2px;transition:opacity .15s}
+.gated-block.gated{opacity:.4;pointer-events:none;filter:grayscale(.4)}
 .switch{position:relative;display:inline-block;width:36px;height:20px;flex:none}
 .switch input{position:absolute;opacity:0;width:0;height:0}
 .switch .slider{position:absolute;inset:0;background:var(--border);border-radius:999px;transition:background .25s ease}
@@ -251,26 +254,29 @@ button:disabled{opacity:.5;cursor:not-allowed}
     <div id="presets"></div>
   </details>
   <details><summary>Mode agent <span id="agent-badge" style="margin-left:auto;margin-right:12px;font-size:10px"></span></summary>
-    <label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">⚠️ active l'<b>accès machine</b> (shell complet via <b>bash</b> sur le serveur) — l'IA peut inspecter, lancer des scripts, lire/éditer des fichiers (timeout 30s, max 300s). La mémoire se règle séparément ci-dessous.</span></span></label>
+    <label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">⚠️ active l'<b>accès machine</b> (shell complet via <b>bash</b> sur le serveur) — l'IA peut inspecter, lancer des scripts, lire/éditer des fichiers (timeout 30s, max 300s). Mémoire et accès internet ci-dessous ne fonctionnent que si le mode agent est activé.</span></span></label>
     <label class="switchrow"><span class="switch"><input type="checkbox" id="toollimit-toggle" onchange="toggleToolLimit()"><span class="slider"></span></span> limiter les appels d'outils par tour<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">activé par défaut : coupe l'IA après ~8 appels d'outils (message <code>[stop: trop d'appels d'outils]</code>). Désactive-le si tu veux la laisser enchaîner sans plafond (l'anti-boucle reste actif).</span></span></label>
-    <label class="switchrow" style="justify-content:space-between;gap:10px"><span>Mémoire<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span id="mem-mode-desc" class="tip"></span></span></span>
-      <select id="mem-mode" onchange="setMemMode()" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px">
-        <option value="always">auto (proactive)</option>
-        <option value="ondemand">sur demande</option>
-        <option value="off">désactivée</option>
-      </select>
-    </label>
-    <div class="skillshead"><span>Pages <span id="mem-count" class="mem-count"></span></span><button class="addbtn" onclick="event.preventDefault();event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button></div>
-    <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="display:none">
-    <div id="mem-list" class="mem-list muted" style="font-size:12px"></div>
-  </details>
-  <details><summary>Accès internet <span id="internet-badge" style="margin-left:auto;margin-right:12px;font-size:10px"></span></summary>
-    <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">nécessite le <b>mode agent</b>. Ajoute les outils <b>web_search / web_open / web_read / web_grep</b> via un serveur <b>Crawl4AI</b>. Actifs seulement si le serveur répond.</span></span></label>
-    <div class="row" style="margin-top:6px">
-      <input id="crawl-url" type="text" placeholder="http://localhost:11235" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;font:inherit" onchange="saveCrawlUrl()">
-      <button onclick="saveCrawlUrl()">enregistrer</button>
+    <!-- Mémoire + Accès internet : sous-réglages du mode agent. Grisés/inertes quand l'agent est off (voir setAgentGate). -->
+    <div id="mem-block" class="gated-block">
+      <label class="switchrow" style="justify-content:space-between;gap:10px"><span>Mémoire<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span id="mem-mode-desc" class="tip"></span></span></span>
+        <select id="mem-mode" onchange="setMemMode()" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px">
+          <option value="always">auto (proactive)</option>
+          <option value="ondemand">sur demande</option>
+          <option value="off">désactivée</option>
+        </select>
+      </label>
+      <div class="skillshead"><span>Pages <span id="mem-count" class="mem-count"></span></span><button class="addbtn" onclick="event.preventDefault();event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button></div>
+      <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="display:none">
+      <div id="mem-list" class="mem-list muted" style="font-size:12px"></div>
     </div>
-    <div id="internet-status" class="muted" style="font-size:11px;margin-top:4px"></div>
+    <div id="net-block" class="gated-block">
+      <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA<span id="internet-badge" style="margin-left:6px;font-size:10px"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">nécessite le <b>mode agent</b>. Ajoute les outils <b>web_search / web_open / web_read / web_grep</b> via un serveur <b>Crawl4AI</b>. Actifs seulement si le serveur répond.</span></span></label>
+      <div class="row" style="margin-top:6px">
+        <input id="crawl-url" type="text" placeholder="http://localhost:11235" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;font:inherit" onchange="saveCrawlUrl()">
+        <button onclick="saveCrawlUrl()">enregistrer</button>
+      </div>
+      <div id="internet-status" class="muted" style="font-size:11px;margin-top:4px"></div>
+    </div>
   </details>
   <details><summary>System prompt</summary>
     <textarea id="sysprompt" placeholder="(optionnel) ex: tu es un assistant concis en français" oninput="saveSys()" style="width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit;min-height:70px;resize:vertical"></textarea>
@@ -387,7 +393,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260709115708"></script>
+<script src="/e2e.js?v=20260709135300"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -650,12 +656,21 @@ async function loadAgent(){
   document.getElementById('agent-badge').innerHTML = on
     ? '<span class="tag ok">on</span>' : '<span class="tag" style="opacity:.6">off</span>';
   document.getElementById('brand').classList.toggle('agent', on);
+  setAgentGate(on);
   if(s.mem_mode){ document.getElementById('mem-mode').value = s.mem_mode; renderMemModeDesc(s.mem_mode); }
   memPages = (s.pages || s.skills || []).slice().sort((a,b)=>a.name.localeCompare(b.name));
   memShown = MEM_PAGE;
   document.getElementById('mem-count').textContent = memPages.length ? '('+memPages.length+')' : '';
   document.getElementById('mem-search').style.display = memPages.length > MEM_PAGE ? '' : 'none';
   renderMemList();
+}
+// Mémoire + accès internet sont des sous-réglages du mode agent : sans agent, ni
+// les outils mem_* ni les outils web ne sont fournis (voir globalCaps côté Go). On
+// grise donc ces blocs quand l'agent est off pour que l'UI ne mente pas.
+function setAgentGate(on){
+  ['mem-block','net-block'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.classList.toggle('gated', !on);
+  });
 }
 // Liste mémoire scalable : recherche + rendu plafonné (les milliers de pages ne
 // déroulent plus une barre géante). memShown grimpe par paliers via « voir plus ».
