@@ -58,8 +58,10 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .addbtn{font-size:11px;padding:3px 11px 4px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;line-height:1.2}
 .addbtn:hover{border-color:var(--accent);color:var(--accent)}
 .mem-count{font-size:10px;color:var(--dim);font-weight:400;letter-spacing:0;text-transform:none;margin-left:4px}
-/* Séparateur de sous-section (Mémoire / Accès internet) dans le mode agent. */
-.subhead{display:flex;align-items:center;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);font-weight:600;margin:16px 0 4px;padding-top:12px;border-top:1px solid var(--border)}
+/* Titre de sous-section (Mémoire / Accès internet) : simple libellé, PAS de trait
+   (le trait est réservé aux sections principales — cf. `details`). La séparation
+   visuelle vient de la carte englobante .gated-block. */
+.subhead{display:flex;align-items:center;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:600;margin:0 0 6px}
 /* Barre repliable « Pages » : un seul chevron, bouton + ajouter aligné à droite. */
 .pages-bar{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:7px 0;margin-top:4px}
 .pages-bar .pages-caret{flex-shrink:0;font-size:9px;color:var(--dim);transition:transform .12s}
@@ -87,7 +89,10 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 /* interrupteur (switch) */
 .switchrow{position:relative;display:flex;align-items:center;gap:9px;font-size:12px;padding:6px 0;cursor:pointer;user-select:none}
 /* Sous-réglage du mode agent inaccessible quand l'agent est off : grisé + inerte. */
-.gated-block{margin-top:2px;transition:opacity .15s}
+/* Sous-réglages du mode agent présentés en CARTES (bordure + fond) pour ne pas
+   les confondre avec les traits des sections principales. */
+.gated-block{margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:9px 11px;background:var(--panel);transition:opacity .15s}
+.gated-block>.switchrow:first-of-type{padding-top:0}
 .gated-block.gated{opacity:.4;pointer-events:none;filter:grayscale(.4)}
 .switch{position:relative;display:inline-block;width:36px;height:20px;flex:none}
 .switch input{position:absolute;opacity:0;width:0;height:0}
@@ -409,7 +414,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260709142956"></script>
+<script src="/e2e.js?v=20260709163021"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
