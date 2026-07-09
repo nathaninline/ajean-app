@@ -58,13 +58,14 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .addbtn{font-size:11px;padding:3px 11px 4px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;line-height:1.2}
 .addbtn:hover{border-color:var(--accent);color:var(--accent)}
 .mem-count{font-size:10px;color:var(--dim);font-weight:400;letter-spacing:0;text-transform:none;margin-left:4px}
-/* Liste des pages mémoire repliable (fermée par défaut → gagne de la place). */
-.mem-pages{margin-top:10px}
-.mem-pages>summary{display:flex;align-items:center;justify-content:space-between;list-style:none;cursor:pointer;margin:0 0 5px}
-.mem-pages>summary::-webkit-details-marker{display:none}
-.mem-pages>summary .mem-pages-lbl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
-.mem-pages>summary .mem-pages-lbl::before{content:'▸';display:inline-block;margin-right:6px;font-size:9px;transition:transform .12s}
-.mem-pages[open]>summary .mem-pages-lbl::before{transform:rotate(90deg)}
+/* Séparateur de sous-section (Mémoire / Accès internet) dans le mode agent. */
+.subhead{display:flex;align-items:center;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);font-weight:600;margin:16px 0 4px;padding-top:12px;border-top:1px solid var(--border)}
+/* Barre repliable « Pages » : un seul chevron, bouton + ajouter aligné à droite. */
+.pages-bar{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:7px 0;margin-top:4px}
+.pages-bar .pages-caret{flex-shrink:0;font-size:9px;color:var(--dim);transition:transform .12s}
+.pages-bar.open .pages-caret{transform:rotate(90deg)}
+.pages-bar .pages-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600}
+.pages-bar .addbtn{margin-left:auto}
 .mem-search{width:100%;box-sizing:border-box;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 9px;font:inherit;font-size:12px;margin:0 0 6px}
 .mem-search:focus{outline:none;border-color:var(--accent)}
 .mem-list{max-height:240px;overflow-y:auto;overscroll-behavior:contain}
@@ -265,21 +266,27 @@ button:disabled{opacity:.5;cursor:not-allowed}
     <label class="switchrow"><span class="switch"><input type="checkbox" id="toollimit-toggle" onchange="toggleToolLimit()"><span class="slider"></span></span> limiter les appels d'outils par tour<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">activé par défaut : coupe l'IA après ~8 appels d'outils (message <code>[stop: trop d'appels d'outils]</code>). Désactive-le si tu veux la laisser enchaîner sans plafond (l'anti-boucle reste actif).</span></span></label>
     <!-- Mémoire + Accès internet : sous-réglages du mode agent. Grisés/inertes quand l'agent est off (voir setAgentGate). -->
     <div id="mem-block" class="gated-block">
-      <label class="switchrow" style="justify-content:space-between;gap:10px"><span>Mémoire<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span id="mem-mode-desc" class="tip"></span></span></span>
+      <div class="subhead">Mémoire<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span id="mem-mode-desc" class="tip"></span></span></div>
+      <label class="switchrow" style="justify-content:space-between;gap:10px"><span>mode</span>
         <select id="mem-mode" onchange="setMemMode()" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px">
           <option value="always">auto (proactive)</option>
           <option value="ondemand">sur demande</option>
           <option value="off">désactivée</option>
         </select>
       </label>
-      <details class="mem-pages">
-        <summary><span class="mem-pages-lbl">Pages <span id="mem-count" class="mem-count"></span></span><button class="addbtn" onclick="event.preventDefault();event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button></summary>
+      <div id="mem-pages-bar" class="pages-bar" onclick="toggleMemPages()">
+        <span class="pages-caret">▸</span>
+        <span class="pages-title">Pages <span id="mem-count" class="mem-count"></span></span>
+        <button class="addbtn" onclick="event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button>
+      </div>
+      <div id="mem-pages-body" hidden>
         <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="display:none">
         <div id="mem-list" class="mem-list muted" style="font-size:12px"></div>
-      </details>
+      </div>
     </div>
     <div id="net-block" class="gated-block">
-      <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA<span id="internet-badge" style="margin-left:6px;font-size:10px"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">nécessite le <b>mode agent</b>. Ajoute les outils <b>web_search / web_open / web_read / web_grep</b> via un serveur <b>Crawl4AI</b>. Actifs seulement si le serveur répond.</span></span></label>
+      <div class="subhead">Accès internet<span id="internet-badge" style="margin-left:6px;font-size:10px"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Ajoute les outils <b>web_search / web_open / web_read / web_grep</b> via un serveur <b>Crawl4AI</b>. Actifs seulement si le serveur répond.</span></span></div>
+      <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA</label>
       <div class="row" style="margin-top:6px">
         <input id="crawl-url" type="text" placeholder="http://localhost:11235" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;font:inherit" onchange="saveCrawlUrl()">
         <button onclick="saveCrawlUrl()">enregistrer</button>
@@ -402,7 +409,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260709142310"></script>
+<script src="/e2e.js?v=20260709142956"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -680,6 +687,14 @@ function setAgentGate(on){
   ['mem-block','net-block'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.classList.toggle('gated', !on);
   });
+}
+// Repli/dépli de la liste des pages mémoire (fermée par défaut → gagne de la place).
+function toggleMemPages(){
+  const body=document.getElementById('mem-pages-body');
+  const bar=document.getElementById('mem-pages-bar');
+  const open=body.hasAttribute('hidden');
+  if(open){ body.removeAttribute('hidden'); bar.classList.add('open'); }
+  else { body.setAttribute('hidden',''); bar.classList.remove('open'); }
 }
 // Liste mémoire scalable : recherche + rendu plafonné (les milliers de pages ne
 // déroulent plus une barre géante). memShown grimpe par paliers via « voir plus ».
