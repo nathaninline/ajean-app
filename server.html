@@ -8,8 +8,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ajean">
 <title>jean</title>
+<!-- Applique le thème AVANT le rendu (pas de flash) : lit le choix persisté. -->
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('jean-theme')||'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
 <style>
-:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff}
+/* ===== Thèmes =====================================================
+   Toutes les couleurs de l'UI passent par ces variables. Pour AJOUTER un
+   thème plus tard : 1) copier un bloc [data-theme="…"] ci-dessous en changeant
+   les valeurs, 2) ajouter son {id,label} au registre THEMES (voir le JS). Le
+   reste (sélecteur, persistance, application) est automatique. */
+:root{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117}
+[data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117}
+[data-theme="light"]{color-scheme:light;--bg:#ffffff;--panel:#f6f8fa;--border:#d0d7de;--text:#1f2328;--dim:#656d76;--accent:#0969da;--ok:#1a7f37;--warn:#9a6700;--err:#cf222e;--mag:#8250df;--code-bg:#eff1f3}
 *{box-sizing:border-box}
 body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);color:var(--text);height:100vh;height:100dvh;display:flex;font-size:14px}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
@@ -160,8 +169,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .msg .body ul,.msg .body ol{padding-left:1.4em}
 .msg .body li{margin:.15em 0}
 .msg .body li>p{margin:0}
-.msg.assistant .body code{background:#0d1117;padding:1px 5px;border-radius:3px;font-size:.9em;overflow-wrap:anywhere;word-break:break-word}
-.msg.assistant .body pre,.msg.reasoning .body pre{position:relative;background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:10px;overflow-x:auto;max-width:100%;margin:.5em 0}
+.msg.assistant .body code{background:var(--code-bg);padding:1px 5px;border-radius:3px;font-size:.9em;overflow-wrap:anywhere;word-break:break-word}
+.msg.assistant .body pre,.msg.reasoning .body pre{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:10px;overflow-x:auto;max-width:100%;margin:.5em 0}
 .copybtn{position:absolute;bottom:6px;right:6px;font-size:11px;padding:3px 8px;margin:0;background:var(--panel);border:1px solid var(--border);color:var(--dim);border-radius:5px;opacity:.5;transition:opacity .15s,color .15s}
 .msg.assistant .body pre:hover .copybtn,.msg.reasoning .body pre:hover .copybtn{opacity:1}
 .copybtn:hover{border-color:var(--accent);color:var(--accent)}
@@ -179,7 +188,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .msg.tool{align-self:flex-start;background:transparent;border:1px dashed var(--border);max-width:90%;white-space:normal;padding:8px 12px;font-size:12px;overflow-wrap:anywhere;word-break:break-word}
 .msg.tool .tool-head{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px}
 .msg.tool .tool-sub{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin:8px 0 4px}
-.msg.tool pre{position:relative;background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:8px 10px;overflow:auto;margin:0;max-height:280px}
+.msg.tool pre{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;overflow:auto;margin:0;max-height:280px}
 .msg.tool pre code{background:transparent;padding:0;font-size:.82em;line-height:1.4;white-space:pre}
 .msg.tool .tool-caret{color:var(--accent);animation:toolblink 1s step-end infinite}
 .msg.tool .tool-wait{font-size:12px;color:var(--dim);margin-top:8px;animation:toolblink 1.2s ease-in-out infinite}
@@ -302,6 +311,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
       <label class="switchrow"><span class="switch"><input type="checkbox" id="toollimit-toggle" onchange="toggleToolLimit()"><span class="slider"></span></span> limiter les appels d'outils par tour<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">activé par défaut : coupe l'IA après ~8 appels d'outils (message <code>[stop: trop d'appels d'outils]</code>). Désactive-le si tu veux la laisser enchaîner sans plafond (l'anti-boucle reste actif).</span></span></label>
     </div>
   </details>
+  <details><summary>Apparence</summary>
+    <label class="switchrow" style="justify-content:space-between;gap:12px"><span>thème</span>
+      <select id="theme-select" onchange="applyTheme(this.value)" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px"></select>
+    </label>
+  </details>
   <details><summary>System prompt</summary>
     <textarea id="sysprompt" placeholder="(optionnel) ex: tu es un assistant concis en français" oninput="saveSys()" style="width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit;min-height:70px;resize:vertical"></textarea>
   </details>
@@ -417,7 +431,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260709163759"></script>
+<script src="/e2e.js?v=20260709164530"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -510,7 +524,26 @@ let msgs = [];
 let busy = false;
 function toggleSide(){ document.getElementById('side').classList.toggle('open'); document.getElementById('backdrop').classList.toggle('open'); document.body.classList.toggle('drawer-open'); }
 function saveSys(){ localStorage.setItem('jean.sys', document.getElementById('sysprompt').value); }
-document.addEventListener('DOMContentLoaded', ()=>{ document.getElementById('sysprompt').value = localStorage.getItem('jean.sys') || ''; restoreChat(); });
+// ===== Thèmes ================================================================
+// Registre des thèmes disponibles. Pour en AJOUTER un : ajouter un bloc
+// [data-theme="…"] dans le <style> puis une entrée {id,label} ici — le reste
+// (menu déroulant, persistance localStorage, application) est automatique.
+const THEMES=[{id:'dark',label:'sombre'},{id:'light',label:'clair'}];
+function applyTheme(id){
+  if(!THEMES.some(t=>t.id===id)) id='dark';
+  document.documentElement.setAttribute('data-theme', id);
+  try{ localStorage.setItem('jean-theme', id); }catch(e){}
+  const sel=document.getElementById('theme-select'); if(sel) sel.value=id;
+}
+function initTheme(){
+  const sel=document.getElementById('theme-select');
+  if(sel && !sel.options.length){
+    THEMES.forEach(t=>{ const o=document.createElement('option'); o.value=t.id; o.textContent=t.label; sel.appendChild(o); });
+  }
+  let id='dark'; try{ id=localStorage.getItem('jean-theme')||'dark'; }catch(e){}
+  applyTheme(id);
+}
+document.addEventListener('DOMContentLoaded', ()=>{ initTheme(); document.getElementById('sysprompt').value = localStorage.getItem('jean.sys') || ''; restoreChat(); });
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
 // Modales natives (askConfirm/askPrompt/askAlert) — remplacent confirm()/prompt()/
 // alert() par de vraies boîtes stylées. Chacune renvoie une Promise : askConfirm →
