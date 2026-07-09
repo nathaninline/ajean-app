@@ -16,9 +16,9 @@
    thème plus tard : 1) copier un bloc [data-theme="…"] ci-dessous en changeant
    les valeurs, 2) ajouter son {id,label} au registre THEMES (voir le JS). Le
    reste (sélecteur, persistance, application) est automatique. */
-:root{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117}
-[data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117}
-[data-theme="light"]{color-scheme:light;--bg:#f0f1f4;--panel:#f8f9fb;--border:#d7dbe1;--text:#24292f;--dim:#636b74;--accent:#0969da;--ok:#1a7f37;--warn:#9a6700;--err:#cf222e;--mag:#8250df;--code-bg:#e6e9ee}
+:root{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
+[data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
+[data-theme="light"]{color-scheme:light;--bg:#f0f1f4;--panel:#f8f9fb;--border:#d7dbe1;--text:#24292f;--dim:#636b74;--accent:#0969da;--ok:#1a7f37;--warn:#9a6700;--err:#cf222e;--mag:#8250df;--code-bg:#e6e9ee;--danger-bg:#fbe6e6;--warn-bg:#fbefda}
 *{box-sizing:border-box}
 body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);color:var(--text);height:100vh;height:100dvh;display:flex;font-size:14px}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
@@ -213,7 +213,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 #ctx-fill{height:100%;width:0%;background:var(--ok,#3a7);transition:width .3s,background .3s}
 #ctxmeta{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:5px 12px 0}
 #ctx-text{font-size:10px;letter-spacing:.03em;white-space:nowrap}
-#ctx-compact{display:none;margin:0;padding:2px 10px;font-size:10px;background:#3d2f1f;border-color:var(--warn,#c93)}
+#ctx-compact{display:none;margin:0;padding:2px 10px;font-size:10px;background:var(--warn-bg);border-color:var(--warn,#c93)}
 #inputbar{padding:8px 12px;display:flex;gap:8px}
 #input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font:inherit;resize:none;min-height:44px;max-height:200px}
 #input:focus{outline:none;border-color:var(--accent)}
@@ -348,7 +348,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
     <div id="inputbar">
       <textarea id="input" placeholder="message…" onkeydown="onKey(event)"></textarea>
       <button id="send" onclick="send()">send</button>
-      <button id="stop" onclick="stopGen()" style="display:none;background:#3d1f23;border-color:var(--err);color:var(--err)">stop</button>
+      <button id="stop" onclick="stopGen()" style="display:none;background:var(--danger-bg);border-color:var(--err);color:var(--err)">stop</button>
     </div>
     <div class="muted" style="padding:0 12px 6px;font-size:10px;text-align:center;opacity:.7">Entrée pour envoyer · Maj+Entrée = nouvelle ligne</div>
   </div>
@@ -406,7 +406,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
     </div>
     <div style="padding:14px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <button id="m-del" onclick="delItem()" style="background:#3d1f23;border-color:var(--err);color:var(--err);margin:0">supprimer</button>
+        <button id="m-del" onclick="delItem()" style="background:var(--danger-bg);border-color:var(--err);color:var(--err);margin:0">supprimer</button>
         <label id="m-del-model-wrap" style="display:none;align-items:center;gap:5px;font-size:11px;color:var(--dim)"><input type="checkbox" id="m-del-model"> + le modèle .gguf</label>
       </div>
       <div style="display:flex;gap:6px">
@@ -430,7 +430,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260709172300"></script>
+<script src="/e2e.js?v=20260709172836"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
