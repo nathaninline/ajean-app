@@ -435,7 +435,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260710094544"></script>
+<script src="/e2e.js?v=20260710113543"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1294,9 +1294,13 @@ async function send(){
       const s = serverStats;
       const totalSec = (performance.now() - t0) / 1000;
       const parts = [role];
-      // prompt_tokens_total = taille réelle du prompt (system inclus, même si en
-      // cache) ; repli sur prompt_tokens (neuf traité) si le backend n'envoie pas l'usage.
-      const pt = s.prompt_tokens_total || s.prompt_tokens;
+      // prefill = tokens RÉELLEMENT traités ce tour (timings.prompt_n) : gros au 1er
+      // tour (system prompt), petit ensuite car le préfixe est en cache. On NE prend
+      // PAS prompt_tokens_total (taille totale du prompt ≈ tout le contexte à chaque
+      // tour) — ça donnait un prefill quasi constant, incohérent avec la vitesse
+      // affichée (prompt_per_second, qui mesure justement prompt_n). Repli sur le
+      // total seulement si le backend n'a pas envoyé de timings.
+      const pt = s.prompt_tokens || s.prompt_tokens_total;
       if(pt) parts.push('prefill ' + pt + ' tok · ' + (s.prompt_per_second||0).toFixed(0) + ' tok/s');
       if(s.gen_tokens) parts.push('decode ' + s.gen_tokens + ' tok · ' + s.gen_per_second.toFixed(1) + ' tok/s');
       parts.push('total ' + totalSec.toFixed(1) + 's');
