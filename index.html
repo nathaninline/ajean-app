@@ -1,29 +1,1343 @@
-<!doctype html><html lang="fr"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- PWA standalone : "Ajouter à l'écran d'accueil" sur iPhone → app plein écran
+     SANS la barre d'onglets Safari (indispensable pour enregistrer des démos). -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jean">
+<title>Jean</title>
+<!-- Favicon (même marque « ajean » que la landing/portail) + icône PWA (écran d'accueil
+     iOS). SVG inline pour le favicon, PNG 180×180 en data-URI pour apple-touch-icon
+     (iOS n'accepte pas le SVG pour l'icône d'accueil). Aucun fichier externe requis. -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><rect width='12' height='12' rx='2' ry='2' fill='%231f6feb'/><rect x='6' y='3' width='2' height='2' fill='%23fff'/><rect x='6' y='5' width='2' height='2' fill='%23fff'/><rect x='4' y='7' width='2' height='2' fill='%23fff'/></svg>">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABa0lEQVR42u3dsQ2AIBBAUSCOYA8b4iiMSI9D2FpYGTEheW8AisvPUV7MdQR4kowAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+JAHCAOxMEHNiO4622f9HI5TpsD3wriQBwgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4EAfiQBwgDsSBOBAH4kAciANxIA7EgThAHIgDcSAOxIE4EAfiQByIA8SBOBAH4kAciANxIA7EgThAHIgDcSAO/rLkLXsX520OxIE4EAfiQByIA8SBOBAH4kAciANxIA7EgThAHIgDcSAOxIE4EAfiQByIA8SBOHgl5jpMAZsDcSAOxIE4EAfiQByIA3GAOBAH4kAciANxIA7EgTgQB4gDcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcSAOxME0F8YvCl24O02KAAAAAElFTkSuQmCC">
-<title>Jean</title>
-<style>html,body{height:100%;margin:0;background:#0d1117}
-#l{position:fixed;inset:0;display:grid;place-items:center;color:#7d8590;
-  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px}</style>
-</head><body>
-<div id="l">ajean<span style="color:#58a6ff">.link</span></div>
+<!-- Applique le thème AVANT le rendu (pas de flash) : lit le choix persisté. -->
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('jean-theme')||'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
+<style>
+/* ===== Thèmes =====================================================
+   Toutes les couleurs de l'UI passent par ces variables. Pour AJOUTER un
+   thème plus tard : 1) copier un bloc [data-theme="…"] ci-dessous en changeant
+   les valeurs, 2) ajouter son {id,label} au registre THEMES (voir le JS). Le
+   reste (sélecteur, persistance, application) est automatique. */
+:root{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
+[data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
+[data-theme="light"]{color-scheme:light;--bg:#f0f1f4;--panel:#f8f9fb;--border:#d7dbe1;--text:#24292f;--dim:#636b74;--accent:#0969da;--accent-bg:rgba(9,105,218,.10);--ok:#0969da;--warn:#9a6700;--err:#cf222e;--mag:#8250df;--code-bg:#e6e9ee;--danger-bg:#fbe6e6;--warn-bg:#fbefda}
+*{box-sizing:border-box}
+body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);color:var(--text);height:100vh;height:100dvh;display:flex;font-size:14px}
+/* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
+   pas passer sous l'encoche / la barre système / l'indicateur d'accueil. Les
+   env(safe-area-inset-*) valent 0 hors PWA, donc aucun impact ailleurs. */
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.side{width:320px;border-right:1px solid var(--border);padding:16px;overflow-y:auto;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+#menubtn{display:none;position:fixed;top:calc(10px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));z-index:20;background:var(--panel);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:6px;font-size:18px;cursor:pointer}
+#backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10}
+@media (max-width:720px){
+  .side{position:fixed;inset:0 auto 0 0;width:80%;max-width:320px;z-index:15;transform:translateX(-100%);transition:transform .2s;background:var(--bg);padding-top:calc(16px + env(safe-area-inset-top));padding-left:calc(16px + env(safe-area-inset-left))}
+  .side.open{transform:translateX(0)}
+  #menubtn,#backdrop.open{display:block}
+  body.drawer-open #menubtn{display:none}
+  .main{width:100%}
+  #chat{padding:60px 8px 12px}
+  .msg{max-width:92%}
+  #chat .msg.assistant,#chat .msg.reasoning{max-width:100%}
+  #inputbar{padding:8px;gap:4px}
+  #send,#stop{padding:0 12px}
+  h1{margin-left:48px}
+}
+/* Desktop : menu plus large et bulles (badges) un peu plus grosses. */
+@media (min-width:721px){
+  .side{width:380px}
+  .preset-meta .qtag,.preset-meta .rtag,.preset-meta .btag{font-size:11px;padding:2px 9px;border-radius:9px}
+  .preset-meta .qtag svg,.preset-meta .rtag svg,.preset-meta .btag svg{width:11px;height:11px}
+}
+h1{margin:0;font-size:18px;color:var(--accent)}
+#brand{display:inline-flex;align-items:baseline}
+.sidehead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:18px}
+/* pastille d'état service, en haut à droite de la barre latérale */
+.statuspill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--dim);font-weight:600;white-space:nowrap}
+.statuspill.ok{color:var(--ok);border-color:rgba(88,166,255,.45);background:rgba(88,166,255,.10)}
+.statuspill.err{color:var(--err);border-color:rgba(248,81,73,.45);background:rgba(248,81,73,.10)}
+.statuspill.loading{color:var(--warn);border-color:rgba(210,153,34,.45);background:rgba(210,153,34,.10)}
+.statuspill.loading .dot{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.statuspill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.statuspill .port{opacity:.6;font-weight:400}
+/* en-tête + bouton d'ajout de skill (toujours visible) */
+.skillshead{display:flex;align-items:center;justify-content:space-between;margin:12px 0 5px}
+.skillshead>span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.addbtn{font-size:11px;padding:3px 11px 4px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;line-height:1.2}
+.addbtn:hover{border-color:var(--accent);color:var(--accent)}
+.mem-count{font-size:10px;color:var(--dim);font-weight:400;letter-spacing:0;text-transform:none;margin-left:4px}
+/* Titre de sous-section (Mémoire / Accès internet) : simple libellé, PAS de trait
+   (le trait est réservé aux sections principales — cf. `details`). La séparation
+   visuelle vient de la carte englobante .gated-block. */
+.subhead{position:relative;display:flex;align-items:center;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:600;margin:0 0 6px}
+/* Barre repliable « Pages » : un seul chevron, bouton + ajouter aligné à droite. */
+.pages-bar{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:7px 0;margin-top:4px}
+.pages-bar .pages-caret{flex-shrink:0;font-size:9px;color:var(--dim);transition:transform .12s}
+.pages-bar.open .pages-caret{transform:rotate(90deg)}
+.pages-bar .pages-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600}
+.pages-bar .addbtn{margin-left:auto}
+.mem-search{width:100%;box-sizing:border-box;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 9px;font:inherit;font-size:12px;margin:0 0 6px}
+.mem-search:focus{outline:none;border-color:var(--accent)}
+.mem-list{max-height:240px;overflow-y:auto;overscroll-behavior:contain}
+.mem-list .preset{margin:3px 0;padding:5px 9px}
+.mem-more{font-size:11px;color:var(--dim);text-align:center;padding:6px 0 2px}
+.ask-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+.ask-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;width:100%;max-width:420px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.5);animation:askpop .12s ease-out}
+@keyframes askpop{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+.ask-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px}
+.ask-msg{font-size:13px;color:var(--dim);line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.ask-input{width:100%;box-sizing:border-box;margin-top:12px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font:inherit;font-size:13px}
+.ask-input:focus{outline:none;border-color:var(--accent)}
+.ask-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.ask-actions button{margin:0;padding:7px 16px}
+.ask-ok{border-color:var(--accent);color:var(--accent)}
+.ask-ok.danger{border-color:var(--err);color:var(--err)}
+#brand-a{display:inline-block;line-height:1;max-width:0;opacity:0;overflow:hidden;color:var(--text);transition:max-width .35s ease,opacity .35s ease}
+#brand.agent #brand-a{max-width:1ch;opacity:1;margin-right:.04em}
+/* interrupteur (switch) */
+.switchrow{position:relative;display:flex;align-items:center;gap:9px;font-size:12px;padding:6px 0;cursor:pointer;user-select:none}
+/* Sous-réglage du mode agent inaccessible quand l'agent est off : grisé + inerte. */
+/* Sous-réglages du mode agent présentés en CARTES (bordure + fond) pour ne pas
+   les confondre avec les traits des sections principales. */
+.gated-block{margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:9px 11px;background:var(--panel);transition:opacity .15s}
+.gated-block>.switchrow:first-of-type{padding-top:0}
+.gated-block.gated{opacity:.4;pointer-events:none;filter:grayscale(.4)}
+.switch{position:relative;display:inline-block;width:36px;height:20px;flex:none}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.switch .slider{position:absolute;inset:0;background:var(--border);border-radius:999px;transition:background .25s ease}
+.switch .slider::before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .25s ease;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.switch input:checked + .slider{background:var(--accent)}
+.switch input:checked + .slider::before{transform:translateX(16px)}
+.switch input:focus-visible + .slider{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+h2{margin:20px 0 8px;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+details{margin:7px 0;border-top:1px solid var(--border);padding-top:4px}
+details>summary{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:600;cursor:pointer;padding:3px 0;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"▸";transition:transform .15s;color:var(--dim);font-size:10px}
+details[open]>summary::after{transform:rotate(90deg)}
+details>summary:hover{color:var(--text)}
+details>div,details>textarea{margin-top:6px}
+.preset-add{display:none;font-size:14px;padding:0 8px;margin:0 8px 0 auto;line-height:1.4;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer}
+.preset-add:hover{border-color:var(--accent);color:var(--accent)}
+details[open]>summary>.preset-add{display:inline-block}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:var(--panel);border:1px solid var(--border)}
+.tag.ok{color:var(--ok);border-color:var(--ok)}
+.tag.err{color:var(--err);border-color:var(--err)}
+button{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer;margin:2px}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:4px;flex-wrap:wrap}
+.preset{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;margin:4px 0;cursor:pointer;background:var(--panel)}
+.preset:hover{border-color:var(--accent)}
+.preset.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);box-shadow:inset 0 0 0 1px var(--accent)}
+.preset>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preset>button{flex-shrink:0}
+.preset-info{flex:1;min-width:0}
+.preset-name{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+.preset-edit{flex-shrink:0;align-self:flex-start;margin:-3px -4px 0 0;padding:2px 4px;font-size:13px;line-height:1;background:transparent;border:none;opacity:.45}
+.preset-edit:hover{opacity:1;color:var(--accent)}
+.preset-meta{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap}
+.qtag{flex-shrink:0;font-size:9px;padding:1px 6px;border:1px solid var(--border);color:var(--dim);border-radius:8px;letter-spacing:.03em;text-transform:uppercase}
+.rtag{flex-shrink:0;display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px;border:1px solid var(--border);color:var(--dim);border-radius:8px;letter-spacing:.03em}
+.btag{flex-shrink:0;display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px;border:1px solid var(--border);color:var(--dim);border-radius:8px;letter-spacing:.03em}
+/* Petit « ? » d'aide : bulle au survol/clic au lieu d'un pavé de texte permanent. */
+.help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;flex-shrink:0;font-size:10px;font-weight:600;line-height:1;color:var(--dim);border:1px solid var(--border);border-radius:50%;cursor:help;user-select:none;vertical-align:middle}
+.help:hover{color:var(--accent);border-color:var(--accent)}
+/* La bulle est ancrée à la ligne (.switchrow position:relative), pas au « ? »,
+   pour rester alignée au bord gauche du panneau et ne pas déborder. */
+.help>.tip{display:none;position:absolute;z-index:40;left:0;right:0;top:calc(100% + 2px);padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:400;line-height:1.4;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.4);white-space:normal;text-align:left;text-transform:none;letter-spacing:normal;cursor:auto}
+.help:hover>.tip,.help:focus>.tip,.help.open>.tip{display:block}
+.kv{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px}
+.kv span:first-child{color:var(--dim);flex-shrink:0}
+.kv span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:right;min-width:0}
+.bar{height:6px;background:var(--panel);border-radius:3px;overflow:hidden;margin:2px 0}
+.bar>div{height:100%;background:var(--accent)}
+#chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:80%;padding:10px 14px;border-radius:10px;white-space:pre-wrap;word-wrap:break-word;line-height:1.45}
+.msg.assistant,.msg.reasoning{white-space:normal}
+.msg .body{overflow-wrap:anywhere;word-break:break-word}
+.msg.user{align-self:flex-end;background:#1f6feb;color:#fff}
+.msg.user .label{color:rgba(255,255,255,.8)}
+.msg.assistant{align-self:flex-start;background:var(--panel);border:1px solid var(--border)}
+.msg.assistant.errmsg{border-color:rgba(248,81,73,.55);background:rgba(248,81,73,.08);color:var(--err)}
+.msg .body>*{margin:1em 0}
+.msg .body>*:first-child{margin-top:0}
+.msg .body>*:last-child{margin-bottom:0}
+.msg .body h1,.msg .body h2,.msg .body h3,.msg .body h4{font-weight:600;line-height:1.25;margin:1.2em 0 .5em}
+.msg .body h1{font-size:1.3em} .msg .body h2{font-size:1.15em} .msg .body h3{font-size:1em} .msg .body h4{font-size:.95em}
+.msg .body ul,.msg .body ol{padding-left:1.4em}
+.msg .body li{margin:.15em 0}
+.msg .body li>p{margin:0}
+.msg.assistant .body code{background:var(--code-bg);padding:1px 5px;border-radius:3px;font-size:.9em;overflow-wrap:anywhere;word-break:break-word}
+.msg.assistant .body pre,.msg.reasoning .body pre{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:10px;overflow-x:auto;max-width:100%;margin:.5em 0}
+.copybtn{position:absolute;bottom:6px;right:6px;font-size:11px;padding:3px 8px;margin:0;background:var(--panel);border:1px solid var(--border);color:var(--dim);border-radius:5px;opacity:.5;transition:opacity .15s,color .15s}
+.msg.assistant .body pre:hover .copybtn,.msg.reasoning .body pre:hover .copybtn{opacity:1}
+.copybtn:hover{border-color:var(--accent);color:var(--accent)}
+.copybtn.done{color:var(--ok);border-color:var(--ok);opacity:1}
+.msg.assistant .body pre code,.msg.reasoning .body pre code{background:transparent;padding:0;font-size:.85em;line-height:1.4}
+.msg.assistant .body blockquote{border-left:3px solid var(--border);padding:0 0 0 10px;margin:.4em 0;color:var(--dim)}
+.msg.assistant .body a{color:var(--accent);text-decoration:none}
+.msg.assistant .body a:hover{text-decoration:underline}
+.msg.assistant .body table{border-collapse:collapse;margin:.5em 0}
+.msg.assistant .body th,.msg.assistant .body td{border:1px solid var(--border);padding:4px 8px}
+.msg.assistant .body hr{border:none;border-top:1px solid var(--border);margin:.6em 0}
+#scrollbtn{position:absolute;bottom:80px;right:20px;background:var(--panel);border:1px solid var(--border);color:var(--accent);width:36px;height:36px;border-radius:50%;cursor:pointer;display:none;font-size:16px;z-index:5}
+#scrollbtn.show{display:block}
+.msg.reasoning{align-self:flex-start;background:transparent;border:1px dashed var(--border);color:var(--mag);font-size:12px;max-width:90%;overflow-wrap:anywhere;word-break:break-word}
+.msg.tool{align-self:flex-start;background:transparent;border:1px dashed var(--border);max-width:90%;white-space:normal;padding:8px 12px;font-size:12px;overflow-wrap:anywhere;word-break:break-word}
+.msg.tool .tool-head{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px}
+.msg.tool .tool-sub{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin:8px 0 4px}
+.msg.tool pre{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;overflow:auto;margin:0;max-height:280px}
+.msg.tool pre code{background:transparent;padding:0;font-size:.82em;line-height:1.4;white-space:pre}
+.msg.tool .tool-caret{color:var(--accent);animation:toolblink 1s step-end infinite}
+.msg.tool .tool-wait{font-size:12px;color:var(--dim);margin-top:8px;animation:toolblink 1.2s ease-in-out infinite}
+@keyframes toolblink{0%,100%{opacity:.45}50%{opacity:1}}
+.msg .label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;display:block}
+/* Bulles repliables (reasoning / tool) : une fois la réponse arrivée, on les
+   replie en douceur pour désencombrer le fil, tout en gardant le label (et son
+   compteur de tokens) cliquable pour redéplier. */
+.msg.collapsible .label{cursor:pointer;user-select:none;margin-bottom:0}
+/* Hauteur animée en JS (mesure scrollHeight → 0) plutôt que grid 1fr→0fr qui
+   peut « dépasser ». overflow:hidden clippe le contenu pendant tout le repli.
+   width revient à auto SANS délai à l'ouverture (pas de saut), et passe à 0
+   APRÈS le fold (width 0s .3s) à la fermeture pour rétrécir la bulle au label. */
+/* height ET width sont animées (en px, pilotées en JS via scrollHeight/scrollWidth)
+   → repli/dépli fluide en diagonale. overflow:hidden clippe pendant l'animation. */
+.msg.collapsible .bodywrap{overflow:hidden;transition:height .42s cubic-bezier(.4,0,.2,1),width .42s cubic-bezier(.4,0,.2,1),opacity .3s ease,margin-top .42s cubic-bezier(.4,0,.2,1);opacity:1;margin-top:4px}
+.msg.collapsible .bodywrap>.body{min-width:0}
+.msg.collapsible.collapsed .bodywrap{opacity:0;margin-top:0}
+/* Composer = un seul bloc cohérent : barre de contexte intégrée en tête (fine
+   ligne de progression pleine largeur affleurant le bord) + zone de saisie. */
+#composer{border-top:1px solid var(--border);background:var(--panel-2,rgba(255,255,255,.02))}
+#ctxtrack{height:3px;width:100%;background:var(--panel);overflow:hidden}
+#ctx-fill{height:100%;width:0%;background:var(--ok,#3a7);transition:width .3s,background .3s}
+#ctxmeta{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:5px 12px 0}
+#ctx-text{font-size:10px;letter-spacing:.03em;white-space:nowrap}
+#ctx-compact{display:none;margin:0;padding:2px 10px;font-size:10px;background:var(--warn-bg);border-color:var(--warn,#c93)}
+#inputbar{padding:8px 12px;display:flex;gap:8px}
+#input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font:inherit;resize:none;min-height:44px;max-height:200px}
+#input:focus{outline:none;border-color:var(--accent)}
+#send{padding:0 20px}
+.muted{color:var(--dim);font-size:12px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);padding:8px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+/* iOS Safari auto-zoome au focus sur tout champ < 16px. On force 16px sur les
+   appareils tactiles uniquement (le desktop garde son rendu, le pinch-zoom
+   manuel reste possible). */
+@media (hover:none) and (pointer:coarse){
+  #input,#sysprompt,#modal input,#modal textarea,#modal select{font-size:16px}
+}
+/* Appareil TACTILE en PAYSAGE : on réduit nettement tout pour gagner de la place
+   (interface « un peu grosse » en horizontal, utile pour enregistrer des démos).
+   Détection par (hover:none)+(pointer:coarse)+landscape : infaillible sur tout
+   téléphone couché, sans dépendre d'un seuil de largeur/hauteur en pixels (les
+   iPhone Pro Max font 932px de large et ~430px de haut, ce qui piégeait les
+   seuils précédents). Le desktop (souris) n'est jamais touché.
+   NB : la règle iOS 16px anti-zoom plus haut est surchargée ici volontairement
+   pour #input — on garde une saisie compacte (le pinch-zoom manuel reste dispo). */
+@media (hover:none) and (pointer:coarse) and (orientation:landscape){
+  body{font-size:11.5px}
+  /* Tiroir latéral : on décale le TIROIR ENTIER après l'encoche (left = inset)
+     au lieu de padder à l'intérieur — sinon grosse bordure vide à gauche qui
+     rétrécit le contenu. Padding interne normal → largeur utile pleine. */
+  .side{width:300px;max-width:300px;left:env(safe-area-inset-left);padding:calc(14px + env(safe-area-inset-top)) 14px 14px 14px}
+  #chat{padding:48px 10px 6px;gap:7px}
+  .msg{padding:6px 10px;border-radius:8px;max-width:78%}
+  #chat .msg.assistant,#chat .msg.reasoning{max-width:88%}
+  #inputbar{padding:5px 8px;gap:6px}
+  /* PAS de font-size < 16px ici : iOS Safari zoome à la sélection du champ. On
+     garde 16px (hérité de la règle anti-zoom) et on compacte via hauteur/padding. */
+  #input{min-height:34px;max-height:120px;padding:6px 9px}
+  #send,#stop{padding:0 14px}
+  #composer .muted{display:none}
+  #ctxmeta{padding:3px 10px 0}
+  #ctx-text{font-size:9px}
+  h1{font-size:15px}
+  h2,details>summary{font-size:10px}
+  #menubtn{width:32px;height:32px;font-size:15px;top:calc(6px + env(safe-area-inset-top))}
+}
+</style></head><body>
+<button id="menubtn" onclick="toggleSide()">☰</button>
+<div id="backdrop" onclick="toggleSide()"></div>
+<div class="side" id="side">
+  <div class="sidehead">
+    <h1 id="brand"><span id="brand-a">a</span>jean</h1>
+    <span id="status-svc" class="statuspill">…</span>
+  </div>
+  <details open><summary>GPU</summary>
+    <div id="vram" class="muted">…</div>
+  </details>
+  <details open><summary>Config active</summary>
+    <div id="cfg" class="muted">…</div>
+  </details>
+  <details><summary>Presets<button class="preset-add" onclick="event.preventDefault();event.stopPropagation();openPreset('')" title="ajouter">+</button></summary>
+    <div id="presets"></div>
+  </details>
+  <details><summary>Mode agent <span id="agent-badge" style="margin-left:auto;margin-right:12px;font-size:10px"></span></summary>
+    <label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">⚠️ active l'<b>accès machine</b> (shell complet via <b>bash</b> sur le serveur) — l'IA peut inspecter, lancer des scripts, lire/éditer des fichiers (timeout 30s, max 300s). Mémoire et accès internet ci-dessous ne fonctionnent que si le mode agent est activé.</span></span></label>
+    <!-- Mémoire / Accès internet / Paramètres : sous-réglages du mode agent, en cartes. Grisés/inertes quand l'agent est off (voir setAgentGate). -->
+    <div id="mem-block" class="gated-block">
+      <div class="subhead">Mémoire<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span id="mem-mode-desc" class="tip"></span></span></div>
+      <label class="switchrow" style="justify-content:flex-start;gap:12px"><span>mode</span>
+        <select id="mem-mode" onchange="setMemMode()" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px">
+          <option value="always">auto (proactive)</option>
+          <option value="ondemand">sur demande</option>
+          <option value="off">désactivée</option>
+        </select>
+      </label>
+      <div id="mem-pages-bar" class="pages-bar" onclick="toggleMemPages()">
+        <span class="pages-caret">▸</span>
+        <span class="pages-title">Pages <span id="mem-count" class="mem-count"></span></span>
+        <button class="addbtn" onclick="event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button>
+      </div>
+      <div id="mem-pages-body" hidden>
+        <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="display:none">
+        <div id="mem-list" class="mem-list muted" style="font-size:12px"></div>
+      </div>
+    </div>
+    <div id="net-block" class="gated-block">
+      <div class="subhead">Accès internet<span id="internet-badge" style="margin-left:6px;font-size:10px"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Ajoute les outils <b>web_search / web_open / web_read / web_grep</b> via un serveur <b>Crawl4AI</b>. Actifs seulement si le serveur répond.</span></span></div>
+      <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA</label>
+      <div class="row" style="margin-top:6px">
+        <input id="crawl-url" type="text" placeholder="http://localhost:11235" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;font:inherit" onchange="saveCrawlUrl()">
+        <button onclick="saveCrawlUrl()">enregistrer</button>
+      </div>
+      <div id="internet-status" class="muted" style="font-size:11px;margin-top:4px"></div>
+    </div>
+    <div id="param-block" class="gated-block">
+      <div class="subhead">Paramètres</div>
+      <label class="switchrow"><span class="switch"><input type="checkbox" id="toollimit-toggle" onchange="toggleToolLimit()"><span class="slider"></span></span> limiter les appels d'outils par tour<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">activé par défaut : coupe l'IA après ~8 appels d'outils (message <code>[stop: trop d'appels d'outils]</code>). Désactive-le si tu veux la laisser enchaîner sans plafond (l'anti-boucle reste actif).</span></span></label>
+    </div>
+  </details>
+  <details><summary>Apparence</summary>
+    <label class="switchrow" style="justify-content:space-between;gap:12px"><span>thème</span>
+      <select id="theme-select" onchange="applyTheme(this.value)" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px"></select>
+    </label>
+  </details>
+  <details><summary>System prompt</summary>
+    <textarea id="sysprompt" placeholder="(optionnel) ex: tu es un assistant concis en français" oninput="saveSys()" style="width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit;min-height:70px;resize:vertical"></textarea>
+  </details>
+  <details><summary>Service</summary>
+    <div class="row">
+      <button onclick="act('start')">start</button>
+      <button onclick="act('restart')">restart</button>
+      <button onclick="act('stop')">stop</button>
+    </div>
+  </details>
+  <details><summary>Actions</summary>
+    <div class="row">
+      <button onclick="loadAll()">↻ refresh</button>
+      <button onclick="resetChat()">⌫ clear chat</button>
+      <button id="btn-bench" onclick="runBenchUI()">⚡ bench</button>
+    </div>
+  </details>
+</div>
+<div class="main" style="position:relative">
+  <div id="chat"></div>
+  <button id="scrollbtn" onclick="jumpBottom()" title="aller en bas">↓</button>
+  <div id="composer">
+    <div id="ctxtrack"><div id="ctx-fill"></div></div>
+    <div id="ctxmeta">
+      <span id="status-preset" style="color:var(--accent);font-size:10px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+      <span style="display:flex;align-items:center;gap:10px;margin-left:auto">
+        <span id="ctx-text" class="muted">contexte 0 / 0</span>
+        <button id="ctx-compact" onclick="compactContext()">compacter</button>
+      </span>
+    </div>
+    <div id="inputbar">
+      <textarea id="input" placeholder="message…" onkeydown="onKey(event)"></textarea>
+      <button id="send" onclick="send()">send</button>
+      <button id="stop" onclick="stopGen()" style="display:none;background:var(--danger-bg);border-color:var(--err);color:var(--err)">stop</button>
+    </div>
+    <div class="muted" style="padding:0 12px 6px;font-size:10px;text-align:center;opacity:.7">Entrée pour envoyer · Maj+Entrée = nouvelle ligne</div>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="bench-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeBenchModal()">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;max-width:480px;display:flex;flex-direction:column">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <strong>⚡ Benchmark</strong>
+      <button onclick="closeBenchModal()" style="margin:0">×</button>
+    </div>
+    <div id="bench-body" style="padding:18px 20px;display:flex;flex-direction:column;gap:12px"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:6px">
+      <button onclick="closeBenchModal()">fermer</button>
+      <button id="bench-rerun" onclick="runBenchUI()" style="border-color:var(--accent);color:var(--accent)">relancer</button>
+    </div>
+  </div>
+</div>
+<div id="ask-modal" class="ask-overlay" style="display:none" onclick="if(event.target===this)askResolve(false)">
+  <div class="ask-box">
+    <div id="ask-title" class="ask-title"></div>
+    <div id="ask-msg" class="ask-msg"></div>
+    <input id="ask-input" class="ask-input" style="display:none">
+    <div class="ask-actions">
+      <button id="ask-cancel" onclick="askResolve(false)">Annuler</button>
+      <button id="ask-ok" class="ask-ok" onclick="askResolve(true)">Confirmer</button>
+    </div>
+  </div>
+</div>
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;max-width:700px;max-height:90vh;display:flex;flex-direction:column">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <strong id="modal-title">Preset</strong>
+      <button onclick="closeModal()" style="margin:0">×</button>
+    </div>
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;overflow:auto;flex:1">
+      <label class="muted">Nom <span style="opacity:.6">(espaces et accents OK, sauf / et \)</span></label>
+      <input id="m-name" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit">
+      <div id="m-model-row" style="display:none">
+        <label class="muted">Backend <span style="opacity:.6">(remplace la ligne BIN=)</span></label>
+        <select id="m-backend" onchange="onPickBackend()" style="width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit;margin:6px 0 10px"></select>
+        <label class="muted">Modèle <span style="opacity:.6">(remplace la ligne MODEL=)</span></label>
+        <select id="m-model" onchange="onPickModel()" style="width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit;margin-top:6px"></select>
+        <label class="muted" style="margin-top:10px;display:block">Télécharger depuis Hugging Face <span style="opacity:.6">(lien vers un .gguf)</span></label>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <input id="m-hf-url" placeholder="https://huggingface.co/…/resolve/main/model.gguf" style="flex:1;min-width:0;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit">
+          <button id="m-hf-btn" onclick="startDownload()" style="flex-shrink:0">⬇ télécharger</button>
+        </div>
+        <div id="m-hf-progress" class="muted" style="display:none;font-size:11px;margin-top:6px"></div>
+        <label class="muted" style="margin-top:10px;display:block">Quantization (tag) <span style="opacity:.6">(vide = détection auto depuis le nom du modèle)</span></label>
+        <input id="m-quant" oninput="applyQuant()" placeholder="ex: Q4_K_M, IQ3_XXS, BF16…" style="width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit;margin-top:6px">
+      </div>
+      <label class="muted">Contenu</label>
+      <textarea id="m-content" spellcheck="false" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit;min-height:280px;resize:vertical"></textarea>
+    </div>
+    <div style="padding:14px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button id="m-del" onclick="delItem()" style="background:var(--danger-bg);border-color:var(--err);color:var(--err);margin:0">supprimer</button>
+        <label id="m-del-model-wrap" style="display:none;align-items:center;gap:5px;font-size:11px;color:var(--dim)"><input type="checkbox" id="m-del-model"> + le modèle .gguf</label>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="closeModal()">annuler</button>
+        <button onclick="saveItem()" style="border-color:var(--accent);color:var(--accent)">enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="marked.min.js"></script>
 <script>
-// BOOTSTRAP anti-cache. Ce fichier est servi à la RACINE et reste donc en cache CDN
-// jusqu'à 10 min — mais il ne change (presque) jamais, donc ce cache est inoffensif.
-// Toute l'appli vit dans app.html, chargé sous une URL VERSIONNÉE (?v=<build>) : le
-// CDN sert alors la bonne version dès le déploiement (même principe que server.html).
-// Le numéro de build est lu dans version.json avec une requête au query unique →
-// le CDN ne peut jamais resservir un ancien numéro.
-(async function(){
-  var v='';
+// marked: GFM on, no auto-breaks (single newlines stay inline).
+marked.setOptions({ gfm: true, breaks: false });
+// Pre-process to fix common LLM markdown mistakes before handing to marked:
+//  - code fences glued to preceding text on the same line ("foo ```ruby ...")
+//  - fences without a closing newline
+//  - 3+ consecutive blank lines collapsed to one (LLMs love padding)
+function fixMd(s){
+  if(!s) return '';
+  // Force a newline before a fence that's been glued to preceding text
+  // (common LLM mistake: "...crée le fichier et```ruby"). We do NOT split
+  // *after* the fence — the part after the fence is the language identifier.
+  s = s.replace(/([^\n])(\s*)(```+|~~~+)(?=\w*\s*\n)/g, '$1\n$3');
+  // Collapse runs of blank lines that LLMs love to emit.
+  s = s.replace(/\n{3,}/g, '\n\n');
+  return s;
+}
+function md(src){ return src ? marked.parse(fixMd(src)) : ''; }
+let msgs = [];
+let busy = false;
+function toggleSide(){ document.getElementById('side').classList.toggle('open'); document.getElementById('backdrop').classList.toggle('open'); document.body.classList.toggle('drawer-open'); }
+function saveSys(){ localStorage.setItem('jean.sys', document.getElementById('sysprompt').value); }
+// ===== Thèmes ================================================================
+// Registre des thèmes disponibles. Pour en AJOUTER un : ajouter un bloc
+// [data-theme="…"] dans le <style> puis une entrée {id,label} ici — le reste
+// (menu déroulant, persistance localStorage, application) est automatique.
+const THEMES=[{id:'dark',label:'sombre'},{id:'light',label:'clair'}];
+function applyTheme(id){
+  if(!THEMES.some(t=>t.id===id)) id='dark';
+  document.documentElement.setAttribute('data-theme', id);
+  try{ localStorage.setItem('jean-theme', id); }catch(e){}
+  const sel=document.getElementById('theme-select'); if(sel) sel.value=id;
+}
+function initTheme(){
+  const sel=document.getElementById('theme-select');
+  if(sel && !sel.options.length){
+    THEMES.forEach(t=>{ const o=document.createElement('option'); o.value=t.id; o.textContent=t.label; sel.appendChild(o); });
+  }
+  let id='dark'; try{ id=localStorage.getItem('jean-theme')||'dark'; }catch(e){}
+  applyTheme(id);
+}
+document.addEventListener('DOMContentLoaded', ()=>{ initTheme(); document.getElementById('sysprompt').value = localStorage.getItem('jean.sys') || ''; restoreChat(); });
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
+// Modales natives (askConfirm/askPrompt/askAlert) — remplacent confirm()/prompt()/
+// alert() par de vraies boîtes stylées. Chacune renvoie une Promise : askConfirm →
+// bool, askPrompt → string|null (null si annulé), askAlert → void. Échap/clic dehors
+// = annuler ; Entrée = valider (sur prompt aussi).
+let _askResolver=null, _askKind='confirm';
+function askResolve(ok){
+  if(!_askResolver) return;
+  const r=_askResolver; _askResolver=null;
+  document.getElementById('ask-modal').style.display='none';
+  document.removeEventListener('keydown', _askKey, true);
+  if(_askKind==='prompt') r(ok ? document.getElementById('ask-input').value : null);
+  else r(ok);
+}
+function _askKey(e){
+  if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); askResolve(false); }
+  else if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); askResolve(true); }
+}
+function _openAsk(kind, message, opts){
+  // Compat 2 conventions : (message, opts) [UI jean] ET l'objet unique
+  // {title,msg,yes,no,placeholder} passé par e2e.js sur ajean.link (server.html,
+  // où cette fonction remplace le window.askConfirm du bootstrap boîte noire).
+  if(message && typeof message==='object'){ const o=message; opts={title:o.title, okText:o.yes, cancelText:o.no, placeholder:o.placeholder, default:o.default, danger:o.danger}; message=o.msg||''; }
+  opts=opts||{};
+  _askKind=kind;
+  document.getElementById('ask-title').textContent = opts.title || (kind==='alert'?'Info':kind==='prompt'?'Saisie':'Confirmation');
+  document.getElementById('ask-msg').textContent = message||'';
+  const inp=document.getElementById('ask-input');
+  if(kind==='prompt'){ inp.style.display=''; inp.value=opts.default||''; inp.placeholder=opts.placeholder||''; }
+  else inp.style.display='none';
+  const cancel=document.getElementById('ask-cancel'), ok=document.getElementById('ask-ok');
+  cancel.style.display = kind==='alert' ? 'none' : '';
+  cancel.textContent = opts.cancelText || 'Annuler';
+  ok.textContent = opts.okText || (kind==='alert'?'OK':kind==='prompt'?'Valider':'Confirmer');
+  ok.classList.toggle('danger', !!opts.danger);
+  document.getElementById('ask-modal').style.display='flex';
+  document.addEventListener('keydown', _askKey, true);
+  setTimeout(()=>{ const f = kind==='prompt'?inp:ok; f.focus(); if(kind==='prompt') inp.select(); }, 30);
+  return new Promise(res=>{ _askResolver=res; });
+}
+function askConfirm(message,opts){ return _openAsk('confirm',message,opts); }
+function askPrompt(message,opts){ return _openAsk('prompt',message,opts); }
+function askAlert(message,opts){ return _openAsk('alert',message,opts); }
+// Clé de pilotage : envoyée en Authorization: Bearer sur chaque appel /api/*.
+// Sur un 401 on la (re)demande et on rejoue la requête. Stockée en localStorage.
+let TOKEN = localStorage.getItem('jean.key') || '';
+function authHeaders(h){ h = Object.assign({}, h||{}); if(TOKEN) h['Authorization']='Bearer '+TOKEN; return h; }
+// Base d'URL : "" en local (page à "/"), "/u/<id>" servie via le relais ajean.link.
+// Garde les chemins absolus (/api/…) corrects derrière le tunnel.
+const API_BASE = location.pathname.replace(/\/(index\.html)?$/, '');
+async function jfetch(u, opts){
+  opts = opts || {};
+  opts.headers = authHeaders(opts.headers);
+  if(u.charAt(0) === '/') u = API_BASE + u;
+  let r = await fetch(u, opts);
+  if(r.status === 401){
+    const k = await askPrompt('Clé de pilotage jean requise :', {title:'Authentification', placeholder:'clé…'});
+    if(k){ TOKEN = k.trim(); localStorage.setItem('jean.key', TOKEN); opts.headers = authHeaders(opts.headers); r = await fetch(u, opts); }
+  }
+  return r;
+}
+async function jget(u){ const r=await jfetch(u); return r.json(); }
+async function jpost(u,b){ const r=await jfetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})}); return r.json(); }
+async function loadStatus(){
+  const s=await jget('/api/status');
+  const el=document.getElementById('status-svc');
+  // Trois états : service coupé (err) · service actif mais modèle pas encore
+  // chargé (loading, llama-server renvoie 503) · modèle prêt (ok).
+  let cls='err', txt=s.state;
+  if(s.active && s.health){ cls='ok'; txt='prêt'; }
+  else if(s.active){ cls='loading'; txt='chargement…'; }
+  el.className='statuspill '+cls;
+  el.innerHTML='<span class="dot"></span>'+txt+' <span class="port">:'+s.port+'</span>';
+  MODEL_READY = !!(s.active && s.health);
+  if(s.ctx){ CTX_MAX=s.ctx; updateCtxMeter(); }
+}
+// Compteur de contexte : CTX_USED estimé via les stats serveur (prefill+decode
+// du dernier tour ≈ taille du prochain prompt). À 90% on propose de compacter.
+let CTX_MAX=0, CTX_USED=0, MODEL_READY=false;
+function setCtxUsed(n){ CTX_USED=n||0; updateCtxMeter(); }
+function updateCtxMeter(){
+  if(!CTX_MAX) return;
+  const pct=Math.min(100, Math.round(CTX_USED*100/CTX_MAX));
+  const fill=document.getElementById('ctx-fill');
+  fill.style.width=pct+'%';
+  fill.style.background = pct>=90 ? 'var(--err,#c44)' : pct>=70 ? 'var(--warn,#c93)' : 'var(--ok,#3a7)';
+  document.getElementById('ctx-text').textContent='contexte '+CTX_USED+' / '+CTX_MAX+' ('+pct+'%)';
+  document.getElementById('ctx-compact').style.display = pct>=90 ? 'inline-block' : 'none';
+}
+async function loadVram(){
+  const gpus=await jget('/api/vram');
+  document.getElementById('vram').innerHTML = (gpus||[]).map(g=>{
+    const pct=Math.round(g.used*100/g.total);
+    return '<div style="margin:6px 0"><div style="font-size:12px">'+g.name+'</div>'+
+      '<div class="bar"><div style="width:'+pct+'%"></div></div>'+
+      '<div class="muted">'+(g.used/1024).toFixed(1)+' / '+(g.total/1024).toFixed(1)+' GiB · GPU '+g.util+'% · '+g.temp+'°C</div></div>';
+  }).join('') || '<span class="muted">(pas de GPU)</span>';
+}
+async function loadCfg(){
+  const c=await jget('/api/config');
+  const keys=['BIN','MODEL','CTX','BATCH','UBATCH','NGL','PORT'];
+  document.getElementById('cfg').innerHTML = keys.filter(k=>c[k]).map(k=>{
+    let v=c[k]; if(k==='MODEL') v=v.split('/').pop();
+    return '<div class="kv"><span>'+k+'</span><span title="'+v.replace(/"/g,'&quot;')+'">'+v+'</span></div>';
+  }).join('');
+}
+async function loadPresets(){
+  const p=await jget('/api/presets');
+  const act = p.find(x=>x.active);
+  // Build via DOM (not string concat) so preset names can contain anything —
+  // spaces, accents, quotes, < > & — without breaking markup or handlers.
+  const sp = document.getElementById('status-preset');
+  sp.textContent = act ? '● '+act.name : '';
+  sp.title = act ? 'preset actif' : '';
+  const cont=document.getElementById('presets');
+  cont.innerHTML='';
+  if(!p.length){ cont.innerHTML='<span class="muted">(aucun)</span>'; return; }
+  p.forEach((x,i)=>{
+    const row=document.createElement('div');
+    row.className='preset'+(x.active?' active':'');
+    row.onclick=()=>switchTo(i+1, x.name);
+    const info=document.createElement('div'); info.className='preset-info';
+    const nm=document.createElement('div'); nm.className='preset-name';
+    nm.textContent=(x.active?'● ':'')+x.name; nm.title=x.name;
+    // Second row: quant tag + bench perf, so the title row stays full-width.
+    const meta=document.createElement('div'); meta.className='preset-meta';
+    if(x.quant){
+      const q=document.createElement('span'); q.className='qtag';
+      q.textContent=x.quant; q.title='quantization';
+      meta.appendChild(q);
+    }
+    if(x.reasoning){
+      const rt=document.createElement('span'); rt.className='rtag';
+      rt.title='raisonnement actif ('+x.reasoning+')';
+      rt.innerHTML='<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>';
+      rt.appendChild(document.createTextNode(x.reasoning));
+      meta.appendChild(rt);
+    }
+    if(x.bench){
+      const bt=document.createElement('span'); bt.className='btag';
+      bt.title='prefill / decode — dernier bench de ce preset';
+      bt.textContent=x.bench.prefill.toFixed(0)+'-'+x.bench.decode.toFixed(0)+' t/s';
+      meta.appendChild(bt);
+    }
+    info.appendChild(nm);
+    if(meta.children.length) info.appendChild(meta);
+    const edit=document.createElement('button');
+    edit.className='preset-edit'; edit.title='éditer'; edit.textContent='✎';
+    edit.onclick=(e)=>{ e.stopPropagation(); openPreset(x.id); };
+    row.appendChild(info); row.appendChild(edit);
+    cont.appendChild(row);
+  });
+}
+// « Mode agent » = accès machine + skills réunis en un seul interrupteur.
+// Quand il est actif, un « a » blanc apparaît en fondu devant « jean » → « ajean ».
+async function loadAgent(){
+  const s=await jget('/api/agent');
+  const on = s.enabled;
+  document.getElementById('agent-toggle').checked = on;
+  document.getElementById('toollimit-toggle').checked = (s.tool_limit !== false);
+  document.getElementById('agent-badge').innerHTML = on
+    ? '<span class="tag ok">on</span>' : '<span class="tag" style="opacity:.6">off</span>';
+  document.getElementById('brand').classList.toggle('agent', on);
+  setAgentGate(on);
+  if(s.mem_mode){ document.getElementById('mem-mode').value = s.mem_mode; renderMemModeDesc(s.mem_mode); }
+  memPages = (s.pages || s.skills || []).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  memShown = MEM_PAGE;
+  document.getElementById('mem-count').textContent = memPages.length ? '('+memPages.length+')' : '';
+  document.getElementById('mem-search').style.display = memPages.length > MEM_PAGE ? '' : 'none';
+  renderMemList();
+}
+// Mémoire + accès internet sont des sous-réglages du mode agent : sans agent, ni
+// les outils mem_* ni les outils web ne sont fournis (voir globalCaps côté Go). On
+// grise donc ces blocs quand l'agent est off pour que l'UI ne mente pas.
+function setAgentGate(on){
+  ['mem-block','net-block','param-block'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.classList.toggle('gated', !on);
+  });
+}
+// Repli/dépli de la liste des pages mémoire (fermée par défaut → gagne de la place).
+function toggleMemPages(){
+  const body=document.getElementById('mem-pages-body');
+  const bar=document.getElementById('mem-pages-bar');
+  const open=body.hasAttribute('hidden');
+  if(open){ body.removeAttribute('hidden'); bar.classList.add('open'); }
+  else { body.setAttribute('hidden',''); bar.classList.remove('open'); }
+}
+// Liste mémoire scalable : recherche + rendu plafonné (les milliers de pages ne
+// déroulent plus une barre géante). memShown grimpe par paliers via « voir plus ».
+let memPages=[], memShown=0; const MEM_PAGE=50;
+function renderMemList(){
+  const q=(document.getElementById('mem-search').value||'').trim().toLowerCase();
+  const list=document.getElementById('mem-list');
+  list.textContent='';
+  if(!memPages.length){ list.innerHTML='<div class="muted">(aucune page mémoire)</div>'; return; }
+  const matches = q ? memPages.filter(x=>(x.name+' '+(x.desc||'')).toLowerCase().includes(q)) : memPages;
+  if(!matches.length){ list.innerHTML='<div class="muted">(aucun résultat pour « '+q.replace(/[<>&]/g,'')+' »)</div>'; return; }
+  const shown = matches.slice(0, memShown);
+  shown.forEach(x=>{
+    const row=document.createElement('div'); row.className='preset'; row.style.fontSize='12px';
+    row.onclick=()=>openMem(x.name);
+    const span=document.createElement('span');
+    const b=document.createElement('b'); b.style.color='var(--text)'; b.textContent=x.name; span.appendChild(b);
+    if(x.desc){ const d=document.createElement('span'); d.className='muted'; d.textContent=' — '+x.desc; span.appendChild(d); }
+    const btn=document.createElement('button'); btn.textContent='edit'; btn.style.cssText='margin:0;padding:2px 8px;font-size:11px';
+    btn.onclick=e=>{ e.stopPropagation(); openMem(x.name); };
+    row.appendChild(span); row.appendChild(btn); list.appendChild(row);
+  });
+  if(matches.length > shown.length){
+    const more=document.createElement('div'); more.className='mem-more';
+    more.textContent='+ voir plus ('+(matches.length-shown.length)+' de plus)';
+    more.style.cursor='pointer';
+    more.onclick=()=>{ memShown+=MEM_PAGE; renderMemList(); };
+    list.appendChild(more);
+  }
+}
+// alias : plusieurs appelants rafraîchissent juste la liste des pages mémoire
+const loadMem = loadAgent;
+async function toggleAgent(){
+  const on=document.getElementById('agent-toggle').checked;
+  if(on && !await askConfirm("L'IA aura un accès shell complet au serveur (bash) et pourra lire/écrire sa mémoire.", {title:'Activer le mode agent ?', okText:'Activer', danger:true})){ document.getElementById('agent-toggle').checked=false; return; }
+  await jpost('/api/agent/toggle',{on});
+  loadAgent();
+}
+async function toggleToolLimit(){
+  const on=document.getElementById('toollimit-toggle').checked;
+  await jpost('/api/agent/tool-limit',{on});
+  loadAgent();
+}
+// Mode mémoire (3 états) — indépendant du mode agent.
+const MEM_DESC={
+  always:'L\'IA cherche dans sa mémoire avant de répondre et sauve d\'elle-même ce qui mérite d\'être retenu.',
+  ondemand:'Les outils mémoire existent mais l\'IA ne les utilise QUE si tu le demandes (« souviens-toi de… », « qu\'avais-tu retenu sur… »).',
+  off:'Mémoire coupée : aucun accès en lecture ni écriture, l\'IA répond sans mémoire.'
+};
+function renderMemModeDesc(m){ const d=document.getElementById('mem-mode-desc'); if(d) d.textContent=MEM_DESC[m]||''; }
+async function setMemMode(){
+  const mode=document.getElementById('mem-mode').value;
+  const r=await jpost('/api/memory',{mode});
+  renderMemModeDesc(r.mode||mode);
+}
+// Accès internet : serveur Crawl4AI + drapeau. Actif ET fonctionnel = pastille verte.
+let internetOn=false;
+function renderInternet(s){
+  internetOn = !!s.enabled;
+  document.getElementById('internet-toggle').checked = internetOn;
+  if(document.activeElement !== document.getElementById('crawl-url'))
+    document.getElementById('crawl-url').value = s.url || '';
+  document.getElementById('internet-badge').innerHTML = internetOn
+    ? '<span class="tag ok">on</span>' : '<span class="tag" style="opacity:.6">off</span>';
+  const st=document.getElementById('internet-status');
+  if(!s.url){ st.textContent='serveur non configuré'; st.style.color=''; }
+  else if(s.reachable){ st.innerHTML='<span style="color:var(--accent)">✓</span> serveur joignable — outils web actifs'; }
+  else { st.innerHTML='⚠️ serveur injoignable — les outils web ne seront pas proposés'; }
+}
+async function loadInternet(){ renderInternet(await jget('/api/internet')); }
+async function toggleInternet(){
+  const on=document.getElementById('internet-toggle').checked;
+  const url=document.getElementById('crawl-url').value.trim();
+  if(on && !url){ toast('renseigne d\'abord l\'URL du serveur Crawl4AI'); document.getElementById('internet-toggle').checked=false; return; }
+  renderInternet(await jpost('/api/internet',{enabled:on, url}));
+}
+async function saveCrawlUrl(){
+  const url=document.getElementById('crawl-url').value.trim();
+  renderInternet(await jpost('/api/internet',{url}));
+}
+async function loadAll(){ await Promise.all([loadStatus(),loadVram(),loadCfg(),loadPresets(),loadAgent(),loadInternet()]); }
+async function act(a){ toast(a+'…'); await jpost('/api/'+a); setTimeout(loadAll,1500); }
+function openBenchModal(){ document.getElementById('bench-modal').style.display = 'flex'; }
+function closeBenchModal(){ document.getElementById('bench-modal').style.display = 'none'; }
+function openBenchModal(){ document.getElementById('bench-modal').style.display = 'flex'; }
+function closeBenchModal(){ document.getElementById('bench-modal').style.display = 'none'; }
+async function runBenchUI(){
+  const btn = document.getElementById('btn-bench');
+  const rerun = document.getElementById('bench-rerun');
+  const body = document.getElementById('bench-body');
+  openBenchModal();
+  btn.disabled = true; btn.textContent = '⏳ bench…';
+  rerun.disabled = true;
+  body.innerHTML =
+    '<div style="text-align:center;padding:20px 0">' +
+    '<div style="font-size:24px;animation:spin 1s linear infinite;display:inline-block">⏳</div>' +
+    '<div class="muted" style="margin-top:8px">prompt 2000 tok + 300 decode<br>~10 secondes…</div>' +
+    '</div>';
   try{
-    var r=await fetch('/version.json?t='+Date.now(),{cache:'no-store'});
-    if(r.ok)v=(await r.json()).build||'';
-  }catch(e){}
-  if(!v)v=Date.now();                       // repli : au pire on ne cache pas
-  var q=location.search||'';                // conserve ?sub=ok etc.
-  location.replace('/app.html?v='+encodeURIComponent(v)+(q?('&'+q.slice(1)):''));
-})();
-</script>
-</body></html>
+    const r = await jget('/api/bench');
+    if(!r.ok){
+      body.innerHTML = '<div style="color:var(--err);text-align:center">erreur: '+r.error+'</div>';
+      return;
+    }
+    const x = r.result;
+    body.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:center">' +
+        '<div style="padding:14px;background:var(--panel);border:1px solid var(--border);border-radius:8px">' +
+          '<div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.1em">Prefill</div>' +
+          '<div style="font-size:26px;color:var(--accent);font-weight:600;margin:6px 0">'+x.prompt_per_second.toFixed(0)+'</div>' +
+          '<div class="muted">tok/s</div>' +
+          '<div class="muted" style="font-size:11px;margin-top:8px">'+x.prompt_n+' tok · '+(x.prompt_ms/1000).toFixed(2)+'s</div>' +
+        '</div>' +
+        '<div style="padding:14px;background:var(--panel);border:1px solid var(--border);border-radius:8px">' +
+          '<div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.1em">Decode</div>' +
+          '<div style="font-size:26px;color:var(--ok);font-weight:600;margin:6px 0">'+x.predicted_per_second.toFixed(1)+'</div>' +
+          '<div class="muted">tok/s</div>' +
+          '<div class="muted" style="font-size:11px;margin-top:8px">'+x.predicted_n+' tok · '+(x.predicted_ms/1000).toFixed(2)+'s</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="muted" style="text-align:center;font-size:11px">total '+x.elapsed_sec.toFixed(2)+'s</div>';
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ bench';
+    rerun.disabled = false;
+    loadPresets();
+  }
+}
+async function switchTo(n,name){
+  if(!await askConfirm('Basculer vers « '+name+' » et redémarrer le service ?', {title:'Changer de preset', okText:'Basculer'})) return;
+  toast('switching…');
+  const r=await jpost('/api/switch',{n:n});
+  toast(r.ok?'switched':'erreur'); setTimeout(loadAll,2000);
+}
+// editingKey = the identifier of the item being edited: a preset id (filename)
+// or a skill name. Empty string = creating a new item.
+let editingKey = '', editingKind = 'preset';
+const KINDS = {
+  // presets are keyed by `id` (filename) so several can share a display name;
+  // skills keep name-as-identity (param 'name').
+  preset: {label:'Preset', param:'id',   getUrl:'/api/preset', saveUrl:'/api/preset/save', delUrl:'/api/preset/delete', reload:()=>loadPresets()},
+  mem:    {label:'Page',   param:'name', getUrl:'/api/mem',    saveUrl:'/api/mem/save',    delUrl:'/api/mem/delete',    reload:()=>loadMem()},
+};
+async function openItem(kind, key){
+  const K = KINDS[kind];
+  const r = await jfetch(K.getUrl + '?' + K.param + '=' + encodeURIComponent(key||''));
+  const d = await r.json();
+  editingKind = kind; editingKey = key || '';
+  const display = d.name || key || '';
+  document.getElementById('modal-title').textContent = key ? (K.label + ' · ' + display) : ('Nouveau ' + K.label.toLowerCase());
+  document.getElementById('m-name').value = display;
+  document.getElementById('m-content').value = d.content || '';
+  document.getElementById('m-del').style.display = key ? 'inline-block' : 'none';
+  // Model picker is preset-only: it edits the MODEL= line of config.env.
+  const modelRow = document.getElementById('m-model-row');
+  const delModelWrap = document.getElementById('m-del-model-wrap');
+  if(kind === 'preset'){
+    modelRow.style.display = 'block';
+    document.getElementById('m-hf-url').value = '';
+    document.getElementById('m-hf-progress').style.display = 'none';
+    document.getElementById('m-del-model').checked = false;
+    document.getElementById('m-quant').value = currentQuantInTextarea();
+    delModelWrap.style.display = key ? 'inline-flex' : 'none';
+    await Promise.all([populateBackendPicker(), populateModelPicker()]);
+  } else {
+    modelRow.style.display = 'none';
+    delModelWrap.style.display = 'none';
+  }
+  document.getElementById('modal').style.display = 'flex';
+}
+
+// Pretty-print bytes — handy for the dropdown options.
+function fmtSize(b){
+  if(b > 1e9) return (b/1e9).toFixed(1)+' GB';
+  if(b > 1e6) return (b/1e6).toFixed(0)+' MB';
+  if(b > 1e3) return (b/1e3).toFixed(0)+' KB';
+  return b+' B';
+}
+// Read the current MODEL= value out of the textarea, handling quotes / spaces.
+function currentModelInTextarea(){
+  const txt = document.getElementById('m-content').value;
+  const m = txt.match(/^\s*MODEL\s*=\s*"?([^"\n]*)"?\s*$/m);
+  return m ? m[1].trim() : '';
+}
+async function populateModelPicker(){
+  const sel = document.getElementById('m-model');
+  const list = await jget('/api/models');
+  const cur = currentModelInTextarea();
+  // Strip directory; config.env conventionally only stores the file basename.
+  const curBase = (cur.split('/').pop() || '').trim();
+  let html = '<option value="">— choisir un modèle —</option>';
+  let matched = false;
+  for(const m of list){
+    const sel = (m.name === curBase) ? ' selected' : '';
+    if(sel) matched = true;
+    html += '<option value="'+m.name+'"'+sel+'>'+m.name+'  ('+fmtSize(m.size)+')</option>';
+  }
+  // If MODEL points to something not in JEAN_HOME, show it as a disabled hint.
+  if(cur && !matched){
+    html += '<option value="" disabled selected>('+(curBase||cur)+' — introuvable dans JEAN_HOME)</option>';
+  }
+  sel.innerHTML = html;
+}
+function onPickModel(){
+  const val = document.getElementById('m-model').value;
+  if(!val) return;
+  const ta = document.getElementById('m-content');
+  if(/^\s*MODEL\s*=.*$/m.test(ta.value)){
+    ta.value = ta.value.replace(/^\s*MODEL\s*=.*$/m, 'MODEL="'+val+'"');
+  } else {
+    // No MODEL= line yet — prepend so it's visible at the top.
+    ta.value = 'MODEL="'+val+'"\n' + ta.value;
+  }
+  toast('MODEL='+val);
+}
+
+// Backend picker — same pattern as model: list /etc/jean/backends/*, rewrite BIN=.
+function currentBinInTextarea(){
+  const txt = document.getElementById('m-content').value;
+  const m = txt.match(/^\s*BIN\s*=\s*"?([^"\n]*)"?\s*$/m);
+  return m ? m[1].trim() : '';
+}
+async function populateBackendPicker(){
+  const sel = document.getElementById('m-backend');
+  const list = await jget('/api/backends');
+  const cur = currentBinInTextarea();
+  let html = '<option value="">— choisir un backend —</option>';
+  let matched = false;
+  for(const b of list){
+    const isSel = (b.path === cur);
+    if(isSel) matched = true;
+    html += '<option value="'+b.path+'"'+(isSel?' selected':'')+'>'+b.name+'</option>';
+  }
+  if(cur && !matched){
+    html += '<option value="" disabled selected>('+(cur.split('/').slice(-3,-2)[0]||cur)+' — hors /etc/jean/backends)</option>';
+  }
+  sel.innerHTML = html;
+}
+function onPickBackend(){
+  const val = document.getElementById('m-backend').value;
+  if(!val) return;
+  const ta = document.getElementById('m-content');
+  if(/^\s*BIN\s*=.*$/m.test(ta.value)){
+    ta.value = ta.value.replace(/^\s*BIN\s*=.*$/m, 'BIN="'+val+'"');
+  } else {
+    ta.value = 'BIN="'+val+'"\n' + ta.value;
+  }
+  toast('BIN='+val);
+}
+// Read/write the QUANT= override line in the preset textarea.
+function currentQuantInTextarea(){
+  const m = document.getElementById('m-content').value.match(/^\s*#?\s*QUANT\s*=\s*"?([^"\n]*)"?\s*$/mi);
+  return m ? m[1].trim() : '';
+}
+function applyQuant(){
+  const val = document.getElementById('m-quant').value.trim();
+  const ta = document.getElementById('m-content');
+  const re = /^\s*#?\s*QUANT\s*=.*$/mi;
+  if(val){
+    if(re.test(ta.value)) ta.value = ta.value.replace(re, 'QUANT="'+val+'"');
+    else ta.value = ta.value.replace(/\s*$/,'') + '\nQUANT="'+val+'"\n';
+  } else {
+    ta.value = ta.value.replace(re, '').replace(/\n{3,}/g,'\n\n');
+  }
+}
+const openPreset = (id)=>openItem('preset', id);
+const openMem    = (n)=>openItem('mem', n);
+function closeModal(){ document.getElementById('modal').style.display = 'none'; }
+async function saveItem(){
+  const K = KINDS[editingKind];
+  const name = document.getElementById('m-name').value.trim();
+  const content = document.getElementById('m-content').value;
+  if(!name){ toast('nom requis'); return; }
+  // Presets: keyed by id (filename); duplicate display names are allowed.
+  // Skills: keyed by name, rename via `old`.
+  const payload = editingKind==='preset'
+    ? {id: editingKey, name, content}
+    : {name, old: editingKey, content};
+  const r = await jpost(K.saveUrl, payload);
+  if(!r.ok){ toast('erreur : ' + (r.error||'')); return; }
+  toast('enregistré'); closeModal(); K.reload();
+}
+async function delItem(){
+  if(!editingKey) return;
+  const K = KINDS[editingKind];
+  const name = document.getElementById('m-name').value.trim() || editingKey;
+  const delModel = editingKind==='preset' && document.getElementById('m-del-model').checked;
+  let msg = 'Supprimer le ' + K.label.toLowerCase() + ' « ' + name + ' » ?';
+  if(delModel) msg += '\n\n⚠️ Le fichier .gguf du modèle sera AUSSI supprimé du disque (irréversible).';
+  if(!await askConfirm(msg, {title:'Suppression', okText:'Supprimer', danger:true})) return;
+  const payload = editingKind==='preset'
+    ? {id: editingKey, deleteModel: delModel}
+    : {name: editingKey};
+  const r = await jpost(K.delUrl, payload);
+  if(!r.ok){ toast('erreur : ' + (r.error||'')); return; }
+  if(delModel){
+    if(r.modelError) toast('preset supprimé, modèle : ' + r.modelError);
+    else if(r.modelDeleted) toast('preset + modèle supprimés');
+    else toast('supprimé (aucun modèle référencé)');
+  } else { toast('supprimé'); }
+  closeModal(); K.reload();
+}
+// Download a .gguf from Hugging Face, polling progress until done.
+let dlPoll = null;
+async function startDownload(){
+  const url = document.getElementById('m-hf-url').value.trim();
+  if(!url){ toast('colle un lien .gguf'); return; }
+  const btn = document.getElementById('m-hf-btn');
+  const prog = document.getElementById('m-hf-progress');
+  btn.disabled = true;
+  prog.style.display = 'block';
+  prog.textContent = 'démarrage…';
+  const r = await jpost('/api/models/download', {url});
+  if(!r.ok){ prog.innerHTML = '<span style="color:var(--err)">erreur : '+(r.error||'')+'</span>'; btn.disabled=false; return; }
+  const fname = r.filename;
+  if(dlPoll) clearInterval(dlPoll);
+  dlPoll = setInterval(async ()=>{
+    const list = await jget('/api/models/download/status');
+    const st = (list||[]).find(d=>d.filename===fname);
+    if(!st){ return; }
+    if(st.error){
+      prog.innerHTML = '<span style="color:var(--err)">erreur : '+st.error+'</span>';
+      clearInterval(dlPoll); dlPoll=null; btn.disabled=false; return;
+    }
+    if(st.finished){
+      prog.innerHTML = '<span style="color:var(--ok)">✓ '+fname+' téléchargé ('+fmtSize(st.done)+')</span>';
+      clearInterval(dlPoll); dlPoll=null; btn.disabled=false;
+      await populateModelPicker();
+      document.getElementById('m-model').value = fname; onPickModel();
+      return;
+    }
+    const pct = st.total>0 ? Math.round(st.done*100/st.total) : 0;
+    const tot = st.total>0 ? ' / '+fmtSize(st.total)+' ('+pct+'%)' : '';
+    prog.textContent = '⬇ '+fmtSize(st.done)+tot+' — '+fname;
+  }, 800);
+}
+// Smart autoscroll: follow the bottom while the user hasn't manually scrolled
+// up. Re-stick when they scroll back near bottom themselves.
+let stickyBottom = true;
+const chatEl = () => document.getElementById('chat');
+function isNearBottom(){
+  const c = chatEl();
+  return c.scrollHeight - c.scrollTop - c.clientHeight < 60;
+}
+function scrollMaybe(){
+  if(stickyBottom){
+    const c = chatEl();
+    c.scrollTop = c.scrollHeight;
+  }
+  document.getElementById('scrollbtn').classList.toggle('show', !stickyBottom);
+}
+function jumpBottom(){ stickyBottom = true; scrollMaybe(); }
+document.addEventListener('DOMContentLoaded', ()=>{
+  const c = chatEl();
+  c.addEventListener('scroll', ()=>{
+    stickyBottom = isNearBottom();
+    document.getElementById('scrollbtn').classList.toggle('show', !stickyBottom);
+  });
+});
+
+function addMsg(role, text){
+  const el=document.createElement('div');
+  el.className='msg '+role;
+  const collapsible = (role==='reasoning' || role==='tool');
+  // .body must be a real block so <p>/<pre>/<ul> margins behave properly.
+  if(collapsible){
+    el.classList.add('collapsible');
+    el.innerHTML='<span class="label">'+role+'</span><div class="bodywrap"><div class="body"></div></div>';
+    el.querySelector('.label').onclick=()=>toggleCollapse(el);
+  } else {
+    el.innerHTML='<span class="label">'+role+'</span><div class="body"></div>';
+  }
+  el.querySelector('.body').textContent=text;
+  chatEl().appendChild(el);
+  scrollMaybe();
+  return el;
+}
+// Replie/déplie en douceur les bulles reasoning/tool. Hauteur animée en JS :
+// on fige scrollHeight puis on va à 0 (fermeture) ou de 0 vers scrollHeight
+// (ouverture), sans jamais dépasser. overflow:hidden clippe pendant l'animation.
+function collapseBody(el){
+  const bw=el.querySelector('.bodywrap'); if(!bw || el.classList.contains('collapsed')) return;
+  bw.style.height = bw.scrollHeight+'px';   // fige les dimensions courantes
+  bw.style.width  = bw.scrollWidth+'px';
+  void bw.offsetHeight;                      // reflow pour que la transition parte de là
+  el.classList.add('collapsed');
+  bw.style.height = '0px';                    // → anime height ET width vers 0
+  bw.style.width  = '0px';
+}
+function expandBody(el){
+  const bw=el.querySelector('.bodywrap'); if(!bw) return;
+  el.classList.remove('collapsed');
+  bw.style.height=''; bw.style.width='';      // mesure les dimensions naturelles…
+  const h=bw.scrollHeight, w=bw.scrollWidth;
+  bw.style.height='0px'; bw.style.width='0px';// …repart de 0 (pas de flash, même frame)
+  void bw.offsetHeight;
+  bw.style.height=h+'px'; bw.style.width=w+'px';
+  const done=e=>{ if(e.propertyName!=='height') return; bw.style.height=''; bw.style.width=''; bw.removeEventListener('transitionend',done); };
+  bw.addEventListener('transitionend',done);
+}
+function toggleCollapse(el){ el.classList.contains('collapsed') ? expandBody(el) : collapseBody(el); }
+// Replie toutes les bulles d'un tour une fois la réponse finale entamée.
+function collapseAll(list){ for(const el of list){ if(el) collapseBody(el); } list.length=0; }
+function setLabel(el, text){ el.querySelector('.label').textContent = text; }
+function bodyOf(el){ return el.querySelector('.body'); }
+// Render markdown into a message body in place; safe because md() escapes HTML.
+function renderBody(el, text){ const b=bodyOf(el); b.innerHTML = md(text); addCopyButtons(b); scrollMaybe(); }
+// Render a tool call as its own conversation message: the command the model
+// wrote, then the response it got back. textContent keeps it injection-safe.
+function renderToolMsg(el, tu){
+  // Métadonnées d'affichage par outil : nom court + en-tête avec icône. Les outils
+  // web (web_search/open/read/grep) doivent afficher 🌐, pas le fallback mémoire.
+  const META = {
+    bash:       {lbl:'terminal',  head:'⚙️ commande'},
+    edit:       {lbl:'édition',   head:'✏️ édition'},
+    web_search: {lbl:'recherche', head:'🌐 recherche web'},
+    web_open:   {lbl:'page web',  head:'🌐 ouverture'},
+    web_read:   {lbl:'page web',  head:'🌐 lecture'},
+    web_grep:   {lbl:'page web',  head:'🌐 recherche'},
+  };
+  const meta = META[tu.name] || {lbl:'mémoire', head:'🧠 mémoire'};
+  let lbl = meta.lbl;
+  // Indication du volume de la réponse de l'outil (~tokens, estimation 1 tok ≈ 4 car).
+  if(tu.result){ lbl += '  ·  ~' + Math.max(1, Math.round(tu.result.length/4)) + ' tok'; }
+  setLabel(el, lbl);
+  const body=bodyOf(el); body.innerHTML='';
+  const head=document.createElement('div'); head.className='tool-head';
+  head.textContent = meta.head;
+  body.appendChild(head);
+  if(tu.label){
+    const pre=document.createElement('pre'); pre.className='tool-cmd';
+    const code=document.createElement('code'); code.textContent=tu.label;
+    if(tu.typing){ const car=document.createElement('span'); car.className='tool-caret'; car.textContent='▋'; code.appendChild(car); }
+    pre.appendChild(code); body.appendChild(pre);
+  }
+  const hasResult = tu.result!==undefined && tu.result!=='';
+  if(hasResult){
+    const sub=document.createElement('div'); sub.className='tool-sub'; sub.textContent='réponse';
+    body.appendChild(sub);
+    const pre=document.createElement('pre');
+    const code=document.createElement('code'); code.textContent=tu.result;
+    pre.appendChild(code); body.appendChild(pre);
+  } else if(!tu.done && !tu.typing){
+    const wait=document.createElement('div'); wait.className='tool-wait'; wait.textContent='⏳ exécution en cours…';
+    body.appendChild(wait);
+  }
+  addCopyButtons(body); scrollMaybe();
+}
+// Inject a "copier" button into every <pre> code block (idempotent).
+function addCopyButtons(root){
+  root.querySelectorAll('pre').forEach(pre=>{
+    if(pre.querySelector('.copybtn')) return;
+    const btn=document.createElement('button');
+    btn.className='copybtn'; btn.type='button'; btn.textContent='copier';
+    btn.onclick=async(e)=>{
+      e.stopPropagation();
+      const code=pre.querySelector('code'), txt=(code||pre).innerText;
+      try{ await navigator.clipboard.writeText(txt); }
+      catch(_){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+      btn.textContent='copié ✓'; btn.classList.add('done');
+      setTimeout(()=>{ btn.textContent='copier'; btn.classList.remove('done'); },1500);
+    };
+    pre.appendChild(btn);
+  });
+}
+function resetChat(){ msgs=[]; document.getElementById('chat').innerHTML=''; saveChat(); try{localStorage.removeItem('jean.ctxused');}catch(e){} setCtxUsed(0); toast('chat vidé'); }
+// Compaction : on demande à l'IA un résumé de la conversation destiné à la
+// reprendre dans une session neuve, puis on repart d'un contexte propre seedé
+// avec ce résumé. Réduit drastiquement les tokens tout en gardant le fil.
+async function compactContext(){
+  if(busy) return;
+  if(!msgs.length){ toast('rien à compacter'); return; }
+  if(!await askConfirm('L\'IA va résumer la conversation puis repartir d\'une session propre basée sur ce résumé.', {title:'Compacter le contexte ?', okText:'Compacter'})) return;
+  busy=true;
+  const btn=document.getElementById('ctx-compact'); btn.textContent='compaction…'; btn.disabled=true;
+  const instruction='Résume de façon structurée et complète TOUTE notre conversation jusqu\'ici, dans le but de poursuivre le travail dans une nouvelle session sans rien perdre d\'important : objectifs, décisions prises, état actuel, fichiers/commandes/éléments clés, et ce qu\'il reste à faire. Écris uniquement le résumé, sans préambule.';
+  let summary='';
+  try{
+    const sys=(document.getElementById('sysprompt').value||'').trim();
+    const base=[...msgs,{role:'user',content:instruction}];
+    const out = sys ? [{role:'system',content:sys},...base] : base;
+    const r=await jfetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:out})});
+    const reader=r.body.getReader(); const dec=new TextDecoder(); let buf='';
+    while(true){
+      const {done,value}=await reader.read(); if(done) break;
+      buf+=dec.decode(value,{stream:true}); let i;
+      while((i=buf.indexOf('\n\n'))>=0){
+        const chunk=buf.slice(0,i); buf=buf.slice(i+2);
+        for(const line of chunk.split('\n')){
+          if(!line.startsWith('data:')) continue;
+          const data=line.slice(5).trim(); if(data==='[DONE]') continue;
+          try{ const o=JSON.parse(data); const d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{}; if(d.content) summary+=d.content; }catch(e){}
+        }
+      }
+    }
+  }catch(e){ toast('échec compaction: '+e.message); busy=false; btn.textContent='compacter'; btn.disabled=false; return; }
+  summary=summary.trim();
+  if(!summary){ toast('résumé vide'); busy=false; btn.textContent='compacter'; btn.disabled=false; return; }
+  // Session propre seedée avec le résumé.
+  msgs=[{role:'user',content:'Résumé de notre session précédente (reprends le travail à partir de là) :\n\n'+summary},
+        {role:'assistant',content:'Compris, je reprends à partir de ce résumé.'}];
+  document.getElementById('chat').innerHTML='';
+  const note=addMsg('tool',''); note.querySelector('.label').textContent='contexte compacté';
+  renderBody(note, '🗜️ **Contexte compacté.** Résumé de reprise :\n\n'+summary);
+  saveChat();
+  setCtxUsed(0); try{localStorage.removeItem('jean.ctxused');}catch(e){}
+  busy=false; btn.textContent='compacter'; btn.disabled=false;
+  toast('contexte compacté');
+}
+// Persistance de la conversation : on garde user+assistant en localStorage pour
+// survivre à un refresh (les bulles tool/reasoning sont éphémères, non stockées).
+function saveChat(){ try{ localStorage.setItem('jean.chat', JSON.stringify(msgs)); }catch(e){} }
+function restoreChat(){
+  let raw=null; try{ raw=localStorage.getItem('jean.chat'); }catch(e){}
+  if(!raw) return;
+  try{ msgs=JSON.parse(raw)||[]; }catch(e){ msgs=[]; return; }
+  for(const m of msgs){
+    // Les messages d'outil (role 'tool' et assistant porteur de tool_calls sans
+    // texte) font partie de l'historique envoyé au modèle mais ne s'affichent pas :
+    // on saute pour ne pas créer de bulles vides au rechargement.
+    if(m.role==='tool') continue;
+    if(m.role==='user') addMsg('user', m.content);
+    else if(m.role==='assistant'){
+      if(!m.content && m.tool_calls) continue;
+      const el=addMsg('assistant',''); renderBody(el, m.content||'');
+    }
+  }
+  const cu=parseInt(localStorage.getItem('jean.ctxused')||'0',10); if(cu>0) setCtxUsed(cu);
+}
+function onKey(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } }
+let abortCtrl=null;
+function stopGen(){ if(abortCtrl){ abortCtrl.abort(); toast('stop'); } }
+async function send(){
+  if(busy) return;
+  const ta=document.getElementById('input'); const text=ta.value.trim();
+  if(!text) return;
+  ta.value=''; busy=true;
+  document.getElementById('send').style.display='none';
+  document.getElementById('stop').style.display='inline-block';
+  addMsg('user', text);
+  msgs.push({role:'user',content:text}); saveChat();
+  let reasonEl=null, contentEl=null, pendingToolEl=null, fullContent='', fullReason='', toolMsgs=null;
+  let turnCollapsibles=[]; // bulles reasoning/tool à replier dès la réponse finale
+  let tokCount=0, reasonTokCount=0, t0=performance.now(), firstTok=0, statsTimer=null;
+  let serverStats=null, streamErr=false;
+  const updateStats=(final)=>{
+    if(!contentEl && !reasonEl) return;
+    const el = contentEl || reasonEl;
+    const role = contentEl ? 'assistant' : 'reasoning';
+    // Mid-stream: client-side estimate. Final tick: use the server's exact
+    // timings if it gave us any (more accurate, includes prefill).
+    if(final && serverStats){
+      const s = serverStats;
+      const totalSec = (performance.now() - t0) / 1000;
+      const parts = [role];
+      // prompt_tokens_total = taille réelle du prompt (system inclus, même si en
+      // cache) ; repli sur prompt_tokens (neuf traité) si le backend n'envoie pas l'usage.
+      const pt = s.prompt_tokens_total || s.prompt_tokens;
+      if(pt) parts.push('prefill ' + pt + ' tok · ' + (s.prompt_per_second||0).toFixed(0) + ' tok/s');
+      if(s.gen_tokens) parts.push('decode ' + s.gen_tokens + ' tok · ' + s.gen_per_second.toFixed(1) + ' tok/s');
+      parts.push('total ' + totalSec.toFixed(1) + 's');
+      setLabel(el, parts.join('  ·  '));
+      return;
+    }
+    const n = contentEl ? tokCount : reasonTokCount;
+    const elapsed = (performance.now() - (firstTok||t0)) / 1000;
+    const tps = elapsed > 0.05 ? (n / elapsed) : 0;
+    setLabel(el, role + '  ·  ' + n + ' tok  ·  ' + tps.toFixed(1) + ' tok/s');
+  };
+  abortCtrl = new AbortController();
+  try{
+    const sys=(document.getElementById('sysprompt').value||'').trim();
+    const out = sys ? [{role:'system',content:sys}, ...msgs] : msgs;
+    const r=await jfetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:out}),signal:abortCtrl.signal});
+    const reader=r.body.getReader(); const dec=new TextDecoder(); let buf='';
+    statsTimer = setInterval(updateStats, 250);
+    while(true){
+      const {done,value}=await reader.read(); if(done) break;
+      buf+=dec.decode(value,{stream:true});
+      let i;
+      while((i=buf.indexOf('\n\n'))>=0){
+        const chunk=buf.slice(0,i); buf=buf.slice(i+2);
+        for(const line of chunk.split('\n')){
+          if(!line.startsWith('data:')) continue;
+          const data=line.slice(5).trim();
+          if(data==='[DONE]') continue;
+          try{
+            const o=JSON.parse(data);
+            const d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{};
+            if(d.error){
+              // Erreur serveur (ex : modèle en cours de chargement → 503). On
+              // l'affiche, on retire le message user de l'historique et on le
+              // remet dans l'input pour renvoyer d'un clic une fois prêt.
+              contentEl=null; reasonEl=null;
+              const eb=addMsg('assistant',''); eb.classList.add('errmsg');
+              renderBody(eb, d.error);
+              if(msgs.length && msgs[msgs.length-1].role==='user'){ ta.value=msgs[msgs.length-1].content; msgs.pop(); }
+              saveChat();
+              streamErr=true;
+              try{ reader.cancel(); }catch(_){}
+              break;
+            }
+            if(d.stats){ serverStats = d.stats; }
+            // Tool-turn messages (assistant tool_calls + tool results) sent at the
+            // end of the stream. On les garde pour les réinjecter dans msgs AVANT
+            // la réponse finale, sinon le modèle re-déclenche le même skill/commande
+            // à chaque tour (aucune trace de l'avoir déjà fait).
+            if(d.tool_messages){ toolMsgs = d.tool_messages; }
+            if(d.tool_used){
+              // Close out the current assistant/reasoning bubbles so any text the
+              // model streams *after* the tool call starts a fresh bubble BELOW it
+              // (and isn't appended above, into the pre-call bubble).
+              contentEl=null; reasonEl=null;
+              const tu=d.tool_used;
+              // One bubble per call: the live "typing" updates, the "en cours"
+              // spinner, and the final result all re-render the SAME element.
+              // Chaînage : replie les étapes précédentes (reasoning/outils déjà
+              // finis) dès qu'une nouvelle démarre — seule l'étape en cours reste ouverte.
+              if(!pendingToolEl){ collapseAll(turnCollapsibles); pendingToolEl=addMsg('tool',''); turnCollapsibles.push(pendingToolEl); }
+              renderToolMsg(pendingToolEl, tu);
+              if(tu.done){
+                pendingToolEl=null;
+                // L'IA gère sa mémoire elle-même : rafraîchir le menu en direct
+                // dès qu'une page est créée/modifiée (pas besoin de F5).
+                if(tu.name==='mem_add' || tu.name==='mem_edit') loadMem();
+              }
+            }
+            if(d.drop_reasoning){
+              // Le modèle a « pensé sans agir » : on relance le tour. Le
+              // raisonnement mort-né est retiré pour ne pas afficher un double bloc.
+              if(reasonEl){
+                const i=turnCollapsibles.indexOf(reasonEl); if(i>=0) turnCollapsibles.splice(i,1);
+                reasonEl.remove(); reasonEl=null; fullReason='';
+              }
+            }
+            if(d.reasoning_content){
+              // Start a fresh buffer per bubble — otherwise a reasoning block that
+              // follows a tool call re-renders ALL previously accumulated reasoning
+              // into the new bubble (duplicated dozens of times over a turn).
+              if(!reasonEl){ collapseAll(turnCollapsibles); reasonEl=addMsg('reasoning',''); fullReason=''; turnCollapsibles.push(reasonEl); }
+              if(!firstTok) firstTok=performance.now();
+              reasonTokCount++;
+              fullReason+=d.reasoning_content; renderBody(reasonEl, fullReason);
+            }
+            if(d.content){
+              if(!contentEl){ collapseAll(turnCollapsibles); contentEl=addMsg('assistant',''); fullContent=''; firstTok=performance.now(); }
+              tokCount++;
+              fullContent+=d.content; renderBody(contentEl, fullContent);
+            }
+          }catch(e){}
+        }
+        if(streamErr) break;
+      }
+      if(streamErr) break;
+    }
+    if(!streamErr){
+      if(toolMsgs) msgs.push(...toolMsgs);
+      msgs.push({role:'assistant',content:fullContent}); saveChat();
+    }
+    // Le KV cache s'accumule : chaque tour ajoute les tokens NOUVELLEMENT traités
+    // (prompt_tokens, le préfixe caché n'est pas recompté) + ceux générés. La
+    // taille réelle du contexte = somme cumulée, donc monotone croissante.
+    if(serverStats){
+      // prompt_tokens_total (usage) = taille TOTALE du prompt ce tour (system +
+      // historique, préfixe caché compris) → contexte ABSOLU et exact. Sinon repli
+      // sur l'ancienne accumulation (prompt_tokens = seulement le neuf traité).
+      if(serverStats.prompt_tokens_total){ setCtxUsed((serverStats.prompt_tokens_total||0) + (serverStats.gen_tokens||0)); }
+      else { setCtxUsed(CTX_USED + (serverStats.prompt_tokens||0) + (serverStats.gen_tokens||0)); }
+      try{ localStorage.setItem('jean.ctxused', CTX_USED); }catch(e){}
+    }
+  }catch(e){
+    if(e.name==='AbortError'){
+      if(contentEl) setLabel(contentEl, 'assistant  ·  '+tokCount+' tok  ·  interrompu');
+      if(toolMsgs) msgs.push(...toolMsgs);
+      if(fullContent) msgs.push({role:'assistant',content:fullContent});
+      else if(!toolMsgs) msgs.pop();
+    } else {
+      addMsg('assistant','[erreur] '+e.message); msgs.pop();
+    }
+    saveChat();
+  }
+  if(statsTimer) clearInterval(statsTimer);
+  updateStats(true);
+  abortCtrl=null; busy=false;
+  document.getElementById('send').style.display='inline-block';
+  document.getElementById('stop').style.display='none';
+  document.getElementById('input').focus();
+}
+loadAll();
+setInterval(loadStatus, 5000);
+setInterval(loadVram, 3000);
+</script></body></html>
