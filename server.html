@@ -134,7 +134,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .row{display:flex;gap:4px;flex-wrap:wrap}
 .preset{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;margin:4px 0;cursor:pointer;background:var(--panel)}
 .preset:hover{border-color:var(--accent)}
-.preset.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);box-shadow:inset 0 0 0 1px var(--accent)}
+.preset.active{border-color:var(--accent);color:var(--accent)}
 .preset>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .preset>button{flex-shrink:0}
 .preset-info{flex:1;min-width:0}
@@ -344,7 +344,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <div id="composer">
     <div id="ctxtrack"><div id="ctx-fill"></div></div>
     <div id="ctxmeta">
-      <span id="status-preset" style="color:var(--accent);font-size:10px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+      <span id="status-preset" class="muted" style="font-size:10px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
       <span style="display:flex;align-items:center;gap:10px;margin-left:auto">
         <span id="ctx-text" class="muted">contexte 0 / 0</span>
         <button id="ctx-compact" onclick="compactContext()">compacter</button>
@@ -435,7 +435,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260710091316"></script>
+<script src="/e2e.js?v=20260710094230"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
