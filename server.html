@@ -492,7 +492,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260715175512"></script>
+<script src="/e2e.js?v=20260715175909"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1429,10 +1429,15 @@ async function send(){
   // En mode COMPLET : on retire l'indicateur dès qu'une bulle prend le relais.
   // En mode SIMPLE : raisonnement/outils sont masqués, donc on GARDE le même
   // indicateur (mêmes points animés) vivant tout le tour, remis en bas.
-  const killTyping=()=>{ if(!typingEl) return; if(simpleMode()){ document.getElementById('chat').appendChild(typingEl); return; } removeTyping(); };
-  // SIMPLE : garantit l'indicateur (le recrée s'il a été retiré) et le remet en
-  // bas — appelé quand une étape masquée (raisonnement/outil) démarre.
-  const showTyping=()=>{ if(!simpleMode()) return; if(!typingEl){ typingEl=addTyping(); } else { document.getElementById('chat').appendChild(typingEl); } };
+  // COMPLET : retire l'indicateur dès qu'une bulle prend le relais.
+  // SIMPLE : on le GARDE (raisonnement/outils masqués) — sans le toucher, pour
+  // ne PAS redémarrer son animation CSS (déplacer le nœud la remettrait à zéro).
+  const killTyping=()=>{ if(!typingEl) return; if(simpleMode()) return; removeTyping(); };
+  // SIMPLE : garantit l'indicateur (le recrée s'il manque) et le remet en bas
+  // UNIQUEMENT s'il n'y est pas déjà — idempotent, donc l'animation ne se
+  // réinitialise pas à chaque token pendant que l'IA raisonne / appelle un outil.
+  const showTyping=()=>{ if(!simpleMode()) return; const c=document.getElementById('chat');
+    if(!typingEl){ typingEl=addTyping(); } else if(c.lastElementChild!==typingEl){ c.appendChild(typingEl); } };
   let reasonEl=null, contentEl=null, pendingToolEl=null, fullContent='', fullReason='', toolMsgs=null;
   let turnCollapsibles=[]; // bulles reasoning/tool à replier dès la réponse finale
   let tokCount=0, reasonTokCount=0, t0=performance.now(), firstTok=0, statsTimer=null;
