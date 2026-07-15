@@ -220,6 +220,21 @@ button:disabled{opacity:.5;cursor:not-allowed}
 [data-display="simple"] #chat .msg.tool{display:none}
 [data-display="simple"] #chat .msg .label{display:none}
 [data-display="simple"] #cfg-details{display:none}
+/* MAIS tant que l'IA travaille (html[data-busy]), l'étape EN COURS (bulle non
+   repliée) reste visible sous forme de petits points animés — sinon l'écran
+   paraît figé alors que l'IA réfléchit / appelle un outil. Le contenu réel est
+   masqué ; seuls les 3 points (::before + box-shadow) s'affichent et pulsent. */
+[data-display="simple"][data-busy] #chat .msg.reasoning:not(.collapsed),
+[data-display="simple"][data-busy] #chat .msg.tool:not(.collapsed){
+  display:flex;align-items:center;background:transparent;border:none;
+  padding:14px 16px;min-height:0;font-size:0;color:transparent}
+[data-display="simple"][data-busy] #chat .msg.reasoning:not(.collapsed)>*,
+[data-display="simple"][data-busy] #chat .msg.tool:not(.collapsed)>*{display:none}
+[data-display="simple"][data-busy] #chat .msg.reasoning:not(.collapsed)::before,
+[data-display="simple"][data-busy] #chat .msg.tool:not(.collapsed)::before{
+  content:'';width:7px;height:7px;border-radius:50%;background:var(--dim);
+  box-shadow:12px 0 0 var(--dim),24px 0 0 var(--dim);
+  animation:typingdot 1.2s infinite ease-in-out}
 /* Hauteur animée en JS (mesure scrollHeight → 0) plutôt que grid 1fr→0fr qui
    peut « dépasser ». overflow:hidden clippe le contenu pendant tout le repli.
    width revient à auto SANS délai à l'ouverture (pas de saut), et passe à 0
@@ -489,7 +504,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260715174235"></script>
+<script src="/e2e.js?v=20260715174857"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1415,6 +1430,9 @@ async function send(){
   const ta=document.getElementById('input'); const text=ta.value.trim();
   if(!text) return;
   ta.value=''; busy=true;
+  // Drapeau "en cours" : en mode simple, sert à garder de petits points animés
+  // sur l'étape active (raisonnement/outil) au lieu d'un écran vide (voir CSS).
+  document.documentElement.setAttribute('data-busy','1');
   document.getElementById('send').style.display='none';
   document.getElementById('stop').style.display='inline-block';
   addMsg('user', text);
@@ -1573,6 +1591,7 @@ async function send(){
   if(statsTimer) clearInterval(statsTimer);
   updateStats(true);
   abortCtrl=null; busy=false;
+  document.documentElement.removeAttribute('data-busy');
   document.getElementById('send').style.display='inline-block';
   document.getElementById('stop').style.display='none';
   document.getElementById('input').focus();
