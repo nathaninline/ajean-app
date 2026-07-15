@@ -147,7 +147,7 @@ header .sp{flex:1}
 
   <div class="tabview" id="view-support">
     <div class="sec"><h2>Support</h2><span class="sp"></span></div>
-    <p class="lead" style="margin-bottom:12px">Une question, un souci ? Écris-moi directement — je te réponds ici.</p>
+    <p class="lead" style="margin-bottom:12px">Une question, un souci ? Écris-moi directement — je te réponds ici. En général dans l'heure ou dans la journée, très rarement au-delà de 48 h.</p>
     <div class="chat" id="supChat"></div>
     <div class="chatbar">
       <textarea id="supInput" rows="1" placeholder="Ton message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSupport();}"></textarea>
@@ -209,7 +209,7 @@ header .sp{flex:1}
   <div style="font-size:44px;line-height:1;margin-bottom:12px">🎉</div>
   <h3 style="color:var(--ok)">Bienvenue sur ajean.link !</h3>
   <p class="muted" style="margin-bottom:16px">Merci — ton abonnement est <b style="color:var(--ok)">actif</b>. Tu peux maintenant accéder à tes serveurs Jean à distance, chiffré de bout en bout.</p>
-  <div class="kv"><span>Formule</span><b>9,99 €/mois · résiliable à tout moment</b></div>
+  <div class="kv"><span>Formule</span><b>4,80 €/mois · résiliable à tout moment</b></div>
   <p class="hint" style="text-align:left;margin-top:12px">Prochaine étape : ouvre « Gérer les clés » pour lier un serveur avec <code>jean link</code>.</p>
   <div class="row"><button class="btn primary" onclick="closeWelcome()" style="margin:0 auto">Commencer →</button></div>
 </div></div>
@@ -217,10 +217,10 @@ header .sp{flex:1}
 <div class="modal" id="subModal"><div class="sheet">
   <h3>S'abonner à ajean.link</h3>
   <p class="muted" id="subMsg">Accès distant illimité à tes serveurs Jean, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide et le support direct.</p>
-  <div class="kv"><span>Formule</span><b>9,99 €/mois · sans engagement</b></div>
+  <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
   <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
   <div class="row"><button class="btn subtle" onclick="closeSub()" style="margin-right:auto">Plus tard</button>
-    <button class="btn primary" id="subBtn" onclick="startCheckout()">S'abonner — 9,99 €/mois →</button></div>
+    <button class="btn primary" id="subBtn" onclick="startCheckout()">S'abonner — 4,80 €/mois →</button></div>
 </div></div>
 
 <div id="toast"></div>
@@ -237,10 +237,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260715143711"></script>
+<script src="/e2e.js?v=20260715151217"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20260715143711'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20260715151217'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
@@ -443,7 +443,7 @@ async function pollSupportBadge(){try{var r=await fetch('/app/support/thread');i
 function openSub(){document.getElementById('subModal').classList.add('show');}
 function closeSub(){document.getElementById('subModal').classList.remove('show');}
 
-/* ---- abonnement Stripe (9,99 €/mois) ---- */
+/* ---- abonnement Stripe (4,80 €/mois) ---- */
 async function startCheckout(){var b=document.getElementById('subBtn');b.disabled=true;b.textContent='Redirection…';
   var r=await fetch('/billing/checkout',{method:'POST'});
   if(!r.ok){b.disabled=false;b.textContent="S'abonner →";toast('Paiement indisponible pour le moment');return;}
