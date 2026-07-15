@@ -105,6 +105,13 @@ header .sp{flex:1}
 .md code{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:12px;color:var(--accent)}
 .md pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;overflow:auto;margin:10px 0}.md pre code{border:0;padding:0}
 .md a{color:var(--accent)}.md blockquote{border-left:3px solid var(--border);padding-left:12px;color:var(--dim);margin:10px 0}
+.md table{display:block;width:100%;overflow-x:auto;border-collapse:collapse;margin:14px 0;font-size:13px}
+.md th,.md td{border:1px solid var(--border);padding:8px 11px;text-align:left;vertical-align:top}
+.md th{background:var(--bg);font-weight:600;white-space:nowrap}
+.md tbody tr:nth-child(even) td{background:rgba(127,127,127,.06)}
+.md hr{border:0;border-top:1px solid var(--border);margin:20px 0}
+.md h1{border-bottom:1px solid var(--border);padding-bottom:6px}
+.md img{max-width:100%;height:auto;border-radius:8px}
 .chat{border:1px solid var(--border);border-radius:8px;background:var(--panel);min-height:44vh;max-height:60vh;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
 .chat .empty2{margin:auto;text-align:center;color:var(--dim)}
 .msg{max-width:80%;padding:9px 13px;border-radius:12px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
@@ -237,10 +244,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260715151217"></script>
+<script src="/e2e.js?v=20260715163423"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20260715151217'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20260715163423'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
