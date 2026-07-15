@@ -216,25 +216,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
    Mode "simple" (Apparence) : masque le raisonnement, les appels d'outils,
    les détails de vitesse sur les bulles et la config active à gauche. Piloté
    par [data-display="simple"] sur <html> (persisté dans 'jean-display'). */
+/* En simple, raisonnement et outils sont masqués. L'activité est signalée par le
+   VRAI indicateur de frappe (.msg.typing, mêmes 3 points animés qu'avant la
+   réponse), maintenu en bas pendant tout le tour côté JS — animation identique. */
 [data-display="simple"] #chat .msg.reasoning,
 [data-display="simple"] #chat .msg.tool{display:none}
 [data-display="simple"] #chat .msg .label{display:none}
 [data-display="simple"] #cfg-details{display:none}
-/* MAIS tant que l'IA travaille (html[data-busy]), l'étape EN COURS (bulle non
-   repliée) reste visible sous forme de petits points animés — sinon l'écran
-   paraît figé alors que l'IA réfléchit / appelle un outil. Le contenu réel est
-   masqué ; seuls les 3 points (::before + box-shadow) s'affichent et pulsent. */
-[data-display="simple"][data-busy] #chat .msg.reasoning:not(.collapsed),
-[data-display="simple"][data-busy] #chat .msg.tool:not(.collapsed){
-  display:flex;align-items:center;background:transparent;border:none;
-  padding:14px 16px;min-height:0;font-size:0;color:transparent}
-[data-display="simple"][data-busy] #chat .msg.reasoning:not(.collapsed)>*,
-[data-display="simple"][data-busy] #chat .msg.tool:not(.collapsed)>*{display:none}
-[data-display="simple"][data-busy] #chat .msg.reasoning:not(.collapsed)::before,
-[data-display="simple"][data-busy] #chat .msg.tool:not(.collapsed)::before{
-  content:'';width:7px;height:7px;border-radius:50%;background:var(--dim);
-  box-shadow:12px 0 0 var(--dim),24px 0 0 var(--dim);
-  animation:typingdot 1.2s infinite ease-in-out}
 /* Hauteur animée en JS (mesure scrollHeight → 0) plutôt que grid 1fr→0fr qui
    peut « dépasser ». overflow:hidden clippe le contenu pendant tout le repli.
    width revient à auto SANS délai à l'ouverture (pas de saut), et passe à 0
@@ -504,7 +492,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260715174857"></script>
+<script src="/e2e.js?v=20260715175512"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1430,15 +1418,21 @@ async function send(){
   const ta=document.getElementById('input'); const text=ta.value.trim();
   if(!text) return;
   ta.value=''; busy=true;
-  // Drapeau "en cours" : en mode simple, sert à garder de petits points animés
-  // sur l'étape active (raisonnement/outil) au lieu d'un écran vide (voir CSS).
-  document.documentElement.setAttribute('data-busy','1');
   document.getElementById('send').style.display='none';
   document.getElementById('stop').style.display='inline-block';
   addMsg('user', text);
   msgs.push({role:'user',content:text}); saveChat();
   let typingEl=addTyping();
-  const killTyping=()=>{ if(typingEl){ typingEl.remove(); typingEl=null; } };
+  const simpleMode=()=>document.documentElement.getAttribute('data-display')==='simple';
+  // Retire définitivement l'indicateur de frappe (fin de tour).
+  const removeTyping=()=>{ if(typingEl){ typingEl.remove(); typingEl=null; } };
+  // En mode COMPLET : on retire l'indicateur dès qu'une bulle prend le relais.
+  // En mode SIMPLE : raisonnement/outils sont masqués, donc on GARDE le même
+  // indicateur (mêmes points animés) vivant tout le tour, remis en bas.
+  const killTyping=()=>{ if(!typingEl) return; if(simpleMode()){ document.getElementById('chat').appendChild(typingEl); return; } removeTyping(); };
+  // SIMPLE : garantit l'indicateur (le recrée s'il a été retiré) et le remet en
+  // bas — appelé quand une étape masquée (raisonnement/outil) démarre.
+  const showTyping=()=>{ if(!simpleMode()) return; if(!typingEl){ typingEl=addTyping(); } else { document.getElementById('chat').appendChild(typingEl); } };
   let reasonEl=null, contentEl=null, pendingToolEl=null, fullContent='', fullReason='', toolMsgs=null;
   let turnCollapsibles=[]; // bulles reasoning/tool à replier dès la réponse finale
   let tokCount=0, reasonTokCount=0, t0=performance.now(), firstTok=0, statsTimer=null;
@@ -1492,7 +1486,7 @@ async function send(){
             const o=JSON.parse(data);
             const d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{};
             if(d.error){
-              killTyping();
+              removeTyping();
               // Erreur serveur (ex : modèle en cours de chargement → 503). On
               // l'affiche, on retire le message user de l'historique et on le
               // remet dans l'input pour renvoyer d'un clic une fois prêt.
@@ -1524,6 +1518,7 @@ async function send(){
               // finis) dès qu'une nouvelle démarre — seule l'étape en cours reste ouverte.
               if(!pendingToolEl){ collapseAll(turnCollapsibles); pendingToolEl=addMsg('tool',''); turnCollapsibles.push(pendingToolEl); }
               renderToolMsg(pendingToolEl, tu);
+              if(!tu.done) showTyping(); // simple : points animés pendant l'appel d'outil
               if(tu.done){
                 pendingToolEl=null;
                 // L'IA gère sa mémoire elle-même : rafraîchir le menu en direct
@@ -1545,12 +1540,13 @@ async function send(){
               // follows a tool call re-renders ALL previously accumulated reasoning
               // into the new bubble (duplicated dozens of times over a turn).
               if(!reasonEl){ collapseAll(turnCollapsibles); reasonEl=addMsg('reasoning',''); fullReason=''; turnCollapsibles.push(reasonEl); }
+              showTyping(); // simple : points animés pendant que l'IA raisonne
               if(!firstTok) firstTok=performance.now();
               reasonTokCount++;
               fullReason+=d.reasoning_content; renderBody(reasonEl, fullReason);
             }
             if(d.content){
-              killTyping();
+              removeTyping(); // la réponse prend le relais : plus de points (comme en complet)
               if(!contentEl){ collapseAll(turnCollapsibles); contentEl=addMsg('assistant',''); fullContent=''; firstTok=performance.now(); }
               tokCount++;
               fullContent+=d.content; renderBody(contentEl, fullContent);
@@ -1587,11 +1583,10 @@ async function send(){
     }
     saveChat();
   }
-  killTyping();
+  removeTyping();
   if(statsTimer) clearInterval(statsTimer);
   updateStats(true);
   abortCtrl=null; busy=false;
-  document.documentElement.removeAttribute('data-busy');
   document.getElementById('send').style.display='inline-block';
   document.getElementById('stop').style.display='none';
   document.getElementById('input').focus();
