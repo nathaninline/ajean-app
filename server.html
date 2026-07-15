@@ -21,11 +21,15 @@
    thème plus tard : 1) copier un bloc [data-theme="…"] ci-dessous en changeant
    les valeurs, 2) ajouter son {id,label} au registre THEMES (voir le JS). Le
    reste (sélecteur, persistance, application) est automatique. */
-:root{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
+/* --font : police par défaut (mono). Un thème peut la surcharger (voir "soft").
+   Les blocs plus spécifiques qui ne redéfinissent pas --font héritent de :root. */
+:root{color-scheme:dark;--font:ui-monospace,SFMono-Regular,Menlo,monospace;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
 [data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
 [data-theme="light"]{color-scheme:light;--bg:#f0f1f4;--panel:#f8f9fb;--border:#d7dbe1;--text:#24292f;--dim:#636b74;--accent:#0969da;--accent-bg:rgba(9,105,218,.10);--ok:#0969da;--warn:#9a6700;--err:#cf222e;--mag:#8250df;--code-bg:#e6e9ee;--danger-bg:#fbe6e6;--warn-bg:#fbefda}
+/* "doux" — thème clair chaud + police Lexend (lecture agréable). */
+[data-theme="soft"]{color-scheme:light;--font:'Lexend',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--bg:#faf8f4;--panel:#ffffff;--border:#e8e3d9;--text:#2c2a26;--dim:#8c8577;--accent:#3f6fe8;--accent-bg:rgba(63,111,232,.10);--ok:#3f6fe8;--warn:#b45309;--err:#dc2626;--mag:#7c3aed;--code-bg:#f3f0ea;--danger-bg:#fbe9e7;--warn-bg:#fbf1e0}
 *{box-sizing:border-box}
-body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);color:var(--text);height:100vh;height:100dvh;display:flex;font-size:14px}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;height:100dvh;display:flex;font-size:14px}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
    pas passer sous l'encoche / la barre système / l'indicateur d'accueil. Les
    env(safe-area-inset-*) valent 0 hors PWA, donc aucun impact ailleurs. */
@@ -471,7 +475,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260715164714"></script>
+<script src="/e2e.js?v=20260715173118"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -568,9 +572,20 @@ function saveSys(){ localStorage.setItem('jean.sys', document.getElementById('sy
 // Registre des thèmes disponibles. Pour en AJOUTER un : ajouter un bloc
 // [data-theme="…"] dans le <style> puis une entrée {id,label} ici — le reste
 // (menu déroulant, persistance localStorage, application) est automatique.
-const THEMES=[{id:'dark',label:'sombre'},{id:'light',label:'clair'}];
+const THEMES=[{id:'dark',label:'sombre'},{id:'light',label:'clair'},{id:'soft',label:'doux'}];
+// Lexend (thème "doux") n'est chargé QUE si ce thème est choisi : aucune requête
+// externe (Google Fonts) tant qu'on reste en sombre/clair — jean reste local par
+// défaut. Fallback système sans-serif si hors ligne.
+function ensureSoftFont(){
+  if(document.getElementById('lexend-font')) return;
+  const l=document.createElement('link');
+  l.id='lexend-font'; l.rel='stylesheet';
+  l.href='https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap';
+  document.head.appendChild(l);
+}
 function applyTheme(id){
   if(!THEMES.some(t=>t.id===id)) id='dark';
+  if(id==='soft') ensureSoftFont();
   document.documentElement.setAttribute('data-theme', id);
   try{ localStorage.setItem('jean-theme', id); }catch(e){}
   const sel=document.getElementById('theme-select'); if(sel) sel.value=id;
