@@ -23,11 +23,11 @@
    reste (sélecteur, persistance, application) est automatique. */
 /* --font : police par défaut (mono). Un thème peut la surcharger (voir "soft").
    Les blocs plus spécifiques qui ne redéfinissent pas --font héritent de :root. */
-:root{color-scheme:dark;--font:ui-monospace,SFMono-Regular,Menlo,monospace;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
+:root{color-scheme:dark;--font:ui-monospace,SFMono-Regular,Menlo,monospace;--bubble:#1f6feb;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
 [data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
 [data-theme="light"]{color-scheme:light;--bg:#f0f1f4;--panel:#f8f9fb;--border:#d7dbe1;--text:#24292f;--dim:#636b74;--accent:#0969da;--accent-bg:rgba(9,105,218,.10);--ok:#0969da;--warn:#9a6700;--err:#cf222e;--mag:#8250df;--code-bg:#e6e9ee;--danger-bg:#fbe6e6;--warn-bg:#fbefda}
 /* "doux" — thème clair chaud + police Lexend (lecture agréable). */
-[data-theme="soft"]{color-scheme:light;--font:'Lexend',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--bg:#faf8f4;--panel:#ffffff;--border:#e8e3d9;--text:#2c2a26;--dim:#8c8577;--accent:#c2611f;--accent-bg:rgba(194,97,31,.10);--ok:#c2611f;--warn:#b45309;--err:#dc2626;--mag:#9a5bd6;--code-bg:#f3f0ea;--danger-bg:#fbe9e7;--warn-bg:#fbf1e0}
+[data-theme="soft"]{color-scheme:light;--font:'Lexend',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--bubble:#c2611f;--bg:#faf8f4;--panel:#ffffff;--border:#e8e3d9;--text:#2c2a26;--dim:#8c8577;--accent:#c2611f;--accent-bg:rgba(194,97,31,.10);--ok:#c2611f;--warn:#b45309;--err:#dc2626;--mag:#9a5bd6;--code-bg:#f3f0ea;--danger-bg:#fbe9e7;--warn-bg:#fbf1e0}
 *{box-sizing:border-box}
 body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;height:100dvh;display:flex;font-size:14px}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
@@ -62,9 +62,9 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .sidehead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:18px}
 /* pastille d'état service, en haut à droite de la barre latérale */
 .statuspill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--dim);font-weight:600;white-space:nowrap}
-.statuspill.ok{color:var(--ok);border-color:rgba(88,166,255,.45);background:rgba(88,166,255,.10)}
-.statuspill.err{color:var(--err);border-color:rgba(248,81,73,.45);background:rgba(248,81,73,.10)}
-.statuspill.loading{color:var(--warn);border-color:rgba(210,153,34,.45);background:rgba(210,153,34,.10)}
+.statuspill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.statuspill.err{color:var(--err);border-color:color-mix(in srgb,var(--err) 45%,transparent);background:color-mix(in srgb,var(--err) 12%,transparent)}
+.statuspill.loading{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent);background:color-mix(in srgb,var(--warn) 12%,transparent)}
 .statuspill.loading .dot{animation:pulse 1s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 .statuspill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
@@ -165,7 +165,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .msg{max-width:80%;padding:10px 14px;border-radius:10px;white-space:pre-wrap;word-wrap:break-word;line-height:1.45}
 .msg.assistant,.msg.reasoning{white-space:normal}
 .msg .body{overflow-wrap:anywhere;word-break:break-word}
-.msg.user{align-self:flex-end;background:#1f6feb;color:#fff}
+.msg.user{align-self:flex-end;background:var(--bubble);color:#fff}
 .msg.user .label{color:rgba(255,255,255,.8)}
 .msg.assistant{align-self:flex-start;background:var(--panel);border:1px solid var(--border)}
 .msg.assistant.errmsg{border-color:rgba(248,81,73,.55);background:rgba(248,81,73,.08);color:var(--err)}
@@ -475,7 +475,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260715173419"></script>
+<script src="/e2e.js?v=20260715173741"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
