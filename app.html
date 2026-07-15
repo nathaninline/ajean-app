@@ -3,9 +3,14 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><rect width='12' height='12' rx='2' ry='2' fill='%231f6feb'/><rect x='6' y='3' width='2' height='2' fill='%23fff'/><rect x='6' y='5' width='2' height='2' fill='%23fff'/><rect x='4' y='7' width='2' height='2' fill='%23fff'/></svg>">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABa0lEQVR42u3dsQ2AIBBAUSCOYA8b4iiMSI9D2FpYGTEheW8AisvPUV7MdQR4kowAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+JAHCAOxMEHNiO4622f9HI5TpsD3wriQBwgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4EAfiQBwgDsSBOBAH4kAciANxIA7EgThAHIgDcSAOxIE4EAfiQByIA8SBOBAH4kAciANxIA7EgThAHIgDcSAO/rLkLXsX520OxIE4EAfiQByIA8SBOBAH4kAciANxIA7EgThAHIgDcSAOxIE4EAfiQByIA8SBOHgl5jpMAZsDcSAOxIE4EAfiQByIA3GAOBAH4kAciANxIA7EgTgQB4gDcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcSAOxME0F8YvCl24O02KAAAAAElFTkSuQmCC">
 <title>Jean</title>
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('jean-theme')||'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
 <style>
-:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c222b;--border:#30363d;--text:#e6edf3;
---dim:#7d8590;--accent:#58a6ff;--blue:#1f6feb;--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff}
+/* Thème partagé avec jean web (jean/ui/index.html) : mêmes variables, mêmes
+   couleurs. Défaut sombre ; [data-theme="light"] pour le mode clair. */
+:root,[data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--panel2:#1c222b;--border:#30363d;--text:#e6edf3;
+--dim:#7d8590;--accent:#58a6ff;--blue:#1f6feb;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117}
+[data-theme="light"]{color-scheme:light;--bg:#f0f1f4;--panel:#f8f9fb;--panel2:#eceef2;--border:#d7dbe1;--text:#24292f;
+--dim:#636b74;--accent:#0969da;--blue:#1f6feb;--accent-bg:rgba(9,105,218,.10);--ok:#0969da;--warn:#9a6700;--err:#cf222e;--mag:#8250df;--code-bg:#e6e9ee}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.5;overscroll-behavior-y:none}
 header{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:14px;padding:12px 20px;background:var(--bg);border-bottom:1px solid var(--border)}
@@ -96,22 +101,39 @@ header .sp{flex:1}
 .tbadge{display:inline-block;min-width:16px;text-align:center;background:var(--err);color:#fff;border-radius:9px;font-size:10px;padding:0 5px;margin-left:6px}
 .tabview{display:none}.tabview.on{display:block}
 .hidden{display:none}
-.artcard{display:block;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color .12s}
-.artcard:hover{border-color:var(--accent)}
-.artcard b{font-size:15px}.artcard .ex{color:var(--dim);font-size:12px;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.md{line-height:1.65;font-size:14px}
-.md h1,.md h2,.md h3{margin:18px 0 8px;line-height:1.3}.md h1{font-size:20px}.md h2{font-size:17px}.md h3{font-size:15px}
-.md p{margin:10px 0}.md ul,.md ol{margin:10px 0 10px 22px}.md li{margin:4px 0}
-.md code{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:12px;color:var(--accent)}
-.md pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;overflow:auto;margin:10px 0}.md pre code{border:0;padding:0}
-.md a{color:var(--accent)}.md blockquote{border-left:3px solid var(--border);padding-left:12px;color:var(--dim);margin:10px 0}
-.md table{display:block;width:100%;overflow-x:auto;border-collapse:collapse;margin:14px 0;font-size:13px}
-.md th,.md td{border:1px solid var(--border);padding:8px 11px;text-align:left;vertical-align:top}
-.md th{background:var(--bg);font-weight:600;white-space:nowrap}
-.md tbody tr:nth-child(even) td{background:rgba(127,127,127,.06)}
-.md hr{border:0;border-top:1px solid var(--border);margin:20px 0}
-.md h1{border-bottom:1px solid var(--border);padding-bottom:6px}
+.artcard{display:flex;align-items:flex-start;gap:12px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:border-color .12s,background .12s}
+.artcard:hover{border-color:var(--accent);background:var(--accent-bg)}
+.artcard .qm{flex:none;width:26px;height:26px;border-radius:7px;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:14px}
+.artcard .ac{min-width:0;flex:1}
+.artcard b{font-size:15px;font-weight:600;display:block}.artcard .ex{color:var(--dim);font-size:12.5px;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.artcard .chev{flex:none;color:var(--dim);align-self:center}
+.md{line-height:1.7;font-size:15px;color:var(--text)}
+.md>*:first-child{margin-top:0}
+.md h1,.md h2,.md h3{margin:24px 0 10px;line-height:1.3;font-weight:700}
+.md h1{font-size:21px;border-bottom:1px solid var(--border);padding-bottom:7px}
+.md h2{font-size:17px}
+.md h3{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.md p{margin:11px 0}
+.md ul,.md ol{margin:11px 0;padding-left:22px}.md li{margin:6px 0;padding-left:4px}
+.md li::marker{color:var(--accent)}
+.md strong{color:var(--text);font-weight:700}
+.md a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.md code{background:var(--code-bg);border:1px solid var(--border);border-radius:5px;padding:1.5px 6px;font-size:.86em;color:var(--accent)}
+.md pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:13px 15px;overflow-x:auto;margin:12px 0;line-height:1.55}
+.md pre code{border:0;padding:0;background:none;color:var(--text);font-size:13px}
+.md blockquote{border-left:3px solid var(--accent);background:var(--accent-bg);border-radius:0 8px 8px 0;padding:10px 14px;color:var(--text);margin:14px 0}
+.md blockquote p{margin:0}
+.md hr{border:0;border-top:1px solid var(--border);margin:24px 0}
 .md img{max-width:100%;height:auto;border-radius:8px}
+/* Tableaux : enveloppés dans .tw (scroll horizontal sur mobile), séparateurs
+   horizontaux seulement = plus lisible que la grille complète. */
+.tw{overflow-x:auto;margin:16px 0;border:1px solid var(--border);border-radius:10px}
+.md table{width:100%;border-collapse:collapse;font-size:13.5px}
+.md thead th{background:var(--panel2);text-align:left;font-weight:600;white-space:nowrap}
+.md th,.md td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.md tbody tr:last-child td{border-bottom:0}
+.md tbody tr:nth-child(even){background:var(--accent-bg)}
+.md td code{white-space:nowrap}
 .chat{border:1px solid var(--border);border-radius:8px;background:var(--panel);min-height:44vh;max-height:60vh;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
 .chat .empty2{margin:auto;text-align:center;color:var(--dim)}
 .msg{max-width:80%;padding:9px 13px;border-radius:12px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
@@ -126,7 +148,8 @@ header .sp{flex:1}
 <header>
   <div class="brand"><span>ajean<span class="accent">.link</span></span></div>
   <span class="sp"></span>
-  <button class="iconbtn" onclick="openAccount()" title="Mon compte" aria-label="Mon compte"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></svg></button>
+  <button class="iconbtn" id="themeBtn" onclick="toggleTheme()" title="Thème clair / sombre" aria-label="Changer de thème"></button>
+  <button class="iconbtn" id="acctBtn" onclick="openAccount()" title="Mon compte" aria-label="Mon compte"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></svg></button>
 </header>
 
 <nav class="tabs">
@@ -226,7 +249,7 @@ header .sp{flex:1}
   <p class="muted" id="subMsg">Accès distant illimité à tes serveurs Jean, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide et le support direct.</p>
   <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
   <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
-  <div class="row"><button class="btn subtle" onclick="closeSub()" style="margin-right:auto">Plus tard</button>
+  <div class="row"><button class="btn subtle" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
     <button class="btn primary" id="subBtn" onclick="startCheckout()">S'abonner — 4,80 €/mois →</button></div>
 </div></div>
 
@@ -244,10 +267,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260715163423"></script>
+<script src="/e2e.js?v=20260715164714"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20260715163423'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20260715164714'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
@@ -407,14 +430,18 @@ function tab(v){document.querySelectorAll('.tab').forEach(function(t){t.classLis
 
 /* ---- Aide / FAQ (articles publiés) ---- */
 var ARTS=[];
-function mdRender(s){try{return marked.parse(s||'');}catch(e){return esc(s||'');}}
+function mdRender(s){try{var h=marked.parse(s||'');
+  return h.replace(/<table>/g,'<div class="tw"><table>').replace(/<\/table>/g,'</table></div>');
+}catch(e){return esc(s||'');}}
 function stripMd(s){return (s||'').replace(/[#*`>_\-]/g,' ').replace(/\s+/g,' ').trim();}
 async function loadArticles(){var r=await j('/app/help/articles');if(!r)return;ARTS=(await r.json()).articles||[];
   closeArticle();
   var el=document.getElementById('artList');
   el.innerHTML=ARTS.length?ARTS.map(function(a){
-    return '<div class="artcard" onclick="openArticle(\''+a.id+'\')"><b>'+esc(a.title)+'</b>'+
-      '<div class="ex">'+esc(stripMd(a.body).slice(0,160))+'</div></div>';
+    return '<div class="artcard" onclick="openArticle(\''+a.id+'\')">'+
+      '<span class="qm">?</span><div class="ac"><b>'+esc(a.title)+'</b>'+
+      '<div class="ex">'+esc(stripMd(a.body).slice(0,150))+'</div></div>'+
+      '<span class="chev">→</span></div>';
   }).join(''):'<div class="empty">Aucun article pour le moment.</div>';}
 function openArticle(id){var a=ARTS.find(function(x){return x.id===id;});if(!a)return;
   document.getElementById('artList').classList.add('hidden');
@@ -457,7 +484,7 @@ async function startCheckout(){var b=document.getElementById('subBtn');b.disable
   var d=await r.json();location.href=d.url;}
 async function pollActivation(){for(var i=0;i<12;i++){await new Promise(function(r){setTimeout(r,2000);});
     var r=await fetch('/billing/status');if(!r.ok)break;var s=await r.json();
-    if(s.active){document.getElementById('subModal').classList.remove('show');welcome();await load();return;}}
+    if(s.active){ACTIVE=true;document.getElementById('subModal').classList.remove('show');showShell(true);welcome();await load();pollSupportBadge();return;}}
   document.getElementById('subMsg').textContent='Paiement bien pris en compte. Si l\'accès ne s\'ouvre pas, recharge la page dans une minute.';}
 // Écran de remerciement après paiement ; nettoie l'URL (?sub=ok) pour ne pas
 // ré-afficher au rechargement.
@@ -466,6 +493,16 @@ function welcome(){try{history.replaceState({},'',location.pathname);}catch(e){}
 function closeWelcome(){document.getElementById('welcomeModal').classList.remove('show');}
 async function manageSub(){var r=await fetch('/billing/portal',{method:'POST'});
   if(!r.ok){toast('Gestion indisponible');return;}var d=await r.json();location.href=d.url;}
+
+/* ---- Thème clair / sombre (mêmes couleurs que jean web, mémorisé) ---- */
+var ICON_SUN='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
+var ICON_MOON='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>';
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);
+  try{localStorage.setItem('jean-theme',t);}catch(e){}
+  var b=document.getElementById('themeBtn');if(b)b.innerHTML=(t==='light')?ICON_MOON:ICON_SUN;}
+function toggleTheme(){var cur=(document.documentElement.getAttribute('data-theme')==='light')?'light':'dark';
+  applyTheme(cur==='light'?'dark':'light');}
+applyTheme(document.documentElement.getAttribute('data-theme')==='light'?'light':'dark');
 
 async function boot(){
   // « Payer ou rien » : sans abonnement actif, l'accès distant est fermé. Le compte
@@ -476,10 +513,25 @@ async function boot(){
   var s={};try{s=await st.json();}catch(e){}
   EMAIL=s.email||'';ACTIVE=!!s.active;
   var back=(new URLSearchParams(location.search)).get('sub')==='ok';
-  if(back){if(!ACTIVE)pollActivation();else welcome();}
-  else if(!ACTIVE)openSub(); // mur d'abonnement
+  if(!ACTIVE){
+    // « Payer ou rien » : mur TOTAL. Tant que l'abonnement n'est pas actif, aucun
+    // contenu (serveurs, aide, support) n'est chargé ni affiché. L'écran d'abonnement
+    // est bloquant (pas de « Plus tard ») — seule issue : payer ou se déconnecter.
+    showShell(false);
+    if(back)pollActivation(); else openSub();
+    return;
+  }
+  showShell(true);
+  if(back)welcome();
   await load();
   pollSupportBadge();}
+// showShell : masque tabs + contenu + bouton compte tant que le mur est en place.
+function showShell(on){
+  var tb=document.querySelector('nav.tabs'),wr=document.querySelector('.wrap'),ab=document.getElementById('acctBtn');
+  if(tb)tb.style.display=on?'':'none';
+  if(wr)wr.style.display=on?'':'none';
+  if(ab)ab.style.display=on?'':'none';
+}
 boot();
-setInterval(function(){if(document.querySelector('.modal.show'))return;load();pollSupportBadge();},15000);
+setInterval(function(){if(!ACTIVE)return;if(document.querySelector('.modal.show'))return;load();pollSupportBadge();},15000);
 </script></body></html>
