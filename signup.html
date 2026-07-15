@@ -33,14 +33,15 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 <div class="authwrap">
   <div class="brand"><span>ajean<span class="tag">.link</span></span></div>
   <div class="card"><div class="inner">
-  <h1>Créer un compte gratuit</h1>
+  <h1>Créer un compte</h1>
   <p>Accès distant chiffré de bout en bout à tes serveurs Jean.</p>
+  <p class="price">9,99 €/mois · sans engagement, résiliable à tout moment.</p>
   <p class="err" id="jsErr" style="display:none"></p>
   <form id="sf">
     <input type="email" name="email" id="se" placeholder="email" autocomplete="username" autofocus required>
     <input type="password" name="password" id="sp" placeholder="mot de passe (min. 8 caractères)" autocomplete="new-password" minlength="8" required>
     <input type="password" name="password2" id="sp2" placeholder="confirmer le mot de passe" autocomplete="new-password" minlength="8" required>
-    <button class="btn btn-primary" id="sb" type="submit">Créer mon compte gratuit →</button>
+    <button class="btn btn-primary" id="sb" type="submit">Créer mon compte →</button>
   </form>
   <p class="foot">Déjà un compte ? <a href="/login.html">Se connecter</a> · <a href="https://ajean.link/">← Accueil</a></p>
 </div></div>
@@ -70,7 +71,7 @@ var sf=document.getElementById('sf');
 sf.onsubmit=async function(e){e.preventDefault();
   var email=document.getElementById('se').value.trim(),pw=document.getElementById('sp').value,pw2=document.getElementById('sp2').value;
   var er=document.getElementById('jsErr'),b=document.getElementById('sb');
-  function show(m){er.textContent=m;er.style.display='';b.disabled=false;b.textContent='Créer mon compte gratuit →';}
+  function show(m){er.textContent=m;er.style.display='';b.disabled=false;b.textContent='Créer mon compte →';}
   er.style.display='none';
   if(pw.length<8){show('Le mot de passe doit faire au moins 8 caractères.');return;}
   if(pw!==pw2){show('Les deux mots de passe ne correspondent pas.');return;}
@@ -83,9 +84,12 @@ sf.onsubmit=async function(e){e.preventDefault();
     var ek=await opaqueRegisterFlow(pw);
     if(!ek){show('Échec de l\'enregistrement du mot de passe.');return;}
     localStorage.setItem('ajk',ek);
-    // 3) Compte gratuit prêt : direction le tableau de bord (connexion d'un serveur).
-    //    L'abonnement illimité se fait plus tard, depuis le tableau de bord.
-    b.textContent='Compte créé, redirection…';
+    // 3) « Payer ou rien » : on enchaîne directement sur le paiement Stripe. En cas
+    //    d'échec (paiement momentanément indispo), on retombe sur le tableau de bord
+    //    qui affichera le mur d'abonnement.
+    b.textContent='Redirection vers le paiement…';
+    try{var co=await fetch('/billing/checkout',{method:'POST'});
+      if(co.ok){var cd=await co.json();if(cd.url){location.href=cd.url;return;}}}catch(e){}
     location.href='/';
   }catch(err){show('Erreur : '+err);}
 };
