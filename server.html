@@ -338,10 +338,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
   </details>
   <details><summary>Apparence</summary>
     <label class="switchrow" style="justify-content:space-between;gap:12px"><span>thème</span>
-      <select id="theme-select" onchange="applyTheme(this.value)" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px"></select>
+      <select id="theme-select" onchange="applyTheme(this.value);savePrefs()" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px"></select>
     </label>
     <label class="switchrow" style="justify-content:space-between;gap:12px;margin-top:8px"><span>affichage<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip"><b>Complet</b> : tout est visible (raisonnement, appels d'outils, vitesse, config active). <b>Simple</b> : masque le raisonnement, les appels d'outils, les détails de vitesse sur les bulles et la config active à gauche.</span></span></span>
-      <select id="display-select" onchange="applyDisplay(this.value)" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px">
+      <select id="display-select" onchange="applyDisplay(this.value);savePrefs()" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px">
         <option value="full">complet</option>
         <option value="simple">simple</option>
       </select>
@@ -492,7 +492,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260715175909"></script>
+<script src="/e2e.js?v=20260716105433"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -627,6 +627,25 @@ function applyDisplay(mode){
 function initDisplay(){
   let m='full'; try{ m=localStorage.getItem('jean-display')||'full'; }catch(e){}
   applyDisplay(m);
+}
+// ===== Persistance côté serveur (partagée entre appareils) ==================
+// L'apparence est aussi enregistrée sur la machine jean (/api/prefs) : ainsi le
+// thème/affichage choisi sur un appareil se retrouve sur tous les autres. Le
+// localStorage reste utilisé pour appliquer instantanément au chargement (sans
+// flash), puis loadPrefs() aligne sur la valeur du serveur (source de vérité).
+function savePrefs(){
+  let theme='dark', display='full';
+  try{ theme=localStorage.getItem('jean-theme')||'dark'; display=localStorage.getItem('jean-display')||'full'; }catch(e){}
+  jpost('/api/prefs', {theme, display}).catch(()=>{});
+}
+async function loadPrefs(){
+  try{
+    const p=await jget('/api/prefs');
+    if(p && p.ok && p.prefs){
+      if(p.prefs.theme) applyTheme(p.prefs.theme);
+      if(p.prefs.display) applyDisplay(p.prefs.display);
+    }
+  }catch(e){}
 }
 document.addEventListener('DOMContentLoaded', ()=>{ initTheme(); initDisplay(); document.getElementById('sysprompt').value = localStorage.getItem('jean.sys') || ''; restoreChat(); });
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
@@ -954,7 +973,7 @@ async function saveCrawlUrl(){
   const url=document.getElementById('crawl-url').value.trim();
   renderInternet(await jpost('/api/internet',{url}));
 }
-async function loadAll(){ await Promise.all([loadStatus(),loadVram(),loadCfg(),loadPresets(),loadAgent(),loadInternet(),loadApiKey()]); }
+async function loadAll(){ await Promise.all([loadStatus(),loadVram(),loadCfg(),loadPresets(),loadAgent(),loadInternet(),loadApiKey(),loadPrefs()]); }
 async function act(a){ toast(a+'…'); await jpost('/api/'+a); setTimeout(loadAll,1500); }
 function openBenchModal(){ document.getElementById('bench-modal').style.display = 'flex'; }
 function closeBenchModal(){ document.getElementById('bench-modal').style.display = 'none'; }
