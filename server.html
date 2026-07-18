@@ -507,7 +507,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260719000305"></script>
+<script src="/e2e.js?v=20260719001247"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -763,7 +763,7 @@ const CTX_RESERVE=1536, GEN_MARGIN=256, MIN_GEN=256;
 // Tampon de build visible en bas de l'UI : permet de vérifier d'un coup d'œil
 // que la page chargée est bien à jour (et pas une version en cache). À bumper à
 // chaque changement notable de l'UI.
-const UI_BUILD='compaction-v5 · 19/07';
+const UI_BUILD='compaction-v6 · 19/07';
 function ctxRoom(){ return CTX_MAX ? Math.max(0, CTX_MAX - CTX_USED) : Infinity; }
 // Plafond de génération pour le prochain tour = place restante moins un coussin.
 // 0 → pas de plafond (fenêtre inconnue). Empêche le modèle de dépasser le
@@ -1576,7 +1576,7 @@ async function send(){
   let reasonEl=null, contentEl=null, pendingToolEl=null, fullContent='', fullReason='', toolMsgs=null;
   let turnCollapsibles=[]; // bulles reasoning/tool à replier dès la réponse finale
   let tokCount=0, reasonTokCount=0, t0=performance.now(), firstTok=0, statsTimer=null;
-  let serverStats=null, streamErr=false, finishReason='';
+  let serverStats=null, streamErr=false, finishReason='', ovfPrompt=0, ovfCtx=0;
   const updateStats=(final)=>{
     if(!contentEl && !reasonEl) return;
     const el = contentEl || reasonEl;
@@ -1633,6 +1633,8 @@ async function send(){
             const o=JSON.parse(data);
             const d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{};
             if(d.finish_reason){ finishReason=d.finish_reason; }
+            if(d.overflow_prompt){ ovfPrompt=d.overflow_prompt; }
+            if(d.overflow_ctx){ ovfCtx=d.overflow_ctx; }
             if(d.error){
               removeTyping();
               // Erreur serveur (ex : modèle en cours de chargement → 503). On
@@ -1730,7 +1732,13 @@ async function send(){
     // jamais automatiquement. C'est le filet qui garantit un avertissement même
     // quand le débordement arrive EN COURS de tour (que le plafond client ne voit pas).
     if(overflow){
-      showCtxBanner('Contexte plein : jean n\'a pas pu répondre ('+CTX_USED+'/'+CTX_MAX+'). Compacte pour continuer — ton message est conservé.');
+      // Affiche les VRAIS compteurs (prompt réel vs fenêtre), pas le compteur
+      // périmé : un débordement vient souvent d'une grosse sortie d'outil qui a
+      // gonflé le prompt d'un coup. On recale aussi le compteur/jauge.
+      if(ovfCtx) CTX_MAX=ovfCtx;
+      if(ovfPrompt) setCtxUsed(ovfPrompt);
+      const p = ovfPrompt||CTX_USED, c = ovfCtx||CTX_MAX;
+      showCtxBanner('Contexte dépassé : le prompt a atteint '+p+' tokens (fenêtre '+c+') — souvent une grosse sortie d\'outil. Compacte pour continuer, ton message est conservé.');
     } else if(finishReason==='length'){
       showCtxBanner('Réponse arrêtée : le contexte est presque plein ('+CTX_USED+'/'+CTX_MAX+'). Compacte pour que jean puisse continuer.');
     }
