@@ -507,7 +507,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260718230341"></script>
+<script src="/e2e.js?v=20260718233209"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -748,6 +748,12 @@ async function loadStatus(){
 // Compteur de contexte : CTX_USED estimé via les stats serveur (prefill+decode
 // du dernier tour ≈ taille du prochain prompt). À 90% on propose de compacter.
 let CTX_MAX=0, CTX_USED=0, MODEL_READY=false;
+// Seuil d'AVERTISSEMENT proactif : dès qu'on dépasse CTX_SOFT_PCT du contexte, on
+// propose de compacter TANT QU'IL RESTE DE LA PLACE (pas au dernier moment). Non
+// bloquant : tu peux continuer ou compacter. ctxWarned évite de renotifier à
+// chaque tour ; il se réarme quand le contexte redescend (après une compaction).
+const CTX_SOFT_PCT=80;
+let ctxWarned=false;
 // Réserve de sécurité : on garde toujours ~CTX_RESERVE tokens libres pour qu'une
 // réponse (et surtout la compaction elle-même) puisse tenir. En dessous, on
 // bloque l'envoi et on propose de compacter. GEN_MARGIN = coussin retranché du
@@ -757,7 +763,7 @@ const CTX_RESERVE=1536, GEN_MARGIN=256, MIN_GEN=256;
 // Tampon de build visible en bas de l'UI : permet de vérifier d'un coup d'œil
 // que la page chargée est bien à jour (et pas une version en cache). À bumper à
 // chaque changement notable de l'UI.
-const UI_BUILD='compaction-v3 · 18/07';
+const UI_BUILD='compaction-v4 · 18/07';
 function ctxRoom(){ return CTX_MAX ? Math.max(0, CTX_MAX - CTX_USED) : Infinity; }
 // Plafond de génération pour le prochain tour = place restante moins un coussin.
 // 0 → pas de plafond (fenêtre inconnue). Empêche le modèle de dépasser le
@@ -772,6 +778,13 @@ function updateCtxMeter(){
   fill.style.background = pct>=90 ? 'var(--err,#c44)' : pct>=70 ? 'var(--warn,#c93)' : 'var(--accent,#58a6ff)';
   document.getElementById('ctx-text').textContent='contexte '+CTX_USED+' / '+CTX_MAX+' ('+pct+'%)';
   document.getElementById('ctx-compact').style.display = pct>=90 ? 'inline-block' : 'none';
+  // Avertissement proactif : on prévient dès CTX_SOFT_PCT, tant qu'il reste de la
+  // marge pour compacter (au lieu d'attendre le blocage). Réarmement sous 70%.
+  if(pct < 70) ctxWarned=false;
+  else if(pct >= CTX_SOFT_PCT && !ctxWarned){
+    ctxWarned=true;
+    showCtxBanner('Contexte à '+pct+'% ('+CTX_USED+'/'+CTX_MAX+') — compacte maintenant tant qu\'il reste de la place, pour éviter un blocage.');
+  }
 }
 // Bannière contextuelle (arrêt avant le mur / envoi bloqué). Message + boutons
 // compacter / plus tard. Une seule à l'écran, remplacée à chaque appel.
