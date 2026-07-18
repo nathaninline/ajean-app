@@ -427,7 +427,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
       <button id="send" onclick="send()">send</button>
       <button id="stop" onclick="stopGen()" style="display:none;background:var(--danger-bg);border-color:var(--err);color:var(--err)">stop</button>
     </div>
-    <div class="muted" style="padding:0 12px 6px;font-size:10px;text-align:center;opacity:.7">Entrée pour envoyer · Maj+Entrée = nouvelle ligne</div>
+    <div class="muted" style="padding:0 12px 6px;font-size:10px;text-align:center;opacity:.7">Entrée pour envoyer · Maj+Entrée = nouvelle ligne · <span id="ui-build"></span></div>
   </div>
 </div>
 <div id="toast"></div>
@@ -507,7 +507,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260718215555"></script>
+<script src="/e2e.js?v=20260718222809"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -754,6 +754,10 @@ let CTX_MAX=0, CTX_USED=0, MODEL_READY=false;
 // plafond de génération pour ne pas viser pile le bord. La compaction est
 // TOUJOURS déclenchée manuellement — jamais automatique.
 const CTX_RESERVE=1536, GEN_MARGIN=256, MIN_GEN=256;
+// Tampon de build visible en bas de l'UI : permet de vérifier d'un coup d'œil
+// que la page chargée est bien à jour (et pas une version en cache). À bumper à
+// chaque changement notable de l'UI.
+const UI_BUILD='compaction-v2 · 18/07';
 function ctxRoom(){ return CTX_MAX ? Math.max(0, CTX_MAX - CTX_USED) : Infinity; }
 // Plafond de génération pour le prochain tour = place restante moins un coussin.
 // 0 → pas de plafond (fenêtre inconnue). Empêche le modèle de dépasser le
@@ -1713,6 +1717,7 @@ async function send(){
   document.getElementById('stop').style.display='none';
   document.getElementById('input').focus();
 }
+try{ document.getElementById('ui-build').textContent='build '+UI_BUILD; }catch(e){}
 loadAll();
 setInterval(loadStatus, 5000);
 setInterval(loadVram, 3000);
