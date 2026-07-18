@@ -507,7 +507,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260718233209"></script>
+<script src="/e2e.js?v=20260719000305"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -763,7 +763,7 @@ const CTX_RESERVE=1536, GEN_MARGIN=256, MIN_GEN=256;
 // Tampon de build visible en bas de l'UI : permet de vérifier d'un coup d'œil
 // que la page chargée est bien à jour (et pas une version en cache). À bumper à
 // chaque changement notable de l'UI.
-const UI_BUILD='compaction-v4 · 18/07';
+const UI_BUILD='compaction-v5 · 19/07';
 function ctxRoom(){ return CTX_MAX ? Math.max(0, CTX_MAX - CTX_USED) : Infinity; }
 // Plafond de génération pour le prochain tour = place restante moins un coussin.
 // 0 → pas de plafond (fenêtre inconnue). Empêche le modèle de dépasser le
@@ -1537,9 +1537,19 @@ async function send(){
   // faire tenir une future compaction), on bloque et on propose de compacter — au
   // lieu de lancer un tour qui déborderait le contexte et planterait. Le message
   // reste dans la zone de saisie pour être renvoyé après compaction.
-  if(CTX_MAX && ctxRoom() < CTX_RESERVE){
-    showCtxBanner('Contexte presque plein ('+CTX_USED+'/'+CTX_MAX+'). Compacte pour libérer de la place avant de continuer — ton message est conservé.');
-    return;
+  // On estime la VRAIE taille du prompt à partir du contenu des messages (le
+  // compteur CTX_USED traîne en mode agent : les grosses sorties d'outils gonflent
+  // l'historique bien avant qu'un tour réussi ne remette le compteur à jour). On
+  // prend le max des deux pour ne jamais laisser partir un envoi voué à déborder.
+  if(CTX_MAX){
+    const sysG=(document.getElementById('sysprompt').value||'').trim();
+    let promptEst = (sysG?estTokens(sysG):0) + estTokens(text);
+    for(const m of msgs) promptEst += estTokens(m.content||'');
+    const used = Math.max(CTX_USED, promptEst);
+    if((CTX_MAX - used) < CTX_RESERVE){
+      showCtxBanner('Contexte presque plein (~'+used+'/'+CTX_MAX+'). Compacte pour libérer de la place avant de continuer — ton message est conservé.');
+      return;
+    }
   }
   hideCtxBanner();
   ta.value=''; busy=true;
