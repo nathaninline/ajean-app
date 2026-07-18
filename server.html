@@ -240,14 +240,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
 #ctxmeta{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:5px 12px 0}
 #ctx-text{font-size:10px;letter-spacing:.03em;white-space:nowrap}
 #ctx-compact{display:none;margin:0;padding:2px 10px;font-size:10px;background:var(--warn-bg);border-color:var(--warn,#c93)}
-/* Bannière de contexte : arrêt propre avant le mur (finish "length") ou envoi
-   bloqué faute de place. Toujours une action manuelle (compacter / plus tard). */
-#ctx-banner{display:none;align-items:center;gap:10px;padding:7px 12px;font-size:11px;line-height:1.35;
-  background:var(--warn-bg);border-top:1px solid var(--warn,#c93);color:var(--text)}
-#ctx-banner.show{display:flex}
-#ctx-banner button{margin:0;padding:2px 10px;font-size:10px}
-#ctx-banner #ctx-banner-compact{background:var(--warn,#c93);border-color:var(--warn,#c93);color:#111}
-#ctx-banner .ghost{background:transparent}
 #inputbar{padding:8px 12px;display:flex;gap:8px}
 #input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font:inherit;resize:none;min-height:44px;max-height:200px}
 #input:focus{outline:none;border-color:var(--accent)}
@@ -408,13 +400,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <button id="scrollbtn" onclick="jumpBottom()" title="aller en bas">↓</button>
   <div id="composer">
     <div id="ctxtrack"><div id="ctx-fill"></div></div>
-    <div id="ctx-banner">
-      <span id="ctx-banner-text"></span>
-      <span style="margin-left:auto;display:flex;gap:6px;flex-shrink:0">
-        <button id="ctx-banner-compact" onclick="compactContext()">compacter</button>
-        <button id="ctx-banner-dismiss" class="ghost" onclick="hideCtxBanner()">plus tard</button>
-      </span>
-    </div>
     <div id="ctxmeta">
       <span id="status-preset" class="muted" style="font-size:10px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
       <span style="display:flex;align-items:center;gap:10px;margin-left:auto">
@@ -427,7 +412,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
       <button id="send" onclick="send()">send</button>
       <button id="stop" onclick="stopGen()" style="display:none;background:var(--danger-bg);border-color:var(--err);color:var(--err)">stop</button>
     </div>
-    <div class="muted" style="padding:0 12px 6px;font-size:10px;text-align:center;opacity:.7">Entrée pour envoyer · Maj+Entrée = nouvelle ligne · <span id="ui-build"></span></div>
+    <div class="muted" style="padding:0 12px 6px;font-size:10px;text-align:center;opacity:.7">Entrée pour envoyer · Maj+Entrée = nouvelle ligne</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -507,7 +492,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260719001247"></script>
+<script src="/e2e.js?v=20260719001843"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -748,52 +733,16 @@ async function loadStatus(){
 // Compteur de contexte : CTX_USED estimé via les stats serveur (prefill+decode
 // du dernier tour ≈ taille du prochain prompt). À 90% on propose de compacter.
 let CTX_MAX=0, CTX_USED=0, MODEL_READY=false;
-// Seuil d'AVERTISSEMENT proactif : dès qu'on dépasse CTX_SOFT_PCT du contexte, on
-// propose de compacter TANT QU'IL RESTE DE LA PLACE (pas au dernier moment). Non
-// bloquant : tu peux continuer ou compacter. ctxWarned évite de renotifier à
-// chaque tour ; il se réarme quand le contexte redescend (après une compaction).
-const CTX_SOFT_PCT=80;
-let ctxWarned=false;
-// Réserve de sécurité : on garde toujours ~CTX_RESERVE tokens libres pour qu'une
-// réponse (et surtout la compaction elle-même) puisse tenir. En dessous, on
-// bloque l'envoi et on propose de compacter. GEN_MARGIN = coussin retranché du
-// plafond de génération pour ne pas viser pile le bord. La compaction est
-// TOUJOURS déclenchée manuellement — jamais automatique.
-const CTX_RESERVE=1536, GEN_MARGIN=256, MIN_GEN=256;
-// Tampon de build visible en bas de l'UI : permet de vérifier d'un coup d'œil
-// que la page chargée est bien à jour (et pas une version en cache). À bumper à
-// chaque changement notable de l'UI.
-const UI_BUILD='compaction-v6 · 19/07';
-function ctxRoom(){ return CTX_MAX ? Math.max(0, CTX_MAX - CTX_USED) : Infinity; }
-// Plafond de génération pour le prochain tour = place restante moins un coussin.
-// 0 → pas de plafond (fenêtre inconnue). Empêche le modèle de dépasser le
-// contexte : il s'arrête proprement (finish "length") au lieu de faire planter.
-function genCap(){ if(!CTX_MAX) return 0; return Math.max(MIN_GEN, ctxRoom() - GEN_MARGIN); }
 function setCtxUsed(n){ CTX_USED=n||0; updateCtxMeter(); }
 function updateCtxMeter(){
   if(!CTX_MAX) return;
   const pct=Math.min(100, Math.round(CTX_USED*100/CTX_MAX));
   const fill=document.getElementById('ctx-fill');
   fill.style.width=pct+'%';
-  fill.style.background = pct>=90 ? 'var(--err,#c44)' : pct>=70 ? 'var(--warn,#c93)' : 'var(--accent,#58a6ff)';
+  fill.style.background = pct>=90 ? 'var(--err,#c44)' : pct>=70 ? 'var(--warn,#c93)' : 'var(--ok,#3a7)';
   document.getElementById('ctx-text').textContent='contexte '+CTX_USED+' / '+CTX_MAX+' ('+pct+'%)';
   document.getElementById('ctx-compact').style.display = pct>=90 ? 'inline-block' : 'none';
-  // Avertissement proactif : on prévient dès CTX_SOFT_PCT, tant qu'il reste de la
-  // marge pour compacter (au lieu d'attendre le blocage). Réarmement sous 70%.
-  if(pct < 70) ctxWarned=false;
-  else if(pct >= CTX_SOFT_PCT && !ctxWarned){
-    ctxWarned=true;
-    showCtxBanner('Contexte à '+pct+'% ('+CTX_USED+'/'+CTX_MAX+') — compacte maintenant tant qu\'il reste de la place, pour éviter un blocage.');
-  }
 }
-// Bannière contextuelle (arrêt avant le mur / envoi bloqué). Message + boutons
-// compacter / plus tard. Une seule à l'écran, remplacée à chaque appel.
-function showCtxBanner(text){
-  const b=document.getElementById('ctx-banner');
-  document.getElementById('ctx-banner-text').textContent=text;
-  b.classList.add('show');
-}
-function hideCtxBanner(){ document.getElementById('ctx-banner').classList.remove('show'); }
 async function loadVram(){
   const gpus=await jget('/api/vram');
   document.getElementById('vram').innerHTML = (gpus||[]).map(g=>{
@@ -1420,80 +1369,35 @@ function resetChat(){ msgs=[]; document.getElementById('chat').innerHTML=''; sav
 // Compaction : on demande à l'IA un résumé de la conversation destiné à la
 // reprendre dans une session neuve, puis on repart d'un contexte propre seedé
 // avec ce résumé. Réduit drastiquement les tokens tout en gardant le fil.
-const COMPACT_INSTR='Résume de façon structurée et complète notre conversation jusqu\'ici, dans le but de poursuivre le travail dans une nouvelle session sans rien perdre d\'important : objectifs, décisions prises, état actuel, fichiers/commandes/éléments clés, et ce qu\'il reste à faire. Écris uniquement le résumé, sans préambule.';
-// Estimation grossière du nombre de tokens d'un message (≈ 4 caractères/token,
-// + un petit forfait de balisage de rôle). Sert à découper la compaction pour
-// qu'AUCUNE requête de résumé ne dépasse la fenêtre — c'est ce qui rendait la
-// compaction impossible quand le contexte était déjà quasi plein.
-function estTokens(s){ return Math.ceil(((s||'').length)/4)+8; }
-// Un appel de résumé, plafonné en sortie. Renvoie le texte accumulé.
-async function streamSummary(outMsgs, maxTok){
-  const body={messages:outMsgs}; if(maxTok) body.max_tokens=maxTok;
-  const r=await jfetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const reader=r.body.getReader(); const dec=new TextDecoder(); let buf='', txt='';
-  while(true){
-    const {done,value}=await reader.read(); if(done) break;
-    buf+=dec.decode(value,{stream:true}); let i;
-    while((i=buf.indexOf('\n\n'))>=0){
-      const chunk=buf.slice(0,i); buf=buf.slice(i+2);
-      for(const line of chunk.split('\n')){
-        if(!line.startsWith('data:')) continue;
-        const data=line.slice(5).trim(); if(data==='[DONE]') continue;
-        let d=null; try{ const o=JSON.parse(data); d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{}; }catch(e){ continue; }
-        if(d.error) throw new Error(d.error);   // ex : 503 modèle en charge
-        if(d.content) txt+=d.content;
-      }
-    }
-  }
-  return txt.trim();
-}
-// Résumé robuste par tranches : on avale l'historique morceau par morceau en
-// reportant un « résumé courant » d'une tranche à l'autre, de sorte que chaque
-// requête tient dans la fenêtre même si l'historique complet, lui, ne tiendrait
-// pas. Marche donc même à 18k/20k, là où l'ancienne version (tout d'un coup)
-// débordait et échouait.
-async function summarizeAll(list, sys){
-  const OUT=1024;                                   // place réservée au résumé
-  const cap=(CTX_MAX||8192);
-  const budget=Math.max(2048, cap - OUT - 512);     // budget prompt par tranche
-  const sysTok=sys?estTokens(sys):0;
-  const instrTok=estTokens(COMPACT_INSTR);
-  let running='';                                   // résumé reporté
-  let i=0;
-  while(i<list.length){
-    let used=sysTok+instrTok+estTokens(running);
-    const chunk=[];
-    while(i<list.length){
-      const t=estTokens(list[i].content);
-      if(chunk.length>0 && used+t>budget) break;    // au moins 1 message par tranche
-      chunk.push(list[i]); used+=t; i++;
-    }
-    const pre = running ? [{role:'user',content:'Résumé partiel de la conversation jusqu\'ici :\n\n'+running}] : [];
-    const base=[...pre,...chunk,{role:'user',content:COMPACT_INSTR}];
-    const out = sys ? [{role:'system',content:sys},...base] : base;
-    running = await streamSummary(out, OUT);
-    if(!running) throw new Error('résumé vide');
-  }
-  return running;
-}
-function setCompactBusy(on){
-  for(const id of ['ctx-compact','ctx-banner-compact']){
-    const b=document.getElementById(id); if(!b) continue;
-    b.textContent = on ? 'compaction…' : 'compacter'; b.disabled=on;
-  }
-}
 async function compactContext(){
   if(busy) return;
   if(!msgs.length){ toast('rien à compacter'); return; }
   if(!await askConfirm('L\'IA va résumer la conversation puis repartir d\'une session propre basée sur ce résumé.', {title:'Compacter le contexte ?', okText:'Compacter'})) return;
-  busy=true; setCompactBusy(true);
+  busy=true;
+  const btn=document.getElementById('ctx-compact'); btn.textContent='compaction…'; btn.disabled=true;
+  const instruction='Résume de façon structurée et complète TOUTE notre conversation jusqu\'ici, dans le but de poursuivre le travail dans une nouvelle session sans rien perdre d\'important : objectifs, décisions prises, état actuel, fichiers/commandes/éléments clés, et ce qu\'il reste à faire. Écris uniquement le résumé, sans préambule.';
   let summary='';
   try{
     const sys=(document.getElementById('sysprompt').value||'').trim();
-    summary=await summarizeAll(msgs, sys);
-  }catch(e){ toast('échec compaction: '+e.message); busy=false; setCompactBusy(false); return; }
+    const base=[...msgs,{role:'user',content:instruction}];
+    const out = sys ? [{role:'system',content:sys},...base] : base;
+    const r=await jfetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:out})});
+    const reader=r.body.getReader(); const dec=new TextDecoder(); let buf='';
+    while(true){
+      const {done,value}=await reader.read(); if(done) break;
+      buf+=dec.decode(value,{stream:true}); let i;
+      while((i=buf.indexOf('\n\n'))>=0){
+        const chunk=buf.slice(0,i); buf=buf.slice(i+2);
+        for(const line of chunk.split('\n')){
+          if(!line.startsWith('data:')) continue;
+          const data=line.slice(5).trim(); if(data==='[DONE]') continue;
+          try{ const o=JSON.parse(data); const d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{}; if(d.content) summary+=d.content; }catch(e){}
+        }
+      }
+    }
+  }catch(e){ toast('échec compaction: '+e.message); busy=false; btn.textContent='compacter'; btn.disabled=false; return; }
   summary=summary.trim();
-  if(!summary){ toast('résumé vide'); busy=false; setCompactBusy(false); return; }
+  if(!summary){ toast('résumé vide'); busy=false; btn.textContent='compacter'; btn.disabled=false; return; }
   // Session propre seedée avec le résumé.
   msgs=[{role:'user',content:'Résumé de notre session précédente (reprends le travail à partir de là) :\n\n'+summary},
         {role:'assistant',content:'Compris, je reprends à partir de ce résumé.'}];
@@ -1502,8 +1406,7 @@ async function compactContext(){
   renderBody(note, '🗜️ **Contexte compacté.** Résumé de reprise :\n\n'+summary);
   saveChat();
   setCtxUsed(0); try{localStorage.removeItem('jean.ctxused');}catch(e){}
-  hideCtxBanner();
-  busy=false; setCompactBusy(false);
+  busy=false; btn.textContent='compacter'; btn.disabled=false;
   toast('contexte compacté');
 }
 // Persistance de la conversation : on garde user+assistant en localStorage pour
@@ -1533,25 +1436,6 @@ async function send(){
   if(busy) return;
   const ta=document.getElementById('input'); const text=ta.value.trim();
   if(!text) return;
-  // Garde-fou AVANT l'envoi : s'il ne reste plus de quoi produire une réponse (et
-  // faire tenir une future compaction), on bloque et on propose de compacter — au
-  // lieu de lancer un tour qui déborderait le contexte et planterait. Le message
-  // reste dans la zone de saisie pour être renvoyé après compaction.
-  // On estime la VRAIE taille du prompt à partir du contenu des messages (le
-  // compteur CTX_USED traîne en mode agent : les grosses sorties d'outils gonflent
-  // l'historique bien avant qu'un tour réussi ne remette le compteur à jour). On
-  // prend le max des deux pour ne jamais laisser partir un envoi voué à déborder.
-  if(CTX_MAX){
-    const sysG=(document.getElementById('sysprompt').value||'').trim();
-    let promptEst = (sysG?estTokens(sysG):0) + estTokens(text);
-    for(const m of msgs) promptEst += estTokens(m.content||'');
-    const used = Math.max(CTX_USED, promptEst);
-    if((CTX_MAX - used) < CTX_RESERVE){
-      showCtxBanner('Contexte presque plein (~'+used+'/'+CTX_MAX+'). Compacte pour libérer de la place avant de continuer — ton message est conservé.');
-      return;
-    }
-  }
-  hideCtxBanner();
   ta.value=''; busy=true;
   document.getElementById('send').style.display='none';
   document.getElementById('stop').style.display='inline-block';
@@ -1576,7 +1460,7 @@ async function send(){
   let reasonEl=null, contentEl=null, pendingToolEl=null, fullContent='', fullReason='', toolMsgs=null;
   let turnCollapsibles=[]; // bulles reasoning/tool à replier dès la réponse finale
   let tokCount=0, reasonTokCount=0, t0=performance.now(), firstTok=0, statsTimer=null;
-  let serverStats=null, streamErr=false, finishReason='', ovfPrompt=0, ovfCtx=0;
+  let serverStats=null, streamErr=false;
   const updateStats=(final)=>{
     if(!contentEl && !reasonEl) return;
     const el = contentEl || reasonEl;
@@ -1609,14 +1493,7 @@ async function send(){
   try{
     const sys=(document.getElementById('sysprompt').value||'').trim();
     const out = sys ? [{role:'system',content:sys}, ...msgs] : msgs;
-    // Plafond de génération = place restante : le modèle s'arrête net avant le
-    // mur (finish "length") plutôt que de saturer le contexte et planter.
-    // Plafond = place restante MOINS une estimation du message qu'on vient
-    // d'ajouter (il gonfle le prompt de ce tour, non encore compté dans CTX_USED).
-    const body={messages:out};
-    const cap = CTX_MAX ? Math.max(MIN_GEN, CTX_MAX - CTX_USED - estTokens(text) - GEN_MARGIN) : 0;
-    if(cap) body.max_tokens=cap;
-    const r=await jfetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:abortCtrl.signal});
+    const r=await jfetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:out}),signal:abortCtrl.signal});
     const reader=r.body.getReader(); const dec=new TextDecoder(); let buf='';
     statsTimer = setInterval(updateStats, 250);
     while(true){
@@ -1632,9 +1509,6 @@ async function send(){
           try{
             const o=JSON.parse(data);
             const d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{};
-            if(d.finish_reason){ finishReason=d.finish_reason; }
-            if(d.overflow_prompt){ ovfPrompt=d.overflow_prompt; }
-            if(d.overflow_ctx){ ovfCtx=d.overflow_ctx; }
             if(d.error){
               removeTyping();
               // Erreur serveur (ex : modèle en cours de chargement → 503). On
@@ -1707,13 +1581,9 @@ async function send(){
       }
       if(streamErr) break;
     }
-    const overflow = (finishReason==='context_overflow');
     if(!streamErr){
       if(toolMsgs) msgs.push(...toolMsgs);
-      // En débordement de contexte le modèle n'a rien produit ce tour : ne pas
-      // pousser une réponse assistant vide (sinon paire user/assistant fantôme).
-      if(fullContent || !overflow) msgs.push({role:'assistant',content:fullContent});
-      saveChat();
+      msgs.push({role:'assistant',content:fullContent}); saveChat();
     }
     // Le KV cache s'accumule : chaque tour ajoute les tokens NOUVELLEMENT traités
     // (prompt_tokens, le préfixe caché n'est pas recompté) + ceux générés. La
@@ -1725,22 +1595,6 @@ async function send(){
       if(serverStats.prompt_tokens_total){ setCtxUsed((serverStats.prompt_tokens_total||0) + (serverStats.gen_tokens||0)); }
       else { setCtxUsed(CTX_USED + (serverStats.prompt_tokens||0) + (serverStats.gen_tokens||0)); }
       try{ localStorage.setItem('jean.ctxused', CTX_USED); }catch(e){}
-    }
-    // Contexte saturé : soit la réponse a été coupée au plafond ('length'), soit
-    // le tour a carrément débordé côté serveur ('context_overflow', ex : mode agent
-    // avec grosses sorties d'outils). Dans les deux cas on propose de compacter —
-    // jamais automatiquement. C'est le filet qui garantit un avertissement même
-    // quand le débordement arrive EN COURS de tour (que le plafond client ne voit pas).
-    if(overflow){
-      // Affiche les VRAIS compteurs (prompt réel vs fenêtre), pas le compteur
-      // périmé : un débordement vient souvent d'une grosse sortie d'outil qui a
-      // gonflé le prompt d'un coup. On recale aussi le compteur/jauge.
-      if(ovfCtx) CTX_MAX=ovfCtx;
-      if(ovfPrompt) setCtxUsed(ovfPrompt);
-      const p = ovfPrompt||CTX_USED, c = ovfCtx||CTX_MAX;
-      showCtxBanner('Contexte dépassé : le prompt a atteint '+p+' tokens (fenêtre '+c+') — souvent une grosse sortie d\'outil. Compacte pour continuer, ton message est conservé.');
-    } else if(finishReason==='length'){
-      showCtxBanner('Réponse arrêtée : le contexte est presque plein ('+CTX_USED+'/'+CTX_MAX+'). Compacte pour que jean puisse continuer.');
     }
   }catch(e){
     if(e.name==='AbortError'){
@@ -1761,7 +1615,6 @@ async function send(){
   document.getElementById('stop').style.display='none';
   document.getElementById('input').focus();
 }
-try{ document.getElementById('ui-build').textContent='build '+UI_BUILD; }catch(e){}
 loadAll();
 setInterval(loadStatus, 5000);
 setInterval(loadVram, 3000);
