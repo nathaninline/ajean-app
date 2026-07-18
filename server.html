@@ -507,7 +507,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260718222809"></script>
+<script src="/e2e.js?v=20260718230341"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -757,7 +757,7 @@ const CTX_RESERVE=1536, GEN_MARGIN=256, MIN_GEN=256;
 // Tampon de build visible en bas de l'UI : permet de vérifier d'un coup d'œil
 // que la page chargée est bien à jour (et pas une version en cache). À bumper à
 // chaque changement notable de l'UI.
-const UI_BUILD='compaction-v2 · 18/07';
+const UI_BUILD='compaction-v3 · 18/07';
 function ctxRoom(){ return CTX_MAX ? Math.max(0, CTX_MAX - CTX_USED) : Infinity; }
 // Plafond de génération pour le prochain tour = place restante moins un coussin.
 // 0 → pas de plafond (fenêtre inconnue). Empêche le modèle de dépasser le
@@ -1588,7 +1588,11 @@ async function send(){
     const out = sys ? [{role:'system',content:sys}, ...msgs] : msgs;
     // Plafond de génération = place restante : le modèle s'arrête net avant le
     // mur (finish "length") plutôt que de saturer le contexte et planter.
-    const body={messages:out}; const cap=genCap(); if(cap) body.max_tokens=cap;
+    // Plafond = place restante MOINS une estimation du message qu'on vient
+    // d'ajouter (il gonfle le prompt de ce tour, non encore compté dans CTX_USED).
+    const body={messages:out};
+    const cap = CTX_MAX ? Math.max(MIN_GEN, CTX_MAX - CTX_USED - estTokens(text) - GEN_MARGIN) : 0;
+    if(cap) body.max_tokens=cap;
     const r=await jfetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:abortCtrl.signal});
     const reader=r.body.getReader(); const dec=new TextDecoder(); let buf='';
     statsTimer = setInterval(updateStats, 250);
@@ -1678,9 +1682,13 @@ async function send(){
       }
       if(streamErr) break;
     }
+    const overflow = (finishReason==='context_overflow');
     if(!streamErr){
       if(toolMsgs) msgs.push(...toolMsgs);
-      msgs.push({role:'assistant',content:fullContent}); saveChat();
+      // En débordement de contexte le modèle n'a rien produit ce tour : ne pas
+      // pousser une réponse assistant vide (sinon paire user/assistant fantôme).
+      if(fullContent || !overflow) msgs.push({role:'assistant',content:fullContent});
+      saveChat();
     }
     // Le KV cache s'accumule : chaque tour ajoute les tokens NOUVELLEMENT traités
     // (prompt_tokens, le préfixe caché n'est pas recompté) + ceux générés. La
@@ -1693,9 +1701,14 @@ async function send(){
       else { setCtxUsed(CTX_USED + (serverStats.prompt_tokens||0) + (serverStats.gen_tokens||0)); }
       try{ localStorage.setItem('jean.ctxused', CTX_USED); }catch(e){}
     }
-    // Réponse coupée faute de place (plafond de génération atteint) : on le signale
-    // et on propose de compacter. Aucune compaction automatique — c'est un choix.
-    if(finishReason==='length'){
+    // Contexte saturé : soit la réponse a été coupée au plafond ('length'), soit
+    // le tour a carrément débordé côté serveur ('context_overflow', ex : mode agent
+    // avec grosses sorties d'outils). Dans les deux cas on propose de compacter —
+    // jamais automatiquement. C'est le filet qui garantit un avertissement même
+    // quand le débordement arrive EN COURS de tour (que le plafond client ne voit pas).
+    if(overflow){
+      showCtxBanner('Contexte plein : jean n\'a pas pu répondre ('+CTX_USED+'/'+CTX_MAX+'). Compacte pour continuer — ton message est conservé.');
+    } else if(finishReason==='length'){
       showCtxBanner('Réponse arrêtée : le contexte est presque plein ('+CTX_USED+'/'+CTX_MAX+'). Compacte pour que jean puisse continuer.');
     }
   }catch(e){
