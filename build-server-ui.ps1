@@ -30,7 +30,10 @@ async function jfetch(u, opts){
   var method = (opts.method||'GET').toUpperCase();
   var path = u.charAt(0)==='/' ? u : ('/'+u);
   await ensureSession();                       // garantit empreinte + appairage
-  if(path.indexOf('/api/chat')===0){           // chat streamé
+  // SEUL /api/chat (le flux d'abonnement SSE) est streamé E2E. Les endpoints de
+  // contrôle /api/chat/send|stop|reset|state sont du req/resp → ils passent par
+  // /api/e2e/req comme le reste (sinon ils seraient traités comme un flux).
+  if(path==='/api/chat'){                        // flux d'abonnement streamé
     var reqObj = opts.body ? JSON.parse(opts.body) : {};
     return e2eChatResponse(reqObj, opts.signal);
   }
