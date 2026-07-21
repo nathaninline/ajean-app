@@ -501,7 +501,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260721155034"></script>
+<script src="/e2e.js?v=20260721161930"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1535,7 +1535,7 @@ async function send(){
   try{
     const sys=(document.getElementById('sysprompt').value||'').trim();
     const out = sys ? [{role:'system',content:sys}, ...msgs] : msgs;
-    const r=await jfetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:out}),signal:abortCtrl.signal});
+    const r=await jfetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:out,ctx_used:CTX_USED}),signal:abortCtrl.signal});
     const reader=r.body.getReader(); const dec=new TextDecoder(); let buf='';
     statsTimer = setInterval(updateStats, 250);
     while(true){
