@@ -500,7 +500,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260721213450"></script>
+<script src="/e2e.js?v=20260721221512"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1610,6 +1610,9 @@ async function connectStream(){
     await new Promise(res=>setTimeout(res, 600));
   }
 }
+// Interrompt la génération en cours côté serveur (la goroutine détachée est
+// annulée). Le serveur émet alors turn_done → le bouton repasse en « send ».
+function stopGen(){ jfetch('/api/chat/stop',{method:'POST'}).catch(()=>{}); toast('stop'); }
 // Envoi RÉSILIENT : sur le tunnel E2E, un aller-retour peut échouer transitoirement
 // alors qu'il a en fait abouti (la génération démarre). On réessaie, et un 409
 // (« déjà en cours ») = succès (c'est notre envoi qui est passé). On ne montre une
