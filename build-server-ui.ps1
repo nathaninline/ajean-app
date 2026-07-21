@@ -128,7 +128,12 @@ function e2eChatResponse(reqObj,signal){
     var enc=new TextEncoder();
     streamE2ERaw(MACHINE,reqObj,function(plain){controller.enqueue(enc.encode('data: '+plain+'\n\n'));},signal)
       .then(function(){try{controller.close();}catch(e){}})
-      .catch(function(e){try{controller.enqueue(enc.encode('data: '+JSON.stringify({choices:[{delta:{content:'\n\n⚠️ '+(e&&e.message||e)}}]})+'\n\n'));controller.close();}catch(_){}});
+      // Le flux d'abonnement est PERMANENT : une coupure de transport (tunnel idle,
+      // fin de tour, bascule réseau) est NORMALE — on ferme silencieusement, la
+      // reconnexion auto de connectStream reprend. On n'injecte PLUS de « ⚠️ … »
+      // comme contenu (ça polluait la bulle à chaque coupure). Les vraies erreurs
+      // serveur arrivent, elles, via des événements {error} dans le flux.
+      .catch(function(e){try{controller.close();}catch(_){}});
   }});
   return new Response(stream,{status:200,headers:{'Content-Type':'text/event-stream'}});
 }

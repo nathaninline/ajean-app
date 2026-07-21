@@ -499,7 +499,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260721204053"></script>
+<script src="/e2e.js?v=20260721210015"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -564,7 +564,12 @@ function e2eChatResponse(reqObj,signal){
     var enc=new TextEncoder();
     streamE2ERaw(MACHINE,reqObj,function(plain){controller.enqueue(enc.encode('data: '+plain+'\n\n'));},signal)
       .then(function(){try{controller.close();}catch(e){}})
-      .catch(function(e){try{controller.enqueue(enc.encode('data: '+JSON.stringify({choices:[{delta:{content:'\n\n⚠️ '+(e&&e.message||e)}}]})+'\n\n'));controller.close();}catch(_){}});
+      // Le flux d'abonnement est PERMANENT : une coupure de transport (tunnel idle,
+      // fin de tour, bascule réseau) est NORMALE — on ferme silencieusement, la
+      // reconnexion auto de connectStream reprend. On n'injecte PLUS de « ⚠️ … »
+      // comme contenu (ça polluait la bulle à chaque coupure). Les vraies erreurs
+      // serveur arrivent, elles, via des événements {error} dans le flux.
+      .catch(function(e){try{controller.close();}catch(_){}});
   }});
   return new Response(stream,{status:200,headers:{'Content-Type':'text/event-stream'}});
 }
