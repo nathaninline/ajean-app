@@ -1,0 +1,139 @@
+<!doctype html>
+<!-- GÉNÉRÉ par assemble.ps1 depuis src/ — NE PAS ÉDITER app.html DIRECTEMENT -->
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><rect width='12' height='12' rx='2' ry='2' fill='%231f6feb'/><rect x='6' y='3' width='2' height='2' fill='%23fff'/><rect x='6' y='5' width='2' height='2' fill='%23fff'/><rect x='4' y='7' width='2' height='2' fill='%23fff'/></svg>">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABa0lEQVR42u3dsQ2AIBBAUSCOYA8b4iiMSI9D2FpYGTEheW8AisvPUV7MdQR4kowAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+JAHCAOxMEHNiO4622f9HI5TpsD3wriQBwgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4EAfiQBwgDsSBOBAH4kAciANxIA7EgThAHIgDcSAOxIE4EAfiQByIA8SBOBAH4kAciANxIA7EgThAHIgDcSAO/rLkLXsX520OxIE4EAfiQByIA8SBOBAH4kAciANxIA7EgThAHIgDcSAOxIE4EAfiQByIA8SBOHgl5jpMAZsDcSAOxIE4EAfiQByIA3GAOBAH4kAciANxIA7EgTgQB4gDcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcSAOxME0F8YvCl24O02KAAAAAElFTkSuQmCC">
+<title>Jean</title>
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('jean-theme')||'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
+<style>
+@@CSS@@
+</style></head><body>
+
+<header>
+  <div class="brand"><span>ajean<span class="accent">.link</span></span></div>
+  <span class="sp"></span>
+  <button class="iconbtn" id="themeBtn" onclick="toggleTheme()" title="Thème clair / sombre" aria-label="Changer de thème"></button>
+  <button class="iconbtn" id="acctBtn" onclick="openAccount()" title="Mon compte" aria-label="Mon compte"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></svg></button>
+</header>
+
+<nav class="tabs">
+  <button class="tab on" data-v="servers" onclick="tab('servers')">Serveurs</button>
+  <button class="tab" data-v="help" onclick="tab('help')">Aide</button>
+  <button class="tab" data-v="support" onclick="tab('support')">Support<span class="tbadge hidden" id="supBadge">0</span></button>
+</nav>
+
+<div class="wrap">
+  <div class="tabview on" id="view-servers">
+    <div class="sec"><h2>Mes serveurs</h2><span class="ct" id="srvCt">0</span><span class="sp"></span>
+      <button class="btn subtle" onclick="openKeys()">Gérer les clés</button></div>
+    <div class="grid" id="grid" style="margin-top:14px"></div>
+  </div>
+
+  <div class="tabview" id="view-help">
+    <div class="sec"><h2>Centre d'aide</h2><span class="sp"></span></div>
+    <div id="artList"><p class="muted">Chargement…</p></div>
+    <article id="artFull" class="hidden">
+      <button class="btn subtle" onclick="closeArticle()" style="margin-bottom:12px">← Tous les articles</button>
+      <h2 id="afTitle" style="font-size:20px;margin-bottom:12px"></h2>
+      <div id="afBody" class="md"></div>
+    </article>
+  </div>
+
+  <div class="tabview" id="view-support">
+    <div class="sec"><h2>Support</h2><span class="sp"></span></div>
+    <p class="lead" style="margin-bottom:12px">Une question, un souci ? Écris-moi directement — je te réponds ici. En général dans l'heure ou dans la journée, très rarement au-delà de 48 h.</p>
+    <div class="chat" id="supChat"></div>
+    <div class="chatbar">
+      <textarea id="supInput" rows="1" placeholder="Ton message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSupport();}"></textarea>
+      <button class="btn primary" onclick="sendSupport()">Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="srvModal"><div class="sheet">
+  <h3>Éditer le serveur</h3>
+  <input type="hidden" id="sId">
+  <div class="field"><label>Nom du serveur</label><input id="sName" placeholder="ex : Studio RTX"></div>
+  <div class="row"><button class="btn danger" onclick="delServer()" style="margin-right:auto">Retirer du compte</button>
+    <button class="btn" onclick="closeSrv()">Annuler</button>
+    <button class="btn primary" onclick="saveServer()">Enregistrer</button></div>
+</div></div>
+
+<div class="modal" id="keyModal"><div class="sheet">
+  <h3>Clés de liaison</h3>
+  <p class="muted">Génère une clé de liaison (une par serveur) puis gère-les ici. Sur la machine, une fois Jean installé, lance la commande affichée.</p>
+  <div id="keyReveal" style="display:none">
+    <div class="reveal"><code id="keyCmd"></code><button class="btn" onclick="copyCmd()">Copier</button></div>
+    <p class="hint">⚠️ Copie-la maintenant — elle ne sera plus affichée en clair. Le serveur apparaîtra ici dès qu'il se connecte.</p>
+  </div>
+  <button class="btn primary" id="genBtn" onclick="genKey()" style="margin-top:10px">+ Générer une clé</button>
+  <div class="keys-head">Clés existantes</div>
+  <div id="keyList"><p class="muted">—</p></div>
+  <div class="row"><button class="btn" onclick="closeKeys()">Fermer</button></div>
+</div></div>
+
+<div class="modal" id="acctModal"><div class="sheet">
+  <h3>Mon compte</h3>
+  <div class="kv"><span>Email</span><b id="acctEmail"></b></div>
+  <div class="kv"><span>Serveurs connectés</span><b id="acctSrv"></b></div>
+  <div class="kv"><span>Chiffrement</span><b>🔒 bout en bout (OPAQUE)</b></div>
+  <div class="seshead">Sessions ouvertes</div>
+  <div id="acctSessions" class="seslist"></div>
+  <div class="row"><button class="btn danger" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
+    <button class="btn" id="acctSubBtn" onclick="manageSub()">Gérer l'abonnement</button>
+    <button class="btn" onclick="closeAcct()">Fermer</button></div>
+</div></div>
+
+<div class="modal" id="confirmModal"><div class="sheet">
+  <h3 id="cfTitle">Confirmer</h3>
+  <p class="muted" id="cfMsg"></p>
+  <div class="row"><button class="btn" onclick="cfResolve(false)" id="cfNo">Annuler</button>
+    <button class="btn primary" onclick="cfResolve(true)" id="cfYes">Continuer</button></div>
+</div></div>
+
+<div class="modal" id="promptModal"><div class="sheet">
+  <h3 id="pmTitle">Saisir</h3>
+  <p class="muted" id="pmMsg"></p>
+  <div class="field"><input id="pmInput" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')pmResolve(true)"></div>
+  <div class="row"><button class="btn" onclick="pmResolve(false)" id="pmNo">Annuler</button>
+    <button class="btn primary" onclick="pmResolve(true)" id="pmYes">Valider</button></div>
+</div></div>
+
+<div class="modal" id="welcomeModal"><div class="sheet" style="text-align:center">
+  <div style="font-size:44px;line-height:1;margin-bottom:12px">🎉</div>
+  <h3 style="color:var(--ok)">Bienvenue sur ajean.link !</h3>
+  <p class="muted" style="margin-bottom:16px">Merci — ton abonnement est <b style="color:var(--ok)">actif</b>. Tu peux maintenant accéder à tes serveurs Jean à distance, chiffré de bout en bout.</p>
+  <div class="kv"><span>Formule</span><b>4,80 €/mois · résiliable à tout moment</b></div>
+  <p class="hint" style="text-align:left;margin-top:12px">Prochaine étape : ouvre « Gérer les clés » pour lier un serveur avec <code>jean link</code>.</p>
+  <div class="row"><button class="btn primary" onclick="closeWelcome()" style="margin:0 auto">Commencer →</button></div>
+</div></div>
+
+<div class="modal" id="subModal"><div class="sheet">
+  <h3>S'abonner à ajean.link</h3>
+  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs Jean, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide et le support direct.</p>
+  <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
+  <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
+  <div class="row"><button class="btn subtle" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
+    <button class="btn primary" id="subBtn" onclick="startCheckout()">S'abonner — 4,80 €/mois →</button></div>
+</div></div>
+
+<div id="toast"></div>
+<script>
+// --- Boîte noire : ce code est servi par GitHub Pages (app.ajean.link), une origine
+// que le relais NE contrôle PAS. Les appels API vont, eux, au relais (ajean.link) ; ce
+// shim réécrit tout chemin API absolu-racine vers le relais avec le cookie de session.
+var API='https://ajean.link';
+(function(){var _f=window.fetch.bind(window);
+  window.fetch=function(u,opt){
+    if(typeof u==='string'&&u.charAt(0)==='/'&&!/^\/(opaque\.wasm|wasm_exec\.js|marked\.min\.js|e2e\.js)/.test(u)){
+      u=API+u;opt=Object.assign({credentials:'include'},opt||{});
+    }
+    return _f(u,opt);};})();
+</script>
+<script src="/wasm_exec.js"></script>
+<script src="/e2e.js?v=20260722095450"></script>
+<script src="/marked.min.js"></script>
+<script>
+@@JS@@
+</script></body></html>
