@@ -12,7 +12,7 @@
 
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$src  = Join-Path $here '..\jean\ui\index.html'
+$src  = Join-Path $here '..\jean\internal\jean\ui\index.html'
 $dst  = Join-Path $here 'server.html'
 $ver  = Get-Date -Format 'yyyyMMddHHmmss'   # anti-cache : tamponné sur les assets/URLs
 
@@ -167,7 +167,7 @@ $vj = Join-Path $here 'version.json'
 Write-Host "version anti-cache = $ver"
 
 # marked.min.js doit exister côté Pages (jean web le charge en relatif).
-$mkSrc = Join-Path $here '..\jean\ui\marked.min.js'
+$mkSrc = Join-Path $here '..\jean\internal\jean\ui\marked.min.js'
 $mkDst = Join-Path $here 'marked.min.js'
 if ((Test-Path $mkSrc) -and ((-not (Test-Path $mkDst)) -or ((Get-FileHash $mkSrc).Hash -ne (Get-FileHash $mkDst).Hash))) {
   Copy-Item -Force $mkSrc $mkDst; Write-Host "marked.min.js copié."
