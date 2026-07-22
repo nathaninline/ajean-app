@@ -500,7 +500,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260722085622"></script>
+<script src="/e2e.js?v=20260722094620"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -770,7 +770,12 @@ async function applyUpdate(){
   msg.textContent='Téléchargement et installation…';
   try{
     const r=await jpost('/api/update/apply',{});
-    if(r.ok){ msg.innerHTML='✓ Installé en <b>v'+r.version+'</b>.<br>'+(r.restart||''); }
+    if(r.ok){
+      msg.innerHTML='✓ Installé en <b>v'+r.version+'</b>.<br>'+(r.restart||'');
+      // Redémarrage auto du service côté serveur : le flux va se couper puis
+      // reconnecter tout seul (connectStream boucle). On rafraîchit l'état après.
+      if(r.restarting){ toast('mise à jour appliquée — reconnexion…'); setTimeout(loadAll, 6000); }
+    }
     else { msg.textContent='Échec : '+(r.error||'inconnu'); }
   }catch(e){ msg.textContent='Erreur pendant la mise à jour (réessaie).'; }
 }
