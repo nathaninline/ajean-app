@@ -55,7 +55,7 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
         <button class="tab" id="tab-signup" type="button" onclick="pickTab('signup')">Créer un compte</button>
       </div>
       <h1 id="auth-title">Se connecter</h1>
-      <p id="auth-sub">Connecte ton compte ajean.link pour activer l'accès distant.</p>
+      <p id="auth-sub">Connectez votre compte ajean.link pour activer l'accès distant.</p>
       <p class="err hidden" id="authErr"></p>
       <form id="af">
         <input type="email" id="ae" placeholder="email" autocomplete="username" autofocus required>
@@ -69,7 +69,7 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
     <!-- Étape abonnement -->
     <div id="stage-sub" class="hidden">
       <h1>Abonnement requis</h1>
-      <p>L'accès distant à ton serveur Jean nécessite un abonnement ajean.link.</p>
+      <p>L'accès distant à votre serveur Jean nécessite un abonnement ajean.link.</p>
       <p class="price">4,80 €/mois · sans engagement.</p>
       <p class="err hidden" id="subErr"></p>
       <button class="btn btn-primary" id="subBtn" type="button" onclick="startCheckout()">S'abonner →</button>
@@ -89,7 +89,7 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
     <!-- Étape finale -->
     <div id="stage-done" class="hidden">
       <h1 class="ok">✓ Serveur connecté</h1>
-      <p>Ton serveur Jean est maintenant accessible à distance. Tu peux fermer cette fenêtre.</p>
+      <p>Votre serveur Jean est maintenant accessible à distance. Vous pouvez fermer cette fenêtre.</p>
       <button class="btn" type="button" onclick="window.close()" style="margin-top:16px">Fermer</button>
     </div>
   </div></div>
@@ -122,7 +122,7 @@ function pickTab(m){mode=m;
   el('tab-login').classList.toggle('on',m==='login');
   el('tab-signup').classList.toggle('on',m==='signup');
   el('auth-title').textContent=m==='login'?'Se connecter':'Créer un compte';
-  el('auth-sub').textContent=m==='login'?"Connecte ton compte ajean.link pour activer l'accès distant.":'Crée ton compte ajean.link — 4,80 €/mois, sans engagement.';
+  el('auth-sub').textContent=m==='login'?"Connectez votre compte ajean.link pour activer l'accès distant.":'Créez votre compte ajean.link — 4,80 €/mois, sans engagement.';
   el('ab').textContent=m==='login'?'Se connecter →':'Créer mon compte →';
   el('ap2').classList.toggle('hidden',m!=='login'?false:true);
   el('ap').setAttribute('autocomplete',m==='login'?'current-password':'new-password');
@@ -194,7 +194,7 @@ async function doConnect(){
   // recliquer « Connecter » depuis Jean (abonnement désormais actif → livraison
   // immédiate à la 2ᵉ tentative).
   if(!window.opener||!PARENT_ORIGIN){
-    el('stage-done').querySelector('p').textContent="Abonnement actif ✓ — retourne dans Jean et reclique « Connecter à ajean.link » pour finaliser (un instant).";
+    el('stage-done').querySelector('p').textContent="Abonnement actif ✓ — retournez dans Jean et recliquez « Connecter à ajean.link » pour finaliser (un instant).";
     stage('done');return;
   }
   try{
