@@ -1,0 +1,230 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><rect width='12' height='12' rx='2' ry='2' fill='%231f6feb'/><rect x='6' y='3' width='2' height='2' fill='%23fff'/><rect x='6' y='5' width='2' height='2' fill='%23fff'/><rect x='4' y='7' width='2' height='2' fill='%23fff'/></svg>">
+<title>Connecter à ajean.link</title>
+<!-- connect.html — popup ouverte depuis l'UI web de Jean (« Accès distant »).
+     Enchaîne compte (OPAQUE) → abonnement (Stripe) → génération d'une clé de
+     liaison, puis renvoie la clé à Jean par postMessage. Zéro terminal, zéro
+     copier-coller. Servi par GitHub Pages (app.ajean.link) ; les appels vont au
+     relais (ajean.link). AUCUN secret ici : la clé rendue est celle du compte de
+     l'utilisateur, remise à SA propre instance de Jean. -->
+<style>:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c222b;--border:#30363d;--text:#e6edf3;
+--dim:#7d8590;--accent:#58a6ff;--blue:#1f6feb;--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body.auth{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:22px;background:var(--bg);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
+.authwrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
+.card{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--border);border-radius:10px}
+.card .inner{padding:30px 28px;text-align:center}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:18px;margin-bottom:22px}
+.brand .tag{color:var(--accent)}
+h1{font-size:18px;font-weight:600;color:var(--accent);margin-bottom:8px}
+p{color:var(--dim);font-size:13px;line-height:1.5}
+.price{color:var(--text);font-weight:600;margin-top:6px}
+.host{display:inline-block;margin-top:10px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;
+  background:var(--bg);color:var(--text);font-size:12px;word-break:break-all}
+form{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+input{padding:11px 13px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-size:14px}
+input:focus{outline:none;border-color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:14px;font-weight:600;width:100%;
+  padding:11px 16px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--text);transition:.12s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-primary:hover{filter:brightness(1.1);color:#fff}
+.btn[disabled]{opacity:.6;cursor:default}
+.btn+.btn{margin-top:8px}
+.err{color:var(--err);margin-top:10px;font-size:13px}
+.ok{color:var(--ok)}
+.foot{font-size:12px;color:var(--dim);margin-top:16px;line-height:1.7}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;padding:8px;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--dim);background:var(--bg);font:inherit;font-size:13px}
+.tab.on{border-color:var(--accent);color:var(--accent)}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hidden{display:none!important}
+@media (hover:none) and (pointer:coarse){input{font-size:16px}}
+</style></head><body class="auth">
+<div class="authwrap">
+  <div class="brand"><span>ajean<span class="tag">.link</span></span></div>
+  <div class="card"><div class="inner">
+    <div id="stage-loading"><p>Chargement…</p></div>
+
+    <!-- Étape compte : login OU création -->
+    <div id="stage-auth" class="hidden">
+      <div class="tabs">
+        <button class="tab on" id="tab-login" type="button" onclick="pickTab('login')">Se connecter</button>
+        <button class="tab" id="tab-signup" type="button" onclick="pickTab('signup')">Créer un compte</button>
+      </div>
+      <h1 id="auth-title">Se connecter</h1>
+      <p id="auth-sub">Connecte ton compte ajean.link pour activer l'accès distant.</p>
+      <p class="err hidden" id="authErr"></p>
+      <form id="af">
+        <input type="email" id="ae" placeholder="email" autocomplete="username" autofocus required>
+        <input type="password" id="ap" placeholder="mot de passe" autocomplete="current-password" minlength="8" required>
+        <input type="password" id="ap2" class="hidden" placeholder="confirmer le mot de passe" autocomplete="new-password" minlength="8">
+        <button class="btn btn-primary" id="ab" type="submit">Se connecter →</button>
+      </form>
+      <p class="foot">Chiffré de bout en bout · 4,80 €/mois, résiliable à tout moment.</p>
+    </div>
+
+    <!-- Étape abonnement -->
+    <div id="stage-sub" class="hidden">
+      <h1>Abonnement requis</h1>
+      <p>L'accès distant à ton serveur Jean nécessite un abonnement ajean.link.</p>
+      <p class="price">4,80 €/mois · sans engagement.</p>
+      <p class="err hidden" id="subErr"></p>
+      <button class="btn btn-primary" id="subBtn" type="button" onclick="startCheckout()">S'abonner →</button>
+      <p class="foot">Paiement sécurisé par Stripe · <a href="#" onclick="doLogout();return false">changer de compte</a></p>
+    </div>
+
+    <!-- Étape consentement : autoriser ce serveur -->
+    <div id="stage-consent" class="hidden">
+      <h1>Connecter ce serveur</h1>
+      <p>Autoriser l'accès distant chiffré de bout en bout pour :</p>
+      <div class="host" id="consent-host">ce serveur</div>
+      <p class="err hidden" id="consentErr"></p>
+      <button class="btn btn-primary" id="consentBtn" type="button" onclick="doConnect()" style="margin-top:16px">Autoriser et connecter →</button>
+      <p class="foot"><span id="consent-email"></span> · <a href="#" onclick="doLogout();return false">changer de compte</a></p>
+    </div>
+
+    <!-- Étape finale -->
+    <div id="stage-done" class="hidden">
+      <h1 class="ok">✓ Serveur connecté</h1>
+      <p>Ton serveur Jean est maintenant accessible à distance. Tu peux fermer cette fenêtre.</p>
+      <button class="btn" type="button" onclick="window.close()" style="margin-top:16px">Fermer</button>
+    </div>
+  </div></div>
+</div>
+<script src="/wasm_exec.js"></script>
+<script>
+// ---- Shim boîte noire : les appels absolus vont au relais avec cookies. ----
+var API='https://ajean.link';
+(function(){var _f=window.fetch.bind(window);
+  window.fetch=function(u,opt){
+    if(typeof u==='string'&&u.charAt(0)==='/'&&!/^\/(opaque\.wasm|wasm_exec\.js|marked\.min\.js)/.test(u)){
+      u=API+u;opt=Object.assign({credentials:'include'},opt||{});
+    }
+    return _f(u,opt);};})();
+function jpost(u,b){return fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})}).then(function(r){return r.json();});}
+var _wasm=(function(){var go=new Go();return WebAssembly.instantiateStreaming(fetch('/opaque.wasm'),go.importObject).then(function(res){go.run(res.instance);});})();
+
+// ---- Paramètres passés par Jean (origine à qui renvoyer la clé + nom d'hôte). ----
+var Q=new URLSearchParams(location.search);
+var PARENT_ORIGIN=Q.get('origin')||'';   // ex: http://192.168.1.127:8090
+var HOST=Q.get('host')||'ce serveur';    // libellé affiché + label de la clé
+var mode='login';
+
+function el(id){return document.getElementById(id);}
+function stage(name){['loading','auth','sub','consent','done'].forEach(function(s){el('stage-'+s).classList.toggle('hidden',s!==name);});}
+function show(id,m){var e=el(id);e.textContent=m;e.classList.remove('hidden');}
+function hide(id){el(id).classList.add('hidden');}
+
+function pickTab(m){mode=m;
+  el('tab-login').classList.toggle('on',m==='login');
+  el('tab-signup').classList.toggle('on',m==='signup');
+  el('auth-title').textContent=m==='login'?'Se connecter':'Créer un compte';
+  el('auth-sub').textContent=m==='login'?"Connecte ton compte ajean.link pour activer l'accès distant.":'Crée ton compte ajean.link — 4,80 €/mois, sans engagement.';
+  el('ab').textContent=m==='login'?'Se connecter →':'Créer mon compte →';
+  el('ap2').classList.toggle('hidden',m!=='login'?false:true);
+  el('ap').setAttribute('autocomplete',m==='login'?'current-password':'new-password');
+  hide('authErr');
+}
+
+// ---- Flux OPAQUE (login / register), repris de login.html / signup.html. ----
+async function opaqueRegisterFlow(pw){
+  var ri=opaqueRegInit(pw);if(!ri.ok)return null;
+  var rr=await jpost('/auth/register/init',{req:ri.req});if(!rr.ok)return null;
+  var rf=opaqueRegFinish(rr.response,rr.clientID,rr.serverID);if(!rf.ok)return null;
+  var done=await jpost('/auth/register/finish',{record:rf.record});if(!done.ok)return null;
+  return rf.exportKey;}
+
+el('af').onsubmit=async function(e){e.preventDefault();
+  var email=el('ae').value.trim(),pw=el('ap').value,pw2=el('ap2').value;
+  var b=el('ab');hide('authErr');
+  function fail(m){show('authErr',m);b.disabled=false;b.textContent=mode==='login'?'Se connecter →':'Créer mon compte →';}
+  b.disabled=true;b.textContent='…';
+  try{await _wasm;
+    if(mode==='signup'){
+      if(pw.length<8)return fail('Le mot de passe doit faire au moins 8 caractères.');
+      var su=await jpost('/auth/signup',{email:email});
+      if(!su.ok)return fail(su.err||'Inscription impossible.');
+      var ek=await opaqueRegisterFlow(pw);
+      if(!ek)return fail("Échec de l'enregistrement du mot de passe.");
+      localStorage.setItem('ajk',ek);
+      return route(); // compte créé, session ouverte → route décidera (abonnement)
+    }
+    // login
+    var i1=opaqueLoginInit(pw);if(!i1.ok)throw new Error(i1.err);
+    var s1=await jpost('/auth/login/init',{email:email,ke1:i1.ke1});
+    if(s1.needLegacy){
+      var lr=await fetch('/login',{method:'POST',headers:{'X-Ajax':'1','Content-Type':'application/x-www-form-urlencoded'},
+        body:'email='+encodeURIComponent(email)+'&password='+encodeURIComponent(pw)});
+      var lj={};try{lj=await lr.json();}catch(_){}
+      if(!lr.ok||!lj.ok)return fail((lj&&lj.err)||'Connexion impossible.');
+      var ek2=await opaqueRegisterFlow(pw);if(!ek2)return fail('Échec de la migration du chiffrement.');
+      localStorage.setItem('ajk',ek2);return route();}
+    if(!s1.ok)return fail(s1.err||'Connexion impossible.');
+    var f1=opaqueLoginFinish(s1.ke2,s1.clientID,s1.serverID);
+    if(!f1.ok)return fail('Email ou mot de passe incorrect.');
+    var s2=await jpost('/auth/login/finish',{sid:s1.sid,ke3:f1.ke3});
+    if(!s2.ok)return fail(s2.err||'Email ou mot de passe incorrect.');
+    localStorage.setItem('ajk',f1.exportKey);
+    route();
+  }catch(err){fail('Erreur : '+err);}
+};
+
+// ---- Abonnement ----
+async function startCheckout(){
+  var b=el('subBtn');b.disabled=true;b.textContent='Redirection…';hide('subErr');
+  try{
+    // Reviens sur CETTE popup après paiement (mêmes paramètres) pour reprendre au
+    // consentement, au lieu du dashboard.
+    var ret='/connect.html'+location.search;
+    var co=await fetch('/billing/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({return:ret})});
+    if(co.ok){var cd=await co.json();if(cd.url){location.href=cd.url;return;}}
+    show('subErr','Paiement momentanément indisponible. Réessaie.');
+  }catch(e){show('subErr','Erreur : '+e);}
+  b.disabled=false;b.textContent="S'abonner →";
+}
+
+// ---- Consentement → génère la clé de liaison et la renvoie à Jean ----
+async function doConnect(){
+  var b=el('consentBtn');b.disabled=true;b.textContent='Connexion…';hide('consentErr');
+  // window.opener peut être coupé après le détour Stripe. Sans lui, la clé ne peut
+  // pas être livrée : on ne la génère PAS (évite une clé orpheline) et on invite à
+  // recliquer « Connecter » depuis Jean (abonnement désormais actif → livraison
+  // immédiate à la 2ᵉ tentative).
+  if(!window.opener||!PARENT_ORIGIN){
+    el('stage-done').querySelector('p').textContent="Abonnement actif ✓ — retourne dans Jean et reclique « Connecter à ajean.link » pour finaliser (un instant).";
+    stage('done');return;
+  }
+  try{
+    var label='Jean — '+HOST;
+    var r=await jpost('/app/key/new',{label:label});
+    if(!r.ok||!r.token){show('consentErr','Impossible de générer la clé.');b.disabled=false;b.textContent='Autoriser et connecter →';return;}
+    // Renvoie la clé à l'instance de Jean qui a ouvert la popup. Origine restreinte.
+    window.opener.postMessage({type:'ajean-link',token:r.token},PARENT_ORIGIN);
+    stage('done');
+  }catch(e){show('consentErr','Erreur : '+e);b.disabled=false;b.textContent='Autoriser et connecter →';}
+}
+
+async function doLogout(){try{await fetch('/logout',{method:'POST'});}catch(e){}
+  localStorage.removeItem('ajk');mode='login';pickTab('login');stage('auth');}
+
+// ---- Routage initial selon l'état du compte ----
+async function route(){
+  stage('loading');
+  var st=null;
+  try{var r=await fetch('/billing/status');if(r.ok)st=await r.json();}catch(e){}
+  if(!st){ // pas connecté
+    pickTab(Q.get('signup')==='1'?'signup':'login');stage('auth');return;
+  }
+  el('consent-email').textContent=st.email||'';
+  if(!st.active){stage('sub');return;}
+  el('consent-host').textContent=HOST;
+  stage('consent');
+}
+
+el('consent-host').textContent=HOST;
+route();
+</script>
+</body></html>
