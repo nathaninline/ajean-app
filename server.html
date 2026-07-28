@@ -165,7 +165,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
    unicode-bidi:plaintext rend chaque valeur dans son sens naturel tout en
    gardant l'ancrage à droite. */
 .kv span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;unicode-bidi:plaintext;text-align:right;min-width:0;color:var(--dim)}
-.bar{height:6px;background:var(--panel);border-radius:3px;overflow:hidden;margin:2px 0}
+.bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:0}
 .bar>div{height:100%;background:var(--accent)}
 #chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
 :root{--col:max(20px,calc(50% - 450px))}
@@ -243,11 +243,13 @@ details:first-of-type{border-top:0}
 details[open]{padding-bottom:10px}
 details>summary{display:flex;align-items:center;gap:8px;height:34px;font-size:13px;font-weight:500;
   color:var(--text);cursor:pointer;list-style:none;user-select:none}
+.stitle{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sbadge{flex:none;font-size:10px}
 details>summary::-webkit-details-marker{display:none}
 details>summary:hover{color:var(--dim)}
 /* Chevron : un carré dont on n'affiche que deux côtés. Il pivote AUTOUR DE SON
    CENTRE (aucune translation), sinon il se décale en tournant. */
-details>summary::after{content:"";flex:none;margin-left:auto;width:6px;height:6px;
+details>summary::after{content:"";flex:none;width:6px;height:6px;
   border-right:1.5px solid var(--dim);border-bottom:1.5px solid var(--dim);
   transform:rotate(-45deg);transition:transform .18s ease}
 details[open]>summary::after{transform:rotate(45deg)}
@@ -275,7 +277,18 @@ details[open]>summary::after{transform:rotate(45deg)}
 .switchrow .switch{margin-left:auto;order:2;flex:none}
 .switchrow>span:first-child{min-width:0}
 
-/* --- Lignes clé / valeur (GPU, RAM, config) --- */
+/* --- Bloc de statistique (GPU, RAM) --- */
+.stat{padding:9px 10px;display:flex;flex-direction:column;gap:6px}
+.stat:not(:last-child){border-bottom:1px solid var(--border)}
+/* La RAM vit dans son propre conteneur (masqué quand l'info manque) : le filet
+   de séparation se pose donc sur le conteneur, pas entre deux .stat frères. */
+#ram-details{border-top:1px solid var(--border)}
+.stat-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.stat-n{font-size:12.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat-v{flex:none;font-size:12.5px;color:var(--text);font-variant-numeric:tabular-nums}
+.stat-s{font-size:11px;color:var(--dim)}
+
+/* --- Lignes clé / valeur (config active) --- */
 .kv{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px;
   padding:6px 10px;border-bottom:1px solid var(--border);font-size:12.5px}
 .kv:last-child{border-bottom:0}
@@ -689,19 +702,21 @@ button:hover{border-color:var(--dim);color:var(--text)}
     </div>
     <pre id="svc-log" class="muted" style="font-size:10px;line-height:1.45;max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:6px 0 0"></pre>
   </div>
-  <details open><summary>GPU</summary>
-    <div id="vram" class="slist">…</div>
+  <!-- GPU et RAM décrivent la même chose (les ressources de la machine) :
+       une seule section, deux blocs de statistique dans la même carte. -->
+  <details open><summary><span class="stitle">Machine</span></summary>
+    <div class="slist">
+      <div id="vram">…</div>
+      <div id="ram-details"><div id="ram"></div></div>
+    </div>
   </details>
-  <details open id="ram-details"><summary>RAM</summary>
-    <div id="ram" class="slist">…</div>
-  </details>
-  <details open id="cfg-details"><summary>Config active</summary>
+  <details open id="cfg-details"><summary><span class="stitle">Config active</span></summary>
     <div id="cfg" class="slist">…</div>
   </details>
-  <details><summary>Presets<button class="preset-add" onclick="event.preventDefault();event.stopPropagation();openPreset('')" title="ajouter">+</button></summary>
+  <details><summary><span class="stitle">Presets</span><button class="preset-add" onclick="event.preventDefault();event.stopPropagation();openPreset('')" title="ajouter">+</button></summary>
     <div id="presets"></div>
   </details>
-  <details><summary>Mode agent <span id="agent-badge" style="margin-left:auto;margin-right:12px;font-size:10px"></span></summary>
+  <details><summary><span class="stitle">Mode agent</span><span id="agent-badge" class="sbadge"></span></summary>
     <div class="slist"><label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">⚠ active l'<b>accès machine</b> (shell complet via <b>bash</b> sur le serveur) — l'IA peut inspecter, lancer des scripts, lire/éditer des fichiers (timeout 30s, max 300s). Mémoire et accès internet ci-dessous ne fonctionnent que si le mode agent est activé.</span></span></label></div>
     <!-- Mémoire / Accès internet / Paramètres : sous-réglages du mode agent, en cartes. Grisés/inertes quand l'agent est off (voir setAgentGate). -->
     <div id="mem-block" class="gated-block">
@@ -724,7 +739,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
       </div>
     </div>
     <div id="net-block" class="gated-block">
-      <div class="subhead">Accès internet<span id="internet-badge" style="margin-left:6px;font-size:10px"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Ajoute les outils <b>web_search / web_open / web_read / web_grep</b> via un serveur <b>Crawl4AI</b>. Actifs seulement si le serveur répond.</span></span></div>
+      <div class="subhead">Accès internet<span id="internet-badge" class="sbadge"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Ajoute les outils <b>web_search / web_open / web_read / web_grep</b> via un serveur <b>Crawl4AI</b>. Actifs seulement si le serveur répond.</span></span></div>
       <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA</label>
       <div class="row" style="margin-top:6px">
         <input id="crawl-url" type="text" placeholder="http://localhost:11235" class="sctl" onchange="saveCrawlUrl()">
@@ -742,7 +757,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
       <div id="internet-status" class="muted" style="font-size:11px;margin-top:4px"></div>
     </div>
     <div id="mcp-block" class="gated-block">
-      <div class="subhead">Serveurs MCP<span id="mcp-badge" style="margin-left:6px;font-size:10px"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Connecte des <b>serveurs MCP</b> (Model Context Protocol) pour donner de nouveaux outils à l'IA : accès fichiers, bases de données, APIs métier… <b>stdio</b> = programme lancé localement (npx/uvx/binaire) · <b>http</b> = serveur distant. ⚠ un serveur stdio exécute du code sur cette machine, au même titre que le shell.</span></span></div>
+      <div class="subhead">Serveurs MCP<span id="mcp-badge" class="sbadge"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Connecte des <b>serveurs MCP</b> (Model Context Protocol) pour donner de nouveaux outils à l'IA : accès fichiers, bases de données, APIs métier… <b>stdio</b> = programme lancé localement (npx/uvx/binaire) · <b>http</b> = serveur distant. ⚠ un serveur stdio exécute du code sur cette machine, au même titre que le shell.</span></span></div>
       <div id="mcp-list" class="mcp-list"></div>
       <button class="addbtn" style="margin-top:6px" onclick="openMcp('')">+ ajouter un serveur</button>
     </div>
@@ -752,7 +767,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
       <label class="switchrow" style="margin-top:8px"><span class="switch"><input type="checkbox" id="compact-toggle" onchange="toggleCompact()"><span class="slider"></span></span> compactage automatique du contexte<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">activé par défaut : quand la conversation approche de la limite de contexte, les vieux tours sont résumés automatiquement (façon Hermes) au lieu de t'imposer un « vider ». Discussions quasi illimitées sans perdre le fil.</span></span></label>
     </div>
   </details>
-  <details><summary>Apparence</summary>
+  <details><summary><span class="stitle">Apparence</span></summary>
     <div class="slist">
       <label class="switchrow rev"><span>mode sombre</span>
         <span class="switch"><input type="checkbox" id="theme-dark" onchange="toggleThemeDark()"><span class="slider"></span></span>
@@ -766,10 +781,10 @@ button:hover{border-color:var(--dim);color:var(--text)}
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-hide-side" onchange="toggleView('hide-side')"><span class="slider"></span></span> barre latérale escamotable<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">La barre latérale devient un tiroir <b>même sur ordinateur</b> : elle reste fermée et s'ouvre avec le bouton ☰. Toute la largeur pour la conversation.</span></span></label>
     </div>
   </details>
-  <details><summary>System prompt</summary>
+  <details><summary><span class="stitle">System prompt</span></summary>
     <textarea id="sysprompt" placeholder="(optionnel) ex: tu es un assistant concis en français" oninput="saveSys()" class="sctl"></textarea>
   </details>
-  <details><summary>Accès OpenAI</summary>
+  <details><summary><span class="stitle">Accès OpenAI</span></summary>
     <div class="subhead">Endpoint compatible OpenAI<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Branchez n'importe quel client compatible OpenAI (OpenCode, Continue, Cursor…) sur ces adresses. Si une clé est définie, le client doit envoyer <code>Authorization: Bearer &lt;clé&gt;</code>.</span></span></div>
     <div class="muted" style="font-size:11px;margin:0 0 10px">Modèle : <code>jean</code></div>
 
@@ -805,7 +820,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
     </div>
     </div>
   </details>
-  <details id="remote-details"><summary>Accès distant <span id="remote-badge" style="margin-left:auto;margin-right:12px;font-size:10px"></span></summary>
+  <details id="remote-details"><summary><span class="stitle">Accès distant</span><span id="remote-badge" class="sbadge"></span></summary>
     <div class="subhead">ajean.link<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Accédez à ce serveur Jean depuis <b>n'importe où</b>, sans ouvrir de port, à travers le relais <b>ajean.link</b>. Le trafic est chiffré de <b>bout en bout</b> : le relais ne voit rien. Abonnement 4,80 €/mois.</span></span></div>
     <!-- Non connecté : un seul bouton, tout se passe dans la popup (compte + paiement). -->
     <div id="remote-off" class="slist pad">
@@ -832,7 +847,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
       </div>
     </div>
   </details>
-  <details id="lc-details"><summary>Moteur</summary>
+  <details id="lc-details"><summary><span class="stitle">Moteur</span></summary>
     <div id="lc-status" class="lc-head muted">…</div>
     <div class="lc-modes">
       <div class="lc-mode" id="lc-mode-fast" onclick="lcPick('fast')">
@@ -857,7 +872,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
       <pre id="lc-log" hidden></pre>
     </div>
   </details>
-  <details><summary>Service</summary>
+  <details><summary><span class="stitle">Service</span></summary>
     <div class="slist pad">
     <div class="row">
       <button onclick="act('start')">start</button>
@@ -866,7 +881,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
     </div>
     </div>
   </details>
-  <details id="upd-details"><summary>Actions</summary>
+  <details id="upd-details"><summary><span class="stitle">Actions</span></summary>
     <div class="slist pad">
       <div class="row"><button id="upd-check" onclick="checkUpdate()">↥ Vérifier les mises à jour</button></div>
       <div id="upd-msg" class="muted"></div>
@@ -1162,7 +1177,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728152127"></script>
+<script src="/e2e.js?v=20260728152723"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1561,12 +1576,16 @@ function updateCtxMeter(){
 }
 async function loadVram(){
   const gpus=await jget('/api/vram');
+  // Bloc de statistique : intitulé + valeur sur une ligne, jauge, détail dessous.
+  // Même gabarit que la RAM (voir .stat dans le CSS) — le HTML libre d'avant
+  // collait aux bords de la carte.
   document.getElementById('vram').innerHTML = (gpus||[]).map(g=>{
     const pct=Math.round(g.used*100/g.total);
-    return '<div style="margin:6px 0"><div style="font-size:12px">'+g.name+'</div>'+
+    return '<div class="stat"><div class="stat-h"><span class="stat-n">'+g.name+'</span>'+
+      '<span class="stat-v">'+(g.used/1024).toFixed(1)+' / '+(g.total/1024).toFixed(1)+' GiB</span></div>'+
       '<div class="bar"><div style="width:'+pct+'%"></div></div>'+
-      '<div class="muted">'+(g.used/1024).toFixed(1)+' / '+(g.total/1024).toFixed(1)+' GiB · GPU '+g.util+'% · '+g.temp+'°C</div></div>';
-  }).join('') || '<span class="muted">(pas de GPU)</span>';
+      '<div class="stat-s">GPU '+g.util+' % · '+g.temp+' °C</div></div>';
+  }).join('') || '<div class="stat"><span class="stat-s">(pas de GPU)</span></div>';
 }
 async function loadRam(){
   const m=await jget('/api/ram');
@@ -1575,8 +1594,10 @@ async function loadRam(){
   if(box) box.style.display='';
   const pct=Math.round(m.used*100/m.total);
   document.getElementById('ram').innerHTML =
-    '<div style="margin:6px 0"><div class="bar"><div style="width:'+pct+'%"></div></div>'+
-    '<div class="muted">'+(m.used/1024).toFixed(1)+' / '+(m.total/1024).toFixed(1)+' GiB · '+pct+'%</div></div>';
+    '<div class="stat"><div class="stat-h"><span class="stat-n">Mémoire vive</span>'+
+    '<span class="stat-v">'+(m.used/1024).toFixed(1)+' / '+(m.total/1024).toFixed(1)+' GiB</span></div>'+
+    '<div class="bar"><div style="width:'+pct+'%"></div></div>'+
+    '<div class="stat-s">'+pct+' % utilisée</div></div>';
 }
 async function loadCfg(){
   // /api/llamacpp en parallèle : il indique si le BIN de la config correspond au
