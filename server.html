@@ -647,11 +647,7 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
    (overflow:hidden sur le rayon). Les trois blocs sont des frères dans le HTML :
    on les recolle en dessinant les bordures par morceaux et l'ordre visuel vient
    de l'ordre flex — aucun changement de markup. */
-/* Le padding BAS absorbe l'indicateur d'accueil de l'iPhone en PWA : la carte
-   descend jusqu'au bord réel de l'écran (plus de bande de fond en dessous) et
-   c'est son propre rembourrage qui garde la jauge au-dessus de l'indicateur.
-   Hors PWA l'inset vaut 0 → strictement les 8 px d'avant. */
-#composer{position:absolute;left:0;right:0;bottom:0;z-index:4;border-top:none;display:flex;flex-direction:column;padding:34px 0 calc(8px + env(safe-area-inset-bottom));--col:calc(max(16px,calc(50% - 380px)) + var(--sbw,0px));background:linear-gradient(to bottom,transparent 0,var(--bg) 34%)}
+#composer{position:absolute;left:0;right:0;bottom:0;z-index:4;border-top:none;display:flex;flex-direction:column;padding:34px 0 8px;--col:calc(max(16px,calc(50% - 380px)) + var(--sbw,0px));background:linear-gradient(to bottom,transparent 0,var(--bg) 34%)}
 #chat{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
 #scrollbtn{bottom:calc(180px + env(safe-area-inset-bottom));border-radius:999px}
 #compact-banner{order:0;margin:0 var(--col) 8px;border-radius:14px}
@@ -669,6 +665,14 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
    découper la jauge dans sa propre forme — la barre est bien épaisse ET rognée
    exactement sur la courbe, symétrique du haut. */
 #ctxmeta{order:2;margin:0 var(--col);padding:6px 16px 15px;gap:10px;background:var(--panel);border:1px solid var(--border);border-top:none;border-radius:0 0 26px 26px;overflow:hidden}
+/* PWA plein écran : la carte scelle le bas de l'écran au lieu de flotter
+   au-dessus de l'indicateur d'accueil. L'indicateur se pose SUR le pied de
+   carte (son fond descend jusqu'au bord réel), et c'est le rembourrage INTERNE
+   du pied qui garde la jauge et le texte au-dessus de lui — plus aucune bande
+   de fond visible. Coins bas remis à plat : un arrondi collé au bord de l'écran
+   laisserait deux petits triangles de fond dans les angles. */
+[data-standalone="1"] #composer{padding-bottom:0}
+[data-standalone="1"] #ctxmeta{padding-bottom:calc(15px + env(safe-area-inset-bottom));border-radius:0;border-bottom:none}
 #ctx-text,#status-preset{color:var(--dim);font-size:10px;letter-spacing:.02em}
 #ctx-compact{border-radius:999px;padding:2px 10px;font-size:10px;background:transparent;border-color:var(--border);color:var(--dim)}
 #ctx-compact:hover{border-color:var(--dim);color:var(--text)}
@@ -1205,7 +1209,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728223956"></script>
+<script src="/e2e.js?v=20260728224528"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1369,12 +1373,19 @@ async function loadSys(){
   const standalone = (window.navigator.standalone === true) ||
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
   if(!standalone) return;
+  document.documentElement.setAttribute('data-standalone', '1');
   const vv = window.visualViewport;
   function apply(){
-    // vv.height suit aussi l'ouverture du clavier : la coque se réduit, donc la
-    // saisie reste au-dessus du clavier au lieu de passer dessous.
     const h = vv ? vv.height : window.innerHeight;
-    if(h > 0) document.documentElement.style.setProperty('--appvh', h + 'px');
+    if(h <= 0) return;
+    // ⚠️ NE PAS suivre le clavier. vv.height se réduit aussi à son ouverture ;
+    // asservir la coque à cette valeur la fait rétrécir d'un coup, et le
+    // composer — collé au bas de la coque — remonte presque en haut de l'écran.
+    // Sous le clavier, iOS décale déjà tout seul la fenêtre visible pour montrer
+    // le champ actif : on garde donc la hauteur « clavier fermé ». Seuil à 75 % :
+    // un clavier occupe toujours bien plus que le quart de l'écran.
+    if(vv && h < window.innerHeight * 0.75) return;
+    document.documentElement.style.setProperty('--appvh', h + 'px');
   }
   apply();
   // Le premier rendu peut encore donner une valeur provisoire : on repasse au
