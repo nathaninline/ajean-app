@@ -1,16 +1,22 @@
-/* Charte AJEAN (identique à ajean.app et au thème AJEAN de l'app) : clair,
-   bleu, esprit machine — bordures nettes de 2 px, aucun arrondi, ombres en
-   blocs pleins, fond quadrillé. Variante sombre conservée (bouton du header). */
-:root,[data-theme="light"]{color-scheme:light;--bg:#f5f8ff;--panel:#ffffff;--panel2:#eef3fe;--border:#cfdcf5;
---line2:#b6cbf0;--grid:#e4ecfa;--soft:#e8f0ff;--text:#0f1f3d;--dim:#5b6f96;--accent:#1f6feb;--blue:#1f6feb;
---accent-bg:rgba(31,111,235,.10);--ok:#1f6feb;--warn:#9a6700;--err:#cf222e;--mag:#6f52d8;--code-bg:#eef3fe;--sh:#cddffb}
-[data-theme="dark"]{color-scheme:dark;--bg:#050810;--panel:#0a1020;--panel2:#0e1526;--border:#16233f;
---line2:#1e3054;--grid:#0a1120;--soft:#101b33;--text:#dce6ff;--dim:#63739c;--accent:#3b82f6;--blue:#3b82f6;
---accent-bg:rgba(59,130,246,.14);--ok:#3b82f6;--warn:#d29922;--err:#f85149;--mag:#9b8cff;--code-bg:#03060d;--sh:#12203c}
+/* Charte AJEAN (identique à ajean.app et au thème de l'app) : noir et blanc,
+   ultra sobre — fond blanc, bordures grises de 1 px, coins arrondis, police
+   système. Variante sombre par data-theme="dark" (bouton du header). */
+:root,[data-theme="light"]{color-scheme:light;--bg:#ffffff;--panel:#fafafa;--panel2:#f5f5f5;--border:#e5e5e5;
+--line2:#d4d4d4;--soft:#f5f5f5;--text:#0a0a0a;--dim:#6b6b6b;--accent:#0a0a0a;--blue:#0a0a0a;
+--accent-bg:rgba(0,0,0,.05);--ok:#0a0a0a;--warn:#6b6b6b;--err:#c0392b;--mag:#6b6b6b;--code-bg:#f5f5f5}
+[data-theme="dark"]{color-scheme:dark;--bg:#0a0a0a;--panel:#141414;--panel2:#1c1c1c;--border:#262626;
+--line2:#333333;--soft:#1c1c1c;--text:#f5f5f5;--dim:#8e8e8e;--accent:#f5f5f5;--blue:#f5f5f5;
+--accent-bg:rgba(255,255,255,.07);--ok:#f5f5f5;--warn:#8e8e8e;--err:#f2777a;--mag:#8e8e8e;--code-bg:#000000}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.5;overscroll-behavior-y:none}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif;font-size:15px;-webkit-font-smoothing:antialiased;line-height:1.5;overscroll-behavior-y:none}
 header{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:14px;padding:12px 20px;background:var(--bg);border-bottom:1px solid var(--border)}
-.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:18px}
+.brand{display:flex;align-items:center;gap:0;font-weight:600;font-size:18px}
+/* Logo en pixels : hauteur multiple de 5 (la grille fait 5 modules de haut),
+   sinon les colonnes sortent inégales au rendu. */
+.brand svg{height:15px;width:auto;display:block;shape-rendering:crispEdges;fill:var(--text)}
+/* « .link » calé sur la ligne de base du logo : sans line-height:1 sa boîte de
+   texte est bien plus haute que le logo et le centrage la fait flotter. */
+.brand .dom{color:var(--dim);font-size:15px;font-weight:400;line-height:1;position:relative;top:2px}
 .accent{color:var(--accent)}
 header .sp{flex:1}
 .iconbtn{width:38px;height:38px;border:0;background:transparent;color:var(--dim);cursor:pointer;display:grid;place-items:center;transition:.12s}
@@ -24,12 +30,12 @@ header .sp{flex:1}
 .lead{color:var(--dim);font-size:13px;line-height:1.5;margin-top:6px}
 .btn{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 14px;cursor:pointer;font:inherit;font-size:13px;font-weight:600;transition:.12s}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
-.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
-.btn.primary:hover{filter:brightness(1.1);color:#fff}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--bg)}
+.btn.primary:hover{opacity:.82;color:var(--bg)}
 .btn.subtle{background:transparent;border-color:transparent;color:var(--dim);font-weight:500;padding:5px 10px}
 .btn.subtle:hover{background:var(--panel);border-color:var(--border);color:var(--text)}
 .btn.danger{border-color:var(--err);color:var(--err)}
-.btn.danger:hover{background:var(--err);border-color:var(--err);color:#fff}
+.btn.danger:hover{background:var(--err);border-color:var(--err);color:#ffffff}
 .btn.sm{padding:6px 10px;font-size:12px;flex:none}
 .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
 .tile{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px;transition:border-color .12s}
@@ -53,8 +59,10 @@ header .sp{flex:1}
 .gline{display:flex;align-items:center;gap:9px;min-width:0}
 .gline .gbar{flex:1}
 .vlabel{font-size:11px;color:var(--dim);flex:none;white-space:nowrap}
-.gbar{height:5px;border-radius:99px;background:var(--bg);overflow:hidden}
-.gbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),#6aa6ff);transition:width .35s ease}
+/* Jauge : aplat neutre (le dégradé bleu venait de la charte précédente) ;
+   le rail se détache du fond de la tuile, pas l'inverse. */
+.gbar{height:5px;border-radius:99px;background:var(--border);overflow:hidden}
+.gbar i{display:block;height:100%;border-radius:99px;background:var(--text);transition:width .35s ease}
 .muted{color:var(--dim);font-size:12px}
 .empty{grid-column:1/-1;text-align:center;color:var(--dim);padding:40px 20px;border:1px dashed var(--border);border-radius:8px}
 .kv{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);gap:8px;padding:3px 0;border-bottom:1px solid var(--border)}
@@ -134,63 +142,8 @@ header .sp{flex:1}
 .chat .empty2{margin:auto;text-align:center;color:var(--dim)}
 .msg{max-width:80%;padding:9px 13px;border-radius:12px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
 .msg.admin{align-self:flex-start;background:var(--bg);border:1px solid var(--border)}
-.msg.user{align-self:flex-end;background:var(--blue);color:#fff}
+.msg.user{align-self:flex-end;background:var(--blue);color:var(--bg)}
 .msg .mt{display:block;font-size:9px;opacity:.6;margin-top:4px}
 .chatbar{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
 .chatbar textarea{flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);font:inherit;font-size:14px;resize:none;max-height:140px}
 .chatbar textarea:focus{outline:none;border-color:var(--accent)}
-
-/* ===== Habillage pixel ====================================================
-   Une couche posée par-dessus les règles ci-dessus : elle enlève TOUS les
-   arrondis (y compris sur les pseudo-éléments), épaissit les bordures et
-   remplace les ombres floues par des blocs pleins. */
-*,*::before,*::after{border-radius:0 !important}
-body{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px}
-header{border-bottom:2px solid var(--border);background:var(--bg)}
-.brand svg{height:15px;width:auto;display:block;shape-rendering:crispEdges;fill:var(--accent)}
-/* « .link » posé sur la ligne de base du logo : sans line-height:1 sa boîte
-   est bien plus haute que le logo et le centrage la fait flotter. */
-.brand .dom{color:var(--dim);font-size:14px;font-weight:400;letter-spacing:.06em;line-height:1;position:relative;top:3px}
-.tabs{border-bottom:2px solid var(--border)}
-.tab{border-bottom:3px solid transparent;text-transform:uppercase;letter-spacing:.1em;font-size:12px}
-.tab.on{border-bottom-color:var(--accent);color:var(--accent)}
-/* Boutons : capitales, cadre net, ombre en bloc qui s'efface quand on appuie. */
-.btn{border:2px solid var(--line2);text-transform:uppercase;letter-spacing:.06em;font-size:12px;font-weight:700;box-shadow:3px 3px 0 0 var(--grid);transition:.1s}
-.btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:none;transform:translate(3px,3px)}
-.btn.primary{border-color:var(--accent);box-shadow:3px 3px 0 0 var(--sh)}
-.btn.primary:hover{filter:none;background:var(--accent)}
-.btn.subtle{border-color:transparent;box-shadow:none;text-transform:none;letter-spacing:0;font-weight:500;font-size:13px}
-.btn.subtle:hover{background:var(--soft);border-color:var(--line2);color:var(--accent);transform:none}
-.btn.danger{border-color:var(--err);box-shadow:3px 3px 0 0 var(--grid)}
-.btn.danger:hover{background:var(--err)}
-/* Cartes serveur : cadre épais + ombre bloc, liseré bleu au survol. */
-.tile{border:2px solid var(--border);box-shadow:5px 5px 0 0 var(--grid)}
-.tile.srv:hover{border-color:var(--accent);box-shadow:5px 5px 0 0 var(--sh)}
-.dot{width:8px;height:8px}
-.empty{border:2px dashed var(--line2)}
-.sec h2{text-transform:uppercase;letter-spacing:.12em;font-size:13px;color:var(--accent)}
-.sec .ct{border:2px solid var(--border);background:var(--soft);color:var(--dim)}
-.gbar{height:6px;background:var(--grid);border:2px solid var(--border)}
-.gbar i{background:var(--accent)}
-/* Modales : une seule ombre, en bloc. */
-.modal{background:rgba(15,31,61,.45)}
-.sheet{border:2px solid var(--line2);box-shadow:8px 8px 0 0 var(--sh);background:var(--panel)}
-.sheet h3{text-transform:uppercase;letter-spacing:.14em;font-size:13px}
-.field input,.reveal code,.chatbar textarea,.ses{border:2px solid var(--line2);background:var(--bg)}
-.field input:focus,.chatbar textarea:focus{border-color:var(--accent)}
-.field label{letter-spacing:.12em;color:var(--text)}
-.keyrow,.kv{border-bottom:2px solid var(--border)}
-.keyrow button{border:2px solid var(--line2)}
-.ses .badge{border:2px solid var(--ok)}
-#toast{border:2px solid var(--line2);box-shadow:4px 4px 0 0 var(--sh)}
-/* Aide : cartes d'articles et rendu Markdown. */
-.artcard{border:2px solid var(--border);box-shadow:4px 4px 0 0 var(--grid)}
-.artcard:hover{border-color:var(--accent);box-shadow:4px 4px 0 0 var(--sh)}
-.artcard .qm{border:2px solid var(--accent);background:var(--soft)}
-.md code,.md pre,.tw{border:2px solid var(--border)}
-.md h1{border-bottom:2px solid var(--border)}
-.md blockquote{border-left:3px solid var(--accent)}
-/* Support : bulles carrées, question en bleu plein. */
-.chat{border:2px solid var(--border);box-shadow:5px 5px 0 0 var(--grid)}
-.msg.admin{border:2px solid var(--border)}
-.msg.user{background:var(--accent);color:#fff}
