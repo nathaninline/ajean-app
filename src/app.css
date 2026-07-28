@@ -148,7 +148,9 @@ header .sp{flex:1}
 body{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px}
 header{border-bottom:2px solid var(--border);background:var(--bg)}
 .brand svg{height:15px;width:auto;display:block;shape-rendering:crispEdges;fill:var(--accent)}
-.brand .dom{color:var(--dim);font-size:14px;font-weight:400;letter-spacing:.06em}
+/* « .link » posé sur la ligne de base du logo : sans line-height:1 sa boîte
+   est bien plus haute que le logo et le centrage la fait flotter. */
+.brand .dom{color:var(--dim);font-size:14px;font-weight:400;letter-spacing:.06em;line-height:1;position:relative;top:3px}
 .tabs{border-bottom:2px solid var(--border)}
 .tab{border-bottom:3px solid transparent;text-transform:uppercase;letter-spacing:.1em;font-size:12px}
 .tab.on{border-bottom-color:var(--accent);color:var(--accent)}
