@@ -73,19 +73,19 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .statuspill .port{opacity:.6;font-weight:400}
 /* en-tête + bouton d'ajout de skill (toujours visible) */
 .skillshead{display:flex;align-items:center;justify-content:space-between;margin:12px 0 5px}
-.skillshead>span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.skillshead>span{font-size:12px;color:var(--dim);font-weight:600}
 .addbtn{font-size:11px;padding:3px 11px 4px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;line-height:1.2}
 .addbtn:hover{border-color:var(--accent);color:var(--accent)}
 .mem-count{font-size:10px;color:var(--dim);font-weight:400;letter-spacing:0;text-transform:none;margin-left:4px}
 /* Titre de sous-section (Mémoire / Accès internet) : simple libellé, PAS de trait
    (le trait est réservé aux sections principales — cf. `details`). La séparation
    visuelle vient de la carte englobante .gated-block. */
-.subhead{position:relative;display:flex;align-items:center;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:600;margin:0 0 6px}
+.subhead{position:relative;display:flex;align-items:center;font-size:12px;color:var(--dim);font-weight:600;margin:0 0 8px}
 /* Barre repliable « Pages » : un seul chevron, bouton + ajouter aligné à droite. */
 .pages-bar{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:7px 0;margin-top:4px}
 .pages-bar .pages-caret{flex-shrink:0;font-size:9px;color:var(--dim);transition:transform .12s}
 .pages-bar.open .pages-caret{transform:rotate(90deg)}
-.pages-bar .pages-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600}
+.pages-bar .pages-title{font-size:12px;color:var(--dim);font-weight:600}
 .pages-bar .addbtn{margin-left:auto}
 .mem-search{width:100%;box-sizing:border-box;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 9px;font:inherit;font-size:12px;margin:0 0 6px}
 .mem-search:focus{outline:none;border-color:var(--accent)}
@@ -103,10 +103,13 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .ask-actions button{margin:0;padding:7px 16px}
 .ask-ok{border-color:var(--accent);color:var(--accent)}
 .ask-ok.danger{border-color:var(--err);color:var(--err)}
-#brand-a{display:inline-flex;line-height:0;max-width:0;opacity:0;overflow:hidden;color:var(--text);transition:max-width .35s ease,opacity .35s ease}
-#brand.agent #brand-a{max-width:9px;opacity:1;margin-right:2px}
+#brand-a{display:inline-flex;line-height:0;color:var(--text);margin-right:2px}
+/* Mode agent : le A passe en couleur d'accent (il était masqué hors agent,
+   la marque se lisant alors « JEAN »). L'état agent reste signalé par sa
+   pastille dans les réglages. */
+#brand.agent #brand-a{color:var(--accent)}
 /* interrupteur (switch) */
-.switchrow{position:relative;display:flex;align-items:center;gap:9px;font-size:12px;padding:6px 0;cursor:pointer;user-select:none}
+.switchrow{position:relative;display:flex;align-items:center;gap:10px;font-size:13.5px;padding:8px 0;cursor:pointer;user-select:none}
 /* Sous-réglage du mode agent inaccessible quand l'agent est off : grisé + inerte. */
 /* Sous-réglages du mode agent présentés en CARTES (bordure + fond) pour ne pas
    les confondre avec les traits des sections principales. */
@@ -123,12 +126,13 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .switch input:checked + .slider::before{transform:translateX(16px);background:var(--bg)}
 .switch input:focus-visible + .slider{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
 h2{margin:20px 0 8px;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
-details{margin:7px 0;border-top:1px solid var(--border);padding-top:4px}
-details>summary{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:600;cursor:pointer;padding:3px 0;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+details{margin:2px 0;border-top:1px solid var(--border);padding-top:2px}
+details>summary{font-size:14px;color:var(--text);font-weight:500;cursor:pointer;padding:11px 2px;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none;border-radius:8px}
 details>summary::-webkit-details-marker{display:none}
-details>summary::after{content:"▸";transition:transform .15s;color:var(--dim);font-size:10px}
-details[open]>summary::after{transform:rotate(90deg)}
-details>summary:hover{color:var(--text)}
+/* Chevron dessiné (comme .pe-adv) : le caractère ▸ rendait mal selon la police. */
+details>summary::after{content:"";width:7px;height:7px;border-right:1.5px solid var(--dim);border-bottom:1.5px solid var(--dim);transform:translateY(-2px) rotate(-45deg);transition:transform .15s}
+details[open]>summary::after{transform:translateY(1px) rotate(45deg)}
+details>summary:hover{background:var(--accent-bg)}
 details>div,details>textarea{margin-top:6px}
 .preset-add{display:none;font-size:14px;padding:0 8px;margin:0 8px 0 auto;line-height:1.4;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer}
 .preset-add:hover{border-color:var(--accent);color:var(--accent)}
@@ -160,7 +164,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
    pour rester alignée au bord gauche du panneau et ne pas déborder. */
 .help>.tip{display:none;position:absolute;z-index:40;left:0;right:0;top:calc(100% + 2px);padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:400;line-height:1.4;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.15);white-space:normal;text-align:left;text-transform:none;letter-spacing:normal;cursor:auto}
 .help:hover>.tip,.help:focus>.tip,.help.open>.tip{display:block}
-.kv{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px}
+.kv{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
 .kv span:first-child{color:var(--dim);flex-shrink:0}
 .kv span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:right;min-width:0}
 .bar{height:6px;background:var(--panel);border-radius:3px;overflow:hidden;margin:2px 0}
@@ -279,7 +283,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 #input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font:inherit;resize:none;min-height:56px;max-height:200px;overflow-y:hidden}
 #input:focus{outline:none;border-color:var(--accent)}
 #send{padding:0 20px}
-.muted{color:var(--dim);font-size:12px}
+.muted{color:var(--dim);font-size:13px}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);padding:8px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none}
 #toast.show{opacity:1}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
@@ -317,7 +321,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   #ctxmeta{padding:3px 10px 0}
   #ctx-text{font-size:9px}
   h1{font-size:15px}
-  h2,details>summary{font-size:10px}
+  h2,details>summary{font-size:13px}
   #menubtn{width:32px;height:32px;font-size:15px;top:calc(6px + env(safe-area-inset-top))}
 }
 /* --- Backend llama.cpp (2 modes : rapide / optimisée) --------------------- */
@@ -466,7 +470,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .btn-save{border-color:var(--accent);color:var(--accent);margin:0}
 .del-model{align-items:center;gap:5px;font-size:11px;color:var(--dim)}
 .del-model input{margin:0}
-.lc-logbar{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:6px 0;margin-top:4px}
+.lc-logbar{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-size:12px;color:var(--dim);font-weight:600;padding:6px 0;margin-top:4px}
 .lc-logbar #lc-log-caret{font-size:9px;transition:transform .12s;display:inline-block}
 .lc-logbar.open #lc-log-caret{transform:rotate(90deg)}
 #lc-log{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:10px;line-height:1.45;max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:0}
@@ -758,7 +762,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
       </div>
     </div>
   </details>
-  <details id="lc-details"><summary>MOTEUR</summary>
+  <details id="lc-details"><summary>Moteur</summary>
     <div id="lc-status" class="lc-head muted">…</div>
     <div class="lc-modes">
       <div class="lc-mode" id="lc-mode-fast" onclick="lcPick('fast')">
@@ -1084,7 +1088,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728145717"></script>
+<script src="/e2e.js?v=20260728150452"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
