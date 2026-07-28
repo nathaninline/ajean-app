@@ -323,11 +323,7 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 @media (min-width:721px){[data-hide-side="1"] .side{width:380px;max-width:380px}}
 /* Le bouton ☰ est posé au-dessus du fil : on dégage le haut de la
    conversation pour qu'il ne recouvre aucun message. */
-@media (min-width:721px){
-  html[data-hide-side="1"] #chat{padding-top:60px}
-  html[data-hide-side="1"] #chat{padding-left:max(16px,calc(50% - 480px));padding-right:max(16px,calc(50% - 480px))}
-  html[data-hide-side="1"] #composer{--col:max(16px,calc(50% - 480px))}
-}
+@media (min-width:721px){html[data-hide-side="1"] #chat{padding-top:60px}}
 [data-hide-side="1"] .side.open{transform:translateX(0)}
 [data-hide-side="1"] #menubtn{display:block}
 [data-hide-side="1"] #backdrop.open{display:block}
@@ -627,7 +623,7 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
    (overflow:hidden sur le rayon). Les trois blocs sont des frères dans le HTML :
    on les recolle en dessinant les bordures par morceaux et l'ordre visuel vient
    de l'ordre flex — aucun changement de markup. */
-#composer{position:absolute;left:0;right:0;bottom:0;z-index:4;border-top:none;display:flex;flex-direction:column;padding:34px 0 8px;--col:max(16px,calc(50% - 380px));background:linear-gradient(to bottom,transparent 0,var(--bg) 34%)}
+#composer{position:absolute;left:0;right:0;bottom:0;z-index:4;border-top:none;display:flex;flex-direction:column;padding:34px 0 8px;--col:calc(max(16px,calc(50% - 380px)) + var(--sbw,0px));background:linear-gradient(to bottom,transparent 0,var(--bg) 34%)}
 #chat{padding-bottom:170px}
 #scrollbtn{bottom:180px;border-radius:999px}
 #compact-banner{order:0;margin:0 var(--col) 8px;border-radius:14px}
@@ -1181,7 +1177,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728154126"></script>
+<script src="/e2e.js?v=20260728154744"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -2258,6 +2254,19 @@ function isNearBottom(){
   const c = chatEl();
   return c.scrollHeight - c.scrollTop - c.clientHeight < 60;
 }
+// La zone de chat réserve une gouttière de barre de défilement de chaque côté
+// (scrollbar-gutter: stable both-edges) ; le composer, lui, n'est pas défilant.
+// On mesure la gouttière réelle et on la reporte sur le composer, sinon les
+// messages sont en retrait par rapport à la zone de saisie — décalage visible
+// surtout quand la barre latérale est escamotée.
+function syncGutter(){
+  const chat=document.getElementById('chat'); if(!chat) return;
+  const g=Math.max(0,(chat.offsetWidth-chat.clientWidth)/2);
+  document.documentElement.style.setProperty('--sbw', g+'px');
+}
+addEventListener('resize', syncGutter);
+addEventListener('DOMContentLoaded', syncGutter);
+
 function scrollMaybe(){
   // Pendant le replay initial on NE force AUCUN reflow : lire scrollHeight à chaque
   // événement rejoué = un layout synchrone forcé sur un DOM qui grossit → coût
