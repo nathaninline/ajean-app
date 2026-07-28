@@ -4,15 +4,18 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><rect width='12' height='12' rx='2' ry='2' fill='%231f6feb'/><rect x='6' y='3' width='2' height='2' fill='%23fff'/><rect x='6' y='5' width='2' height='2' fill='%23fff'/><rect x='4' y='7' width='2' height='2' fill='%23fff'/></svg>">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABa0lEQVR42u3dsQ2AIBBAUSCOYA8b4iiMSI9D2FpYGTEheW8AisvPUV7MdQR4kowAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+JAHCAOxMEHNiO4622f9HI5TpsD3wriQBwgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4EAfiQBwgDsSBOBAH4kAciANxIA7EgThAHIgDcSAOxIE4EAfiQByIA8SBOBAH4kAciANxIA7EgThAHIgDcSAO/rLkLXsX520OxIE4EAfiQByIA8SBOBAH4kAciANxIA7EgThAHIgDcSAOxIE4EAfiQByIA8SBOHgl5jpMAZsDcSAOxIE4EAfiQByIA3GAOBAH4kAciANxIA7EgTgQB4gDcSAOxIE4EAfiQByIA3EgDhAH4kAciANxIA7EgTgQB+IAcSAOxME0F8YvCl24O02KAAAAAElFTkSuQmCC">
-<title>Jean</title>
-<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('jean-theme')||'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
+<title>AJEAN</title>
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('jean-theme')||'light')}catch(e){document.documentElement.setAttribute('data-theme','light')}</script>
 <style>
-/* Thème partagé avec jean web (jean/ui/index.html) : mêmes variables, mêmes
-   couleurs. Défaut sombre ; [data-theme="light"] pour le mode clair. */
-:root,[data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--panel2:#1c222b;--border:#30363d;--text:#e6edf3;
---dim:#7d8590;--accent:#58a6ff;--blue:#1f6feb;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117}
-[data-theme="light"]{color-scheme:light;--bg:#f0f1f4;--panel:#f8f9fb;--panel2:#eceef2;--border:#d7dbe1;--text:#24292f;
---dim:#636b74;--accent:#0969da;--blue:#1f6feb;--accent-bg:rgba(9,105,218,.10);--ok:#0969da;--warn:#9a6700;--err:#cf222e;--mag:#8250df;--code-bg:#e6e9ee}
+/* Charte AJEAN (identique à ajean.app et au thème AJEAN de l'app) : clair,
+   bleu, esprit machine — bordures nettes de 2 px, aucun arrondi, ombres en
+   blocs pleins, fond quadrillé. Variante sombre conservée (bouton du header). */
+:root,[data-theme="light"]{color-scheme:light;--bg:#f5f8ff;--panel:#ffffff;--panel2:#eef3fe;--border:#cfdcf5;
+--line2:#b6cbf0;--grid:#e4ecfa;--soft:#e8f0ff;--text:#0f1f3d;--dim:#5b6f96;--accent:#1f6feb;--blue:#1f6feb;
+--accent-bg:rgba(31,111,235,.10);--ok:#1f6feb;--warn:#9a6700;--err:#cf222e;--mag:#6f52d8;--code-bg:#eef3fe;--sh:#cddffb}
+[data-theme="dark"]{color-scheme:dark;--bg:#050810;--panel:#0a1020;--panel2:#0e1526;--border:#16233f;
+--line2:#1e3054;--grid:#0a1120;--soft:#101b33;--text:#dce6ff;--dim:#63739c;--accent:#3b82f6;--blue:#3b82f6;
+--accent-bg:rgba(59,130,246,.14);--ok:#3b82f6;--warn:#d29922;--err:#f85149;--mag:#9b8cff;--code-bg:#03060d;--sh:#12203c}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.5;overscroll-behavior-y:none}
 header{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:14px;padding:12px 20px;background:var(--bg);border-bottom:1px solid var(--border)}
@@ -145,10 +148,63 @@ header .sp{flex:1}
 .chatbar{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
 .chatbar textarea{flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);font:inherit;font-size:14px;resize:none;max-height:140px}
 .chatbar textarea:focus{outline:none;border-color:var(--accent)}
+
+/* ===== Habillage pixel ====================================================
+   Une couche posée par-dessus les règles ci-dessus : elle enlève TOUS les
+   arrondis (y compris sur les pseudo-éléments), épaissit les bordures et
+   remplace les ombres floues par des blocs pleins. */
+*,*::before,*::after{border-radius:0 !important}
+body{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px}
+header{border-bottom:2px solid var(--border);background:var(--bg)}
+.brand svg{height:15px;width:auto;display:block;shape-rendering:crispEdges;fill:var(--accent)}
+.brand .dom{color:var(--dim);font-size:14px;font-weight:400;letter-spacing:.06em}
+.tabs{border-bottom:2px solid var(--border)}
+.tab{border-bottom:3px solid transparent;text-transform:uppercase;letter-spacing:.1em;font-size:12px}
+.tab.on{border-bottom-color:var(--accent);color:var(--accent)}
+/* Boutons : capitales, cadre net, ombre en bloc qui s'efface quand on appuie. */
+.btn{border:2px solid var(--line2);text-transform:uppercase;letter-spacing:.06em;font-size:12px;font-weight:700;box-shadow:3px 3px 0 0 var(--grid);transition:.1s}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:none;transform:translate(3px,3px)}
+.btn.primary{border-color:var(--accent);box-shadow:3px 3px 0 0 var(--sh)}
+.btn.primary:hover{filter:none;background:var(--accent)}
+.btn.subtle{border-color:transparent;box-shadow:none;text-transform:none;letter-spacing:0;font-weight:500;font-size:13px}
+.btn.subtle:hover{background:var(--soft);border-color:var(--line2);color:var(--accent);transform:none}
+.btn.danger{border-color:var(--err);box-shadow:3px 3px 0 0 var(--grid)}
+.btn.danger:hover{background:var(--err)}
+/* Cartes serveur : cadre épais + ombre bloc, liseré bleu au survol. */
+.tile{border:2px solid var(--border);box-shadow:5px 5px 0 0 var(--grid)}
+.tile.srv:hover{border-color:var(--accent);box-shadow:5px 5px 0 0 var(--sh)}
+.dot{width:8px;height:8px}
+.empty{border:2px dashed var(--line2)}
+.sec h2{text-transform:uppercase;letter-spacing:.12em;font-size:13px;color:var(--accent)}
+.sec .ct{border:2px solid var(--border);background:var(--soft);color:var(--dim)}
+.gbar{height:6px;background:var(--grid);border:2px solid var(--border)}
+.gbar i{background:var(--accent)}
+/* Modales : une seule ombre, en bloc. */
+.modal{background:rgba(15,31,61,.45)}
+.sheet{border:2px solid var(--line2);box-shadow:8px 8px 0 0 var(--sh);background:var(--panel)}
+.sheet h3{text-transform:uppercase;letter-spacing:.14em;font-size:13px}
+.field input,.reveal code,.chatbar textarea,.ses{border:2px solid var(--line2);background:var(--bg)}
+.field input:focus,.chatbar textarea:focus{border-color:var(--accent)}
+.field label{letter-spacing:.12em;color:var(--text)}
+.keyrow,.kv{border-bottom:2px solid var(--border)}
+.keyrow button{border:2px solid var(--line2)}
+.ses .badge{border:2px solid var(--ok)}
+#toast{border:2px solid var(--line2);box-shadow:4px 4px 0 0 var(--sh)}
+/* Aide : cartes d'articles et rendu Markdown. */
+.artcard{border:2px solid var(--border);box-shadow:4px 4px 0 0 var(--grid)}
+.artcard:hover{border-color:var(--accent);box-shadow:4px 4px 0 0 var(--sh)}
+.artcard .qm{border:2px solid var(--accent);background:var(--soft)}
+.md code,.md pre,.tw{border:2px solid var(--border)}
+.md h1{border-bottom:2px solid var(--border)}
+.md blockquote{border-left:3px solid var(--accent)}
+/* Support : bulles carrées, question en bleu plein. */
+.chat{border:2px solid var(--border);box-shadow:5px 5px 0 0 var(--grid)}
+.msg.admin{border:2px solid var(--border)}
+.msg.user{background:var(--accent);color:#fff}
 </style></head><body>
 
 <header>
-  <div class="brand"><span>ajean<span class="accent">.link</span></span></div>
+  <div class="brand"><svg viewBox="0 0 22 5" shape-rendering="crispEdges" fill="currentColor" role="img" aria-label="AJEAN"><rect x="1" y="0" width="2" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="3" y="1" width="1" height="1"/><rect x="0" y="2" width="4" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="5" y="4" width="1" height="1"/><rect x="8" y="0" width="4" height="1"/><rect x="8" y="1" width="1" height="1"/><rect x="8" y="2" width="3" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="8" y="4" width="4" height="1"/><rect x="14" y="0" width="2" height="1"/><rect x="13" y="1" width="1" height="1"/><rect x="16" y="1" width="1" height="1"/><rect x="13" y="2" width="4" height="1"/><rect x="13" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="13" y="4" width="1" height="1"/><rect x="16" y="4" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="21" y="0" width="1" height="1"/><rect x="18" y="1" width="2" height="1"/><rect x="21" y="1" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="2" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="21" y="3" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="21" y="4" width="1" height="1"/></svg><span class="dom">.link</span></div>
   <span class="sp"></span>
   <button class="iconbtn" id="themeBtn" onclick="toggleTheme()" title="Thème clair / sombre" aria-label="Changer de thème"></button>
   <button class="iconbtn" id="acctBtn" onclick="openAccount()" title="Mon compte" aria-label="Mon compte"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></svg></button>
@@ -269,10 +325,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728075834"></script>
+<script src="/e2e.js?v=20260728094745"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20260728075834'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20260728094745'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}

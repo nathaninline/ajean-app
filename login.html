@@ -1,9 +1,9 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><rect width='12' height='12' rx='2' ry='2' fill='%231f6feb'/><rect x='6' y='3' width='2' height='2' fill='%23fff'/><rect x='6' y='5' width='2' height='2' fill='%23fff'/><rect x='4' y='7' width='2' height='2' fill='%23fff'/></svg>">
-<title>Jean</title>
-<style>:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c222b;--border:#30363d;--text:#e6edf3;
---dim:#7d8590;--accent:#58a6ff;--blue:#1f6feb;--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff}
+<title>AJEAN</title>
+<style>:root{--bg:#f5f8ff;--panel:#ffffff;--panel2:#eef3fe;--border:#cfdcf5;--line2:#b6cbf0;--grid:#e4ecfa;--soft:#e8f0ff;--sh:#cddffb;--text:#0f1f3d;
+--dim:#5b6f96;--accent:#1f6feb;--blue:#1f6feb;--ok:#1f6feb;--warn:#9a6700;--err:#cf222e;--mag:#6f52d8}
 *{box-sizing:border-box;margin:0;padding:0}
 body.auth{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:22px;background:var(--bg);
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
@@ -28,12 +28,27 @@ input:focus{outline:none;border-color:var(--accent)}
 a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 code{background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.9em;border:1px solid var(--border)}
 @media (hover:none) and (pointer:coarse){input{font-size:16px}}
+
+/* --- Habillage pixel (même charte que ajean.app et le thème AJEAN) --- */
+*,*::before,*::after{border-radius:0 !important}
+body.auth{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px}
+.card{border:2px solid var(--line2);box-shadow:8px 8px 0 0 var(--sh)}
+.brand svg{height:15px;width:auto;display:block;shape-rendering:crispEdges;fill:var(--accent)}
+.brand .tag{color:var(--dim);font-weight:400;font-size:14px;letter-spacing:.06em}
+h1{text-transform:uppercase;letter-spacing:.14em;font-size:14px}
+input{border:2px solid var(--line2);background:var(--bg)}
+input:focus{border-color:var(--accent)}
+.btn{border:2px solid var(--line2);text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-size:12.5px;box-shadow:3px 3px 0 0 var(--grid);transition:.1s}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:none;transform:translate(3px,3px)}
+.btn-primary{border-color:var(--accent);box-shadow:3px 3px 0 0 var(--sh)}
+.btn-primary:hover{filter:none;background:var(--accent)}
+code{border:2px solid var(--border);background:var(--soft)}
 </style></head><body class="auth">
 <div class="authwrap">
-  <div class="brand"><span>ajean<span class="tag">.link</span></span></div>
+  <div class="brand"><svg viewBox="0 0 22 5" shape-rendering="crispEdges" fill="currentColor" role="img" aria-label="AJEAN"><rect x="1" y="0" width="2" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="3" y="1" width="1" height="1"/><rect x="0" y="2" width="4" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="5" y="4" width="1" height="1"/><rect x="8" y="0" width="4" height="1"/><rect x="8" y="1" width="1" height="1"/><rect x="8" y="2" width="3" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="8" y="4" width="4" height="1"/><rect x="14" y="0" width="2" height="1"/><rect x="13" y="1" width="1" height="1"/><rect x="16" y="1" width="1" height="1"/><rect x="13" y="2" width="4" height="1"/><rect x="13" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="13" y="4" width="1" height="1"/><rect x="16" y="4" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="21" y="0" width="1" height="1"/><rect x="18" y="1" width="2" height="1"/><rect x="21" y="1" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="2" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="21" y="3" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="21" y="4" width="1" height="1"/></svg><span class="tag">.link</span></div>
   <div class="card"><div class="inner">
   <h1>Connexion</h1>
-  <p>Connectez-vous pour accéder à vos serveurs Jean à distance.</p>
+  <p>Connectez-vous pour accéder à vos serveurs AJEAN à distance.</p>
   <p class="err" id="jsErr" style="display:none"></p>
   <form id="lf">
     <input type="email" name="email" id="le" placeholder="email" autocomplete="username" autofocus required>
