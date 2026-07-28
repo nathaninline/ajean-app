@@ -32,7 +32,10 @@
    « se remettait » dès qu'on refaisait défiler vers le bas. overscroll-behavior
    coupe en plus le rebond élastique qui propageait le geste au document. */
 html{height:100%;overflow:hidden;overscroll-behavior:none}
-body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;height:100dvh;max-height:100%;overflow:hidden;overscroll-behavior:none;display:flex;font-size:14px}
+/* --appvh = hauteur visible mesurée en JS (00-viewport.js), posée UNIQUEMENT en
+   PWA iOS où 100dvh ment au premier rendu. Ailleurs la variable n'existe pas et
+   c'est 100dvh qui sert — cascade classique, aucun impact hors PWA. */
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;height:100dvh;height:var(--appvh,100dvh);max-height:100%;overflow:hidden;overscroll-behavior:none;display:flex;font-size:14px}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
    pas passer sous l'encoche / la barre système / l'indicateur d'accueil. Les
    env(safe-area-inset-*) valent 0 hors PWA, donc aucun impact ailleurs.
@@ -1193,7 +1196,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728222903"></script>
+<script src="/e2e.js?v=20260728223235"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1338,6 +1341,41 @@ async function loadSys(){
     if(d && d.ok){ document.getElementById('sysprompt').value = d.text || ''; localStorage.setItem('jean.sys', d.text || ''); }
   }catch(e){}
 }
+// ===== Hauteur réelle de la fenêtre (PWA iOS) ================================
+// En PWA « écran d'accueil » sur iPhone, 100dvh ne vaut PAS la hauteur
+// réellement visible au premier rendu : la coque est trop courte, donc le
+// composer (posé en bottom:0 dans .main) s'affiche trop haut et laisse une
+// bande de fond en dessous. Au premier geste de défilement, WebKit recalcule
+// et tout se remet en place — d'où le symptôme « ça descend un peu et ça se
+// remet bien ».
+//
+// On mesure donc la hauteur nous-mêmes via window.visualViewport (la SEULE
+// source fiable de la zone réellement visible) et on la publie dans --appvh,
+// que le CSS préfère à 100dvh quand elle existe.
+//
+// UNIQUEMENT en mode standalone : dans un onglet Safari normal, la hauteur du
+// visualViewport change au repli/dépli de la barre d'URL, et y asservir la
+// coque ferait sautiller la mise en page. Là-bas, 100dvh fait déjà le travail.
+(function(){
+  const standalone = (window.navigator.standalone === true) ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  if(!standalone) return;
+  const vv = window.visualViewport;
+  function apply(){
+    // vv.height suit aussi l'ouverture du clavier : la coque se réduit, donc la
+    // saisie reste au-dessus du clavier au lieu de passer dessous.
+    const h = vv ? vv.height : window.innerHeight;
+    if(h > 0) document.documentElement.style.setProperty('--appvh', h + 'px');
+  }
+  apply();
+  // Le premier rendu peut encore donner une valeur provisoire : on repasse au
+  // frame suivant puis une fois la page chargée.
+  requestAnimationFrame(apply);
+  window.addEventListener('load', apply);
+  window.addEventListener('orientationchange', function(){ setTimeout(apply, 120); });
+  window.addEventListener('resize', apply);
+  if(vv){ vv.addEventListener('resize', apply); vv.addEventListener('scroll', apply); }
+})();
 // ===== Apparence =============================================================
 // Un seul thème, en deux variantes : claire (par défaut) et sombre. La variante
 // est portée par l'attribut data-theme de <html> ('' ou 'dark') ; tout le reste
