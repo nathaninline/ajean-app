@@ -672,8 +672,12 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
    de fond visible. L'arrondi bas est CONSERVÉ (26 px, symétrique du haut) : la
    carte garde sa forme de pilule, seuls les deux angles laissent voir le fond,
    comme n'importe quelle carte posée sur le fil. */
-[data-standalone="1"] #composer{padding-bottom:0}
+[data-standalone="1"] #composer{padding-bottom:0;bottom:var(--kb,0px)}
 [data-standalone="1"] #ctxmeta{padding-bottom:calc(15px + env(safe-area-inset-bottom))}
+/* Clavier ouvert : la carte se pose sur le clavier, donc plus d'indicateur
+   d'accueil à dégager (il est masqué) — on retire le rembourrage de zone sûre,
+   sinon la carte porte une grosse marge basse dans le vide. */
+[data-standalone="1"][data-kb="1"] #ctxmeta{padding-bottom:15px}
 #ctx-text,#status-preset{color:var(--dim);font-size:10px;letter-spacing:.02em}
 #ctx-compact{border-radius:999px;padding:2px 10px;font-size:10px;background:transparent;border-color:var(--border);color:var(--dim)}
 #ctx-compact:hover{border-color:var(--dim);color:var(--text)}
@@ -1210,7 +1214,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728230335"></script>
+<script src="/e2e.js?v=20260728231324"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1388,14 +1392,31 @@ async function loadSys(){
     if(vv && h < window.innerHeight * 0.75) return;
     document.documentElement.style.setProperty('--appvh', h + 'px');
   }
-  apply();
+  // Clavier : on ne touche PAS à la hauteur de la coque (voir ci-dessus), on
+  // mesure seulement ce que le clavier RECOUVRE en bas, publié dans --kb. Le
+  // composer se décolle d'autant du bas (bottom:var(--kb)) et vient se poser
+  // juste au-dessus du clavier, au lieu de rester dessous — ce qui laissait un
+  // grand vide entre la saisie remontée par iOS et le reste de l'écran.
+  // offsetTop compte : quand iOS décale lui-même la fenêtre visible, le
+  // recouvrement réel diminue d'autant.
+  function keyboard(){
+    if(!vv) return;
+    const overlap = window.innerHeight - vv.height - vv.offsetTop;
+    // Sous 40 px c'est du bruit (barres système, arrondis) : on considère le
+    // clavier fermé et on remet le composer au ras du bas.
+    const open = overlap > 40;
+    document.documentElement.style.setProperty('--kb', open ? Math.round(overlap) + 'px' : '0px');
+    document.documentElement.setAttribute('data-kb', open ? '1' : '0');
+  }
+  function sync(){ apply(); keyboard(); }
+  sync();
   // Le premier rendu peut encore donner une valeur provisoire : on repasse au
   // frame suivant puis une fois la page chargée.
-  requestAnimationFrame(apply);
-  window.addEventListener('load', apply);
-  window.addEventListener('orientationchange', function(){ setTimeout(apply, 120); });
-  window.addEventListener('resize', apply);
-  if(vv){ vv.addEventListener('resize', apply); vv.addEventListener('scroll', apply); }
+  requestAnimationFrame(sync);
+  window.addEventListener('load', sync);
+  window.addEventListener('orientationchange', function(){ setTimeout(sync, 120); });
+  window.addEventListener('resize', sync);
+  if(vv){ vv.addEventListener('resize', sync); vv.addEventListener('scroll', sync); }
 })();
 // ===== Apparence =============================================================
 // Un seul thème, en deux variantes : claire (par défaut) et sombre. La variante
