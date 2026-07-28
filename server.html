@@ -21,8 +21,8 @@
    Un seul thème (« Clean ») : noir et blanc, sobre. Deux variantes — claire par
    défaut, sombre via data-theme="dark" sur <html>. Toutes les couleurs de l'UI
    passent par ces variables ; rien d'autre ne code une couleur en dur. */
-:root{color-scheme:light;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif;--bubble:#f0f0f0;--bg:#ffffff;--panel:#fafafa;--border:#e5e5e5;--text:#0a0a0a;--dim:#6b6b6b;--accent:#0a0a0a;--accent-bg:rgba(0,0,0,.05);--ok:#0a0a0a;--warn:#6b6b6b;--err:#c0392b;--mag:#6b6b6b;--code-bg:#f5f5f5;--danger-bg:#fbeae8;--warn-bg:#f2f2f2;--add:#1a7f37;--add-bg:rgba(26,127,55,.10);--del:#cf222e;--del-bg:rgba(207,34,46,.10)}
-[data-theme="dark"]{color-scheme:dark;--bubble:#1f1f1f;--bg:#0a0a0a;--panel:#141414;--border:#262626;--text:#f5f5f5;--dim:#8e8e8e;--accent:#f5f5f5;--accent-bg:rgba(255,255,255,.07);--ok:#f5f5f5;--warn:#8e8e8e;--err:#f2777a;--mag:#8e8e8e;--code-bg:#000000;--danger-bg:#2e1a19;--warn-bg:#1c1c1c;--add:#4ac26b;--add-bg:rgba(74,194,107,.13);--del:#f85149;--del-bg:rgba(248,81,73,.13)}
+:root{color-scheme:light;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif;--bubble:#f0f0f0;--bg:#ffffff;--panel:#fafafa;--border:#e0e0e2;--text:#0a0a0a;--dim:#6b6b70;--accent:#0a0a0a;--accent-bg:rgba(0,0,0,.05);--ok:#0a0a0a;--warn:#6b6b6b;--err:#c0392b;--mag:#6b6b6b;--code-bg:#f5f5f5;--danger-bg:#fbeae8;--warn-bg:#f2f2f2;--add:#1a7f37;--add-bg:rgba(26,127,55,.10);--del:#cf222e;--del-bg:rgba(207,34,46,.10)}
+[data-theme="dark"]{color-scheme:dark;--bubble:#232326;--bg:#0b0b0c;--panel:#161618;--border:#33333a;--text:#f2f2f4;--dim:#a0a0a8;--accent:#f5f5f5;--accent-bg:rgba(255,255,255,.07);--ok:#f5f5f5;--warn:#8e8e8e;--err:#f2777a;--mag:#8e8e8e;--code-bg:#000000;--danger-bg:#2e1a19;--warn-bg:#1c1c1c;--add:#4ac26b;--add-bg:rgba(74,194,107,.13);--del:#f85149;--del-bg:rgba(248,81,73,.13)}
 *{box-sizing:border-box}
 body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;height:100dvh;display:flex;font-size:14px}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
@@ -80,7 +80,6 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 /* Titre de sous-section (Mémoire / Accès internet) : simple libellé, PAS de trait
    (le trait est réservé aux sections principales — cf. `details`). La séparation
    visuelle vient de la carte englobante .gated-block. */
-.subhead{position:relative;display:flex;align-items:center;font-size:11.5px;color:var(--dim);font-weight:600;margin:14px 2px 6px}
 /* Barre repliable « Pages » : un seul chevron, bouton + ajouter aligné à droite. */
 .pages-bar{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:7px 0;margin-top:4px}
 .pages-bar .pages-caret{flex-shrink:0;font-size:9px;color:var(--dim);transition:transform .12s}
@@ -109,7 +108,6 @@ h1{margin:0;font-size:18px;color:var(--accent)}
    pastille dans les réglages. */
 #brand.agent #brand-a{color:var(--accent)}
 /* interrupteur (switch) */
-.switchrow{position:relative;display:flex;align-items:center;gap:10px;font-size:13px;padding:9px 0;cursor:pointer;user-select:none}
 /* Sous-réglage du mode agent inaccessible quand l'agent est off : grisé + inerte. */
 /* Sous-réglages du mode agent présentés en CARTES (bordure + fond) pour ne pas
    les confondre avec les traits des sections principales. */
@@ -128,15 +126,7 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .switch input:checked + .slider::before{transform:translateX(16px);background:var(--bg)}
 .switch input:focus-visible + .slider{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
 h2{margin:20px 0 8px;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
-details{margin:0;border-top:1px solid var(--border)}
-details>summary{font-size:13px;color:var(--text);font-weight:600;cursor:pointer;padding:9px 2px;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
 details>summary::-webkit-details-marker{display:none}
-/* Chevron dessiné (comme .pe-adv) : le caractère ▸ rendait mal selon la police. */
-details>summary::after{content:"";width:7px;height:7px;border-right:1.5px solid var(--dim);border-bottom:1.5px solid var(--dim);transform:translateY(-2px) rotate(-45deg);transition:transform .15s}
-details[open]>summary::after{transform:translateY(1px) rotate(45deg)}
-details>summary:hover{background:var(--accent-bg)}
-details>div,details>textarea{margin-top:6px}
-details[open]{padding-bottom:12px}
 .preset-add{display:none;font-size:14px;padding:0 8px;margin:0 8px 0 auto;line-height:1.4;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer}
 .preset-add:hover{border-color:var(--accent);color:var(--accent)}
 details[open]>summary>.preset-add{display:inline-block}
@@ -240,41 +230,68 @@ button:disabled{opacity:.5;cursor:not-allowed}
    replie en douceur pour désencombrer le fil, tout en gardant le label (et son
    compteur de tokens) cliquable pour redéplier. */
 .msg.collapsible .label{cursor:pointer;user-select:none;margin-bottom:0}
-/* ===== Barre latérale : système de listes ==========================
-   Un seul gabarit pour TOUS les menus, repris des listes de la modale de
-   preset (.pe-list / .pe-row) : une carte, des lignes de hauteur constante
-   séparées par un filet, l'intitulé à gauche en couleur de texte, le contrôle
-   à droite. Les réglages n'ont plus chacun leur mise en forme improvisée. */
-.slist{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:6px 0}
-/* Carte à contenu libre (champs, boutons) : même cadre, rembourrage porté
-   par la carte au lieu des lignes. */
-.slist.pad{padding:10px 12px}
-.slist.pad>.row:first-child,.slist.pad>.io-cap:first-child{margin-top:0}
-.slist.pad>.row:last-child{margin-bottom:0}
-/* Une ligne = même hauteur, mêmes marges, quel que soit son contenu. */
-.slist>.switchrow,.gated-block>.switchrow{padding:9px 12px;min-height:38px;margin:0;font-size:13px}
-.slist>.switchrow:not(:last-child),.gated-block>.switchrow:not(:last-child){border-bottom:1px solid var(--border)}
-/* Interrupteur à droite (le libellé occupe la place restante). */
-.slist>.switchrow .switch,.gated-block>.switchrow .switch{margin-left:auto;order:2}
-.slist>.switchrow.rev>span:first-child{flex:1}
-/* L'étiquette de la carte fait office d'en-tête : elle garde son retrait. */
-.gated-block>.subhead{margin:10px 12px 6px}
-.gated-block>.row,.gated-block>.pages-bar,.gated-block>div:not(.switchrow):not(.subhead){margin-left:12px;margin-right:12px}
-/* Contrôles : une seule apparence pour les champs et les listes déroulantes. */
-.sctl{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);
-  border-radius:9px;padding:8px 10px;font:inherit;font-size:13px}
-.sctl:focus{outline:none;border-color:var(--dim)}
-textarea.sctl{min-height:80px;resize:vertical;line-height:1.5}
-.slist .sctl{border:0;border-radius:0;background:transparent;padding:0;text-align:right;flex:1}
-/* Les boutons du menu restent discrets : c'est une colonne de réglages. */
-.side button:not(.preset-edit):not(.addbtn):not(.preset-add){font-size:12.5px;padding:7px 12px;border-radius:8px}
+/* ===== Barre latérale ==============================================
+   Colonne de réglages dense : 12 sections repliées doivent tenir sans faire
+   défiler. Un seul gabarit, repris des listes de la modale de preset.
+   Hauteurs : en-tête de section 34 px, ligne de réglage 34 px. */
+.side{padding:10px 12px}
+.sidehead{margin-bottom:10px}
+
+/* --- En-tête de section --- */
+details{margin:0;border-top:1px solid var(--border)}
+details:first-of-type{border-top:0}
+details[open]{padding-bottom:10px}
+details>summary{display:flex;align-items:center;gap:8px;height:34px;font-size:13px;font-weight:500;
+  color:var(--text);cursor:pointer;list-style:none;user-select:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary:hover{color:var(--dim)}
+/* Chevron : un carré dont on n'affiche que deux côtés. Il pivote AUTOUR DE SON
+   CENTRE (aucune translation), sinon il se décale en tournant. */
+details>summary::after{content:"";flex:none;margin-left:auto;width:6px;height:6px;
+  border-right:1.5px solid var(--dim);border-bottom:1.5px solid var(--dim);
+  transform:rotate(-45deg);transition:transform .18s ease}
+details[open]>summary::after{transform:rotate(45deg)}
+
+/* --- Étiquette de groupe : une seule règle pour toutes les variantes --- */
+.subhead,.io-cap,.pages-bar .pages-title,.skillshead>span{position:relative;display:flex;align-items:center;
+  font-size:11px;font-weight:600;color:var(--dim);letter-spacing:.01em;margin:10px 2px 5px}
+.io-cap{margin:0 2px 5px}
+.io-group{margin-top:8px}
+
+/* --- Carte de liste --- */
+.slist,.gated-block{background:var(--panel);border:1px solid var(--border);border-radius:9px;
+  overflow:hidden;margin:0 0 8px}
+.slist:last-child,.gated-block:last-child{margin-bottom:0}
+/* Contenu libre (champ + boutons) : le rembourrage passe sur la carte. */
+.slist.pad,.gated-block{padding:8px 10px}
+.slist.pad>:first-child{margin-top:0}
+.slist.pad>:last-child{margin-bottom:0}
+
+/* --- Ligne de réglage : hauteur constante, contrôle à droite --- */
+.switchrow{position:relative;display:flex;align-items:center;gap:10px;min-height:34px;padding:6px 0;
+  font-size:12.5px;cursor:pointer;user-select:none}
+.slist>.switchrow{padding:6px 10px}
+.slist>.switchrow:not(:last-child){border-bottom:1px solid var(--border)}
+.switchrow .switch{margin-left:auto;order:2;flex:none}
+.switchrow>span:first-child{min-width:0}
+
+/* --- Lignes clé / valeur (GPU, RAM, config) --- */
+.kv{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px;
+  padding:6px 10px;border-bottom:1px solid var(--border);font-size:12.5px}
+.kv:last-child{border-bottom:0}
+.kv span:first-child{color:var(--text);flex-shrink:0}
+
+/* --- Champs et boutons --- */
+.sctl,.io-input{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--border);
+  border-radius:7px;padding:7px 9px;font:inherit;font-size:12.5px}
+.sctl:focus,.io-input:focus{outline:none;border-color:var(--dim)}
+textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
+.side button:not(.preset-edit):not(.addbtn):not(.preset-add):not(.copybtn){font-size:12px;padding:6px 10px;border-radius:7px}
 .side .row{display:flex;gap:6px;align-items:center;margin:6px 0}
 .side .row .sctl,.side .row .io-input{flex:1;min-width:0}
-/* Action destructrice : contour rouge, sans style en ligne au cas par cas. */
 .side .btn-danger-o{border-color:var(--err);color:var(--err)}
 .side .btn-danger-o:hover{background:var(--danger-bg);border-color:var(--err);color:var(--err)}
-/* Textes d'état sous un champ : une seule taille dans tout le menu. */
-.side .muted{font-size:12px;line-height:1.5}
+.side .muted{font-size:11.5px;line-height:1.5}
 
 /* ===== Réglages d'affichage ======================================
    Chaque option est un interrupteur indépendant (Apparence), porté par un
@@ -546,9 +563,7 @@ textarea.sctl{min-height:80px;resize:vertical;line-height:1.5}
 
 /* Accès OpenAI / Accès distant : champs lecture seule (URL, clé) + libellés
    compacts, pour une présentation homogène et sans surcharge visuelle. */
-.io-cap{color:var(--dim);font-size:11.5px;font-weight:600;margin:0 0 5px}
 .io-input{flex:1;min-width:0;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font:inherit;font-size:13px}
-.io-group{margin-top:10px}
 
 /* Toggles de la sous-section « Paramètres » du mode agent : chacun dans sa
    propre carte bordée et arrondie (comme les serveurs MCP), plus lisible. */
@@ -1147,7 +1162,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728151507"></script>
+<script src="/e2e.js?v=20260728152127"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
