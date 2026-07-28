@@ -323,7 +323,11 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 @media (min-width:721px){[data-hide-side="1"] .side{width:380px;max-width:380px}}
 /* Le bouton ☰ est posé au-dessus du fil : on dégage le haut de la
    conversation pour qu'il ne recouvre aucun message. */
-@media (min-width:721px){html[data-hide-side="1"] #chat{padding-top:60px}}
+@media (min-width:721px){
+  html[data-hide-side="1"] #chat{padding-top:60px}
+  html[data-hide-side="1"] #chat{padding-left:max(16px,calc(50% - 480px));padding-right:max(16px,calc(50% - 480px))}
+  html[data-hide-side="1"] #composer{--col:max(16px,calc(50% - 480px))}
+}
 [data-hide-side="1"] .side.open{transform:translateX(0)}
 [data-hide-side="1"] #menubtn{display:block}
 [data-hide-side="1"] #backdrop.open{display:block}
@@ -358,7 +362,7 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 #input:focus{outline:none;border-color:var(--accent)}
 #send{padding:0 20px}
 .muted{color:var(--dim);font-size:13px}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);padding:8px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:50;background:var(--panel);border:1px solid var(--border);padding:8px 16px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.18)}
 #toast.show{opacity:1}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 #compact-banner{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--accent);background:var(--accent-bg);border:1px solid var(--border);border-radius:8px;padding:6px 10px;margin-bottom:8px}
@@ -1177,7 +1181,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728153621"></script>
+<script src="/e2e.js?v=20260728154126"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
