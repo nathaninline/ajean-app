@@ -1213,7 +1213,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728233015"></script>
+<script src="/e2e.js?v=20260728233622"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3213,4 +3213,46 @@ async function remotePairCode(){
     }
   }catch(e){ box.textContent='erreur : '+e; }
 }
+// ===== TEMPORAIRE — diagnostic de mise en page PWA ===========================
+// ⚠️ À SUPPRIMER une fois le bug de la carte de saisie trop haute réglé
+// (ajouté le 2026-07-28). Affiche les mesures réelles du navigateur dans une
+// pastille en haut à droite : impossible de diagnostiquer un iPhone à distance
+// sans ces chiffres, et chaque aller-retour de correction à l'aveugle coûte un
+// cycle de cache de plusieurs minutes.
+//
+// Lecture : win = window.innerHeight (fenêtre de mise en page) · vv = hauteur
+// visible réelle · doc = hauteur défilable du document · sy = position de
+// défilement · top/bot = zones sûres. Si doc > win, le document déborde → c'est
+// LUI qui décale la carte.
+(function(){
+  const box = document.createElement('div');
+  box.id = 'vpdebug';
+  box.style.cssText = 'position:fixed;top:0;right:0;z-index:9999;background:rgba(255,0,0,.85);' +
+    'color:#fff;font:11px/1.35 monospace;padding:4px 6px;border-radius:0 0 0 8px;' +
+    'white-space:pre;pointer-events:none;text-align:right';
+  function cs(v){ return getComputedStyle(document.documentElement).getPropertyValue(v); }
+  function tick(){
+    const vv = window.visualViewport;
+    const de = document.documentElement;
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom);width:0';
+    document.body.appendChild(probe);
+    const bot = Math.round(probe.getBoundingClientRect().height);
+    probe.remove();
+    box.textContent =
+      'win ' + window.innerHeight +
+      ' · vv ' + (vv ? Math.round(vv.height) : '-') +
+      '\ndoc ' + de.scrollHeight + ' · sy ' + Math.round(window.scrollY) +
+      '\nbody ' + Math.round(document.body.getBoundingClientRect().height) +
+      ' · bot ' + bot +
+      '\nvvtop ' + (vv ? Math.round(vv.offsetTop) : '-') +
+      ' · dpr ' + window.devicePixelRatio;
+  }
+  function start(){
+    document.body.appendChild(box);
+    tick();
+    setInterval(tick, 500);
+  }
+  if(document.body) start(); else window.addEventListener('DOMContentLoaded', start);
+})();
 </script></body></html>
