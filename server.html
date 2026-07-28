@@ -44,6 +44,15 @@ body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);hei
    fond visible sous la carte (visible seulement en PWA, où l'inset vaut ~34 px).
    L'indicateur d'accueil est esquivé bloc par bloc, en padding INTERNE. */
 body{padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
+/* Listes déroulantes : la LISTE ouverte n'hérite pas du fond de son <select>.
+   Plusieurs de nos select sont en background:transparent + color clair (chevron
+   discret) : en thème sombre, le navigateur peignait donc du texte clair sur le
+   fond blanc par défaut de la liste — illisible (signalé sur « Cache KV », mais
+   ça touchait TOUTES les listes déroulantes en sombre). On habille donc les
+   <option> eux-mêmes ; color-scheme (posé sur <html>) ne suffit pas dès que le
+   select porte des couleurs explicites. */
+select{color-scheme:inherit}
+option,optgroup{background:var(--panel);color:var(--text)}
 .side{width:320px;border-right:1px solid var(--border);padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));overflow-y:auto;flex-shrink:0}
 .main{flex:1;display:flex;flex-direction:column;min-width:0}
 #menubtn{display:none;position:fixed;top:calc(10px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));z-index:20;background:var(--panel);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:6px;font-size:18px;cursor:pointer}
@@ -1196,7 +1205,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728223235"></script>
+<script src="/e2e.js?v=20260728223956"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
