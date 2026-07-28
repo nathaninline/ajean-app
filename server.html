@@ -669,10 +669,11 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
    au-dessus de l'indicateur d'accueil. L'indicateur se pose SUR le pied de
    carte (son fond descend jusqu'au bord réel), et c'est le rembourrage INTERNE
    du pied qui garde la jauge et le texte au-dessus de lui — plus aucune bande
-   de fond visible. Coins bas remis à plat : un arrondi collé au bord de l'écran
-   laisserait deux petits triangles de fond dans les angles. */
+   de fond visible. L'arrondi bas est CONSERVÉ (26 px, symétrique du haut) : la
+   carte garde sa forme de pilule, seuls les deux angles laissent voir le fond,
+   comme n'importe quelle carte posée sur le fil. */
 [data-standalone="1"] #composer{padding-bottom:0}
-[data-standalone="1"] #ctxmeta{padding-bottom:calc(15px + env(safe-area-inset-bottom));border-radius:0;border-bottom:none}
+[data-standalone="1"] #ctxmeta{padding-bottom:calc(15px + env(safe-area-inset-bottom))}
 #ctx-text,#status-preset{color:var(--dim);font-size:10px;letter-spacing:.02em}
 #ctx-compact{border-radius:999px;padding:2px 10px;font-size:10px;background:transparent;border-color:var(--border);color:var(--dim)}
 #ctx-compact:hover{border-color:var(--dim);color:var(--text)}
@@ -1209,7 +1210,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728224528"></script>
+<script src="/e2e.js?v=20260728230335"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
