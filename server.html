@@ -24,7 +24,7 @@
    reste (sélecteur, persistance, application) est automatique. */
 /* --font : police par défaut (mono). Un thème peut la surcharger (voir "soft").
    Les blocs plus spécifiques qui ne redéfinissent pas --font héritent de :root. */
-:root{color-scheme:dark;--font:ui-monospace,SFMono-Regular,Menlo,monospace;--bubble:#1f6feb;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
+:root{color-scheme:dark;--font:ui-monospace,SFMono-Regular,Menlo,monospace;--bubble:#1f6feb;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f;--add:#3fb950;--add-bg:rgba(63,185,80,.12);--del:#f85149;--del-bg:rgba(248,81,73,.12)}
 [data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--dim:#7d8590;--accent:#58a6ff;--accent-bg:rgba(88,166,255,.12);--ok:#58a6ff;--warn:#d29922;--err:#f85149;--mag:#bc8cff;--code-bg:#0d1117;--danger-bg:#3d1f23;--warn-bg:#3d2f1f}
 [data-theme="light"]{color-scheme:light;--bg:#f0f1f4;--panel:#f8f9fb;--border:#d7dbe1;--text:#24292f;--dim:#636b74;--accent:#0969da;--accent-bg:rgba(9,105,218,.10);--ok:#0969da;--warn:#9a6700;--err:#cf222e;--mag:#8250df;--code-bg:#e6e9ee;--danger-bg:#fbe6e6;--warn-bg:#fbefda}
 /* "doux" — thème clair chaud + police Lexend (lecture agréable). */
@@ -39,10 +39,10 @@
 /* "AJEAN" — clair, bleu, esprit rétro-machine : bordures nettes de 2 px,
    aucun arrondi, ombres en blocs décalés, fond quadrillé (même charte que
    ajean.app). Mise en page complète plus bas (section "Thème pixel"). */
-[data-theme="ajean"]{color-scheme:light;--font:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--bubble:#1f6feb;--bg:#f5f8ff;--panel:#ffffff;--border:#cfdcf5;--text:#0f1f3d;--dim:#5b6f96;--accent:#1f6feb;--accent-bg:rgba(31,111,235,.10);--ok:#1f6feb;--warn:#9a6700;--err:#cf222e;--mag:#6f52d8;--code-bg:#eef3fe;--danger-bg:#fbe6e6;--warn-bg:#fbefda;--grid:#e4ecfa;--line2:#b6cbf0;--soft:#e8f0ff;--sh:#cddffb}
+[data-theme="ajean"]{color-scheme:light;--font:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--bubble:#1f6feb;--bg:#f5f8ff;--panel:#ffffff;--border:#cfdcf5;--text:#0f1f3d;--dim:#5b6f96;--accent:#1f6feb;--accent-bg:rgba(31,111,235,.10);--ok:#1f6feb;--warn:#9a6700;--err:#cf222e;--mag:#6f52d8;--code-bg:#eef3fe;--danger-bg:#fbe6e6;--warn-bg:#fbefda;--grid:#e4ecfa;--line2:#b6cbf0;--soft:#e8f0ff;--sh:#cddffb;--knob:#ffffff}
 /* « AJEAN sombre » — même habillage pixel, palette nuit : bleu vif sur fond
    presque noir, quadrillage discret, ombres bleutées. */
-[data-theme="ajean-dark"]{color-scheme:dark;--font:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--bubble:#3b82f6;--bg:#050810;--panel:#0a1020;--border:#16233f;--text:#dce6ff;--dim:#63739c;--accent:#3b82f6;--accent-bg:rgba(59,130,246,.16);--ok:#3b82f6;--warn:#d29922;--err:#f85149;--mag:#9b8cff;--code-bg:#03060d;--danger-bg:#3d1f23;--warn-bg:#3d2f1f;--grid:#0a1120;--line2:#1e3054;--soft:#101b33;--sh:#132342}
+[data-theme="ajean-dark"]{color-scheme:dark;--font:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--bubble:#3b82f6;--bg:#050810;--panel:#0a1020;--border:#16233f;--text:#dce6ff;--dim:#63739c;--accent:#3b82f6;--accent-bg:rgba(59,130,246,.16);--ok:#3b82f6;--warn:#d29922;--err:#f85149;--mag:#9b8cff;--code-bg:#03060d;--danger-bg:#3d1f23;--warn-bg:#3d2f1f;--grid:#0a1120;--line2:#1e3054;--soft:#101b33;--sh:#132342;--knob:#dce6ff}
 *{box-sizing:border-box}
 body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;height:100dvh;display:flex;font-size:14px}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
@@ -218,6 +218,16 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .msg.reasoning{align-self:flex-start;background:transparent;border:1px dashed var(--border);color:var(--mag);font-size:12px;max-width:90%;overflow-wrap:anywhere;word-break:break-word}
 .msg.tool{align-self:flex-start;background:transparent;border:1px dashed var(--border);max-width:90%;white-space:normal;padding:8px 12px;font-size:12px;overflow-wrap:anywhere;word-break:break-word}
 .msg.tool .tool-head{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px}
+/* ===== Diff des écritures (outil edit / mémoire) ==================
+   Lignes ajoutées en vert, retirées en rouge, contexte neutre. Les couleurs
+   viennent de variables : chaque thème peut les ajuster (clair vs sombre). */
+.msg.tool pre.diff{display:block;padding:0;overflow-x:auto;background:var(--code-bg)}
+.msg.tool pre.diff .dl{display:block;padding:1px 10px;white-space:pre-wrap;word-break:break-word;color:var(--dim)}
+.msg.tool pre.diff .dl.add{color:var(--add);background:var(--add-bg)}
+.msg.tool pre.diff .dl.del{color:var(--del);background:var(--del-bg)}
+.diff-count{margin-left:8px;letter-spacing:0;text-transform:none}
+.diff-count .a{color:var(--add)}
+.diff-count .d{color:var(--del)}
 .msg.tool .tool-sub{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin:8px 0 4px}
 .msg.tool pre{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;overflow:auto;margin:0;max-height:280px}
 .msg.tool pre code{background:transparent;padding:0;font-size:.82em;line-height:1.4;white-space:pre}
@@ -633,8 +643,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 [data-theme^="ajean"] .switch input:checked + .slider{background:var(--accent)}
 /* Pastille carrée : box-sizing explicite (un ::before n'hérite pas de la règle
    globale *{box-sizing:border-box}) — sans ça la bordure débordait du rail. */
-[data-theme^="ajean"] .switch .slider::before{box-sizing:border-box;width:14px;height:14px;background:var(--text);border:2px solid var(--line2);box-shadow:none}
-[data-theme^="ajean"] .switch input:checked + .slider::before{border-color:var(--bg);background:var(--text)}
+[data-theme^="ajean"] .switch .slider::before{box-sizing:border-box;width:14px;height:14px;background:var(--knob);border:2px solid var(--line2);box-shadow:none}
+[data-theme^="ajean"] .switch input:checked + .slider::before{border-color:var(--knob);background:var(--knob)}
 /* Étiquettes de section : capitales espacées, comme des en-têtes de terminal. */
 [data-theme^="ajean"] .subhead,[data-theme^="ajean"] .skillshead>span{letter-spacing:.16em}
 
@@ -680,9 +690,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 [data-theme^="ajean"] .pe-seg>label:has(input:checked){background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:none}
 /* Interrupteurs de la modale : carrés, comme ceux de la barre latérale. */
 [data-theme^="ajean"] .pe-sl{background:var(--line2)}
-[data-theme^="ajean"] .pe-sl::before{box-sizing:border-box;background:var(--text);border:2px solid var(--line2);box-shadow:none}
+[data-theme^="ajean"] .pe-sl::before{box-sizing:border-box;background:var(--knob);border:2px solid var(--line2);box-shadow:none}
 [data-theme^="ajean"] .pe-switch input:checked+.pe-sl{background:var(--accent)}
-[data-theme^="ajean"] .pe-switch input:checked+.pe-sl::before{border-color:var(--bg)}
+[data-theme^="ajean"] .pe-switch input:checked+.pe-sl::before{border-color:var(--knob);background:var(--knob)}
 /* Boutons DANS la modale : mêmes capitales, mais posés à plat — pas d'ombre ni
    de décalage au survol, sinon les rangées de boutons dansent et se recouvrent. */
 [data-theme^="ajean"] .modal-card button{box-shadow:none;font-size:11.5px}
@@ -701,6 +711,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
 /* Listes (MCP, outils) : mêmes bordures épaisses, survol teinté. */
 [data-theme^="ajean"] .mcp-row,[data-theme^="ajean"] .mcp-tools-list,[data-theme^="ajean"] #lc-log{border:2px solid var(--border)}
 [data-theme^="ajean"] .mcp-tool-row:hover{background:var(--soft,#e8f0ff)}
+
+/* Diff sur fond clair : mêmes rôles, teintes plus profondes pour rester lisibles. */
+[data-theme="light"],[data-theme="soft"],[data-theme="gpt"],[data-theme="ajean"]{
+  --add:#1a7f37;--add-bg:rgba(26,127,55,.10);--del:#cf222e;--del-bg:rgba(207,34,46,.10)}
+[data-theme="soft-dark"],[data-theme="ajean-dark"]{
+  --add:#4ac26b;--add-bg:rgba(74,194,107,.13);--del:#f85149;--del-bg:rgba(248,81,73,.13)}
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()">☰</button>
 <div id="backdrop" onclick="toggleSide()"></div>
@@ -1171,7 +1187,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728100114"></script>
+<script src="/e2e.js?v=20260728102056"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -2300,6 +2316,26 @@ function renderToolMsg(el, tu){
     if(tu.typing){ const car=document.createElement('span'); car.className='tool-caret'; car.textContent='▋'; code.appendChild(car); }
     pre.appendChild(code); body.appendChild(pre);
   }
+  // Diff d'une écriture (fichier ou page de mémoire) : lignes ajoutées en vert,
+  // retirées en rouge, contexte en gris — comme un diff de terminal.
+  if(tu.diff && tu.diff.length){
+    const sub=document.createElement('div'); sub.className='tool-sub';
+    let add=0, del=0;
+    tu.diff.forEach(l=>{ if(l.op==='+') add++; else if(l.op==='-') del++; });
+    sub.textContent='modifications';
+    const cnt=document.createElement('span'); cnt.className='diff-count';
+    cnt.innerHTML='<span class="a">+'+add+'</span> <span class="d">-'+del+'</span>';
+    sub.appendChild(cnt);
+    body.appendChild(sub);
+    const pre=document.createElement('pre'); pre.className='diff';
+    tu.diff.forEach(l=>{
+      const ln=document.createElement('span');
+      ln.className='dl'+(l.op==='+'?' add':l.op==='-'?' del':'');
+      ln.textContent=(l.op==='+'?'+':l.op==='-'?'-':' ')+' '+l.text;
+      pre.appendChild(ln);
+    });
+    body.appendChild(pre);
+  }
   const hasResult = tu.result!==undefined && tu.result!=='';
   if(hasResult){
     const sub=document.createElement('div'); sub.className='tool-sub'; sub.textContent='réponse';
@@ -2317,6 +2353,8 @@ function renderToolMsg(el, tu){
 function addCopyButtons(root){
   root.querySelectorAll('pre').forEach(pre=>{
     if(pre.querySelector('.copybtn')) return;
+    // Pas de bouton copier sur un diff : on copierait les préfixes + / - .
+    if(pre.classList.contains('diff')) return;
     const btn=document.createElement('button');
     btn.className='copybtn'; btn.type='button'; btn.textContent='copier';
     btn.onclick=async(e)=>{
