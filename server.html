@@ -73,19 +73,19 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .statuspill .port{opacity:.6;font-weight:400}
 /* en-tête + bouton d'ajout de skill (toujours visible) */
 .skillshead{display:flex;align-items:center;justify-content:space-between;margin:12px 0 5px}
-.skillshead>span{font-size:12px;color:var(--dim);font-weight:600}
+.skillshead>span{font-size:11.5px;color:var(--dim);font-weight:600}
 .addbtn{font-size:11px;padding:3px 11px 4px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;line-height:1.2}
 .addbtn:hover{border-color:var(--accent);color:var(--accent)}
 .mem-count{font-size:10px;color:var(--dim);font-weight:400;letter-spacing:0;text-transform:none;margin-left:4px}
 /* Titre de sous-section (Mémoire / Accès internet) : simple libellé, PAS de trait
    (le trait est réservé aux sections principales — cf. `details`). La séparation
    visuelle vient de la carte englobante .gated-block. */
-.subhead{position:relative;display:flex;align-items:center;font-size:12px;color:var(--dim);font-weight:600;margin:0 0 8px}
+.subhead{position:relative;display:flex;align-items:center;font-size:11.5px;color:var(--dim);font-weight:600;margin:14px 2px 6px}
 /* Barre repliable « Pages » : un seul chevron, bouton + ajouter aligné à droite. */
 .pages-bar{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:7px 0;margin-top:4px}
 .pages-bar .pages-caret{flex-shrink:0;font-size:9px;color:var(--dim);transition:transform .12s}
 .pages-bar.open .pages-caret{transform:rotate(90deg)}
-.pages-bar .pages-title{font-size:12px;color:var(--dim);font-weight:600}
+.pages-bar .pages-title{font-size:11.5px;color:var(--dim);font-weight:600}
 .pages-bar .addbtn{margin-left:auto}
 .mem-search{width:100%;box-sizing:border-box;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 9px;font:inherit;font-size:12px;margin:0 0 6px}
 .mem-search:focus{outline:none;border-color:var(--accent)}
@@ -109,11 +109,13 @@ h1{margin:0;font-size:18px;color:var(--accent)}
    pastille dans les réglages. */
 #brand.agent #brand-a{color:var(--accent)}
 /* interrupteur (switch) */
-.switchrow{position:relative;display:flex;align-items:center;gap:10px;font-size:13.5px;padding:8px 0;cursor:pointer;user-select:none}
+.switchrow{position:relative;display:flex;align-items:center;gap:10px;font-size:13px;padding:9px 0;cursor:pointer;user-select:none}
 /* Sous-réglage du mode agent inaccessible quand l'agent est off : grisé + inerte. */
 /* Sous-réglages du mode agent présentés en CARTES (bordure + fond) pour ne pas
    les confondre avec les traits des sections principales. */
-.gated-block{margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:9px 11px;background:var(--panel);transition:opacity .15s}
+/* Bloc du mode agent = carte de liste : le rembourrage est porté par les
+   lignes (comme .slist), pas par la carte, sinon les retraits se cumulent. */
+.gated-block{margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:0 0 10px;background:var(--panel);overflow:hidden;transition:opacity .15s}
 .gated-block>.switchrow:first-of-type{padding-top:0}
 .gated-block.gated{opacity:.4;pointer-events:none;filter:grayscale(.4)}
 .switch{position:relative;display:inline-block;width:36px;height:20px;flex:none}
@@ -126,14 +128,15 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .switch input:checked + .slider::before{transform:translateX(16px);background:var(--bg)}
 .switch input:focus-visible + .slider{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
 h2{margin:20px 0 8px;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
-details{margin:2px 0;border-top:1px solid var(--border);padding-top:2px}
-details>summary{font-size:14px;color:var(--text);font-weight:500;cursor:pointer;padding:11px 2px;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none;border-radius:8px}
+details{margin:0;border-top:1px solid var(--border)}
+details>summary{font-size:13px;color:var(--text);font-weight:600;cursor:pointer;padding:9px 2px;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
 details>summary::-webkit-details-marker{display:none}
 /* Chevron dessiné (comme .pe-adv) : le caractère ▸ rendait mal selon la police. */
 details>summary::after{content:"";width:7px;height:7px;border-right:1.5px solid var(--dim);border-bottom:1.5px solid var(--dim);transform:translateY(-2px) rotate(-45deg);transition:transform .15s}
 details[open]>summary::after{transform:translateY(1px) rotate(45deg)}
 details>summary:hover{background:var(--accent-bg)}
 details>div,details>textarea{margin-top:6px}
+details[open]{padding-bottom:12px}
 .preset-add{display:none;font-size:14px;padding:0 8px;margin:0 8px 0 auto;line-height:1.4;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer}
 .preset-add:hover{border-color:var(--accent);color:var(--accent)}
 details[open]>summary>.preset-add{display:inline-block}
@@ -164,9 +167,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
    pour rester alignée au bord gauche du panneau et ne pas déborder. */
 .help>.tip{display:none;position:absolute;z-index:40;left:0;right:0;top:calc(100% + 2px);padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:400;line-height:1.4;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.15);white-space:normal;text-align:left;text-transform:none;letter-spacing:normal;cursor:auto}
 .help:hover>.tip,.help:focus>.tip,.help.open>.tip{display:block}
-.kv{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
-.kv span:first-child{color:var(--dim);flex-shrink:0}
-.kv span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:right;min-width:0}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px;min-height:38px;align-items:center}
+.kv span:first-child{color:var(--text);flex-shrink:0}
+.kv:last-child{border-bottom:0}
+/* direction:rtl tronque par la GAUCHE (on garde la fin d'un chemin long), mais
+   inversait l'ordre des groupes : « 18,2 / 24 Go » s'affichait « Go 24 / 18,2 ».
+   unicode-bidi:plaintext rend chaque valeur dans son sens naturel tout en
+   gardant l'ancrage à droite. */
+.kv span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;unicode-bidi:plaintext;text-align:right;min-width:0;color:var(--dim)}
 .bar{height:6px;background:var(--panel);border-radius:3px;overflow:hidden;margin:2px 0}
 .bar>div{height:100%;background:var(--accent)}
 #chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
@@ -232,6 +240,42 @@ button:disabled{opacity:.5;cursor:not-allowed}
    replie en douceur pour désencombrer le fil, tout en gardant le label (et son
    compteur de tokens) cliquable pour redéplier. */
 .msg.collapsible .label{cursor:pointer;user-select:none;margin-bottom:0}
+/* ===== Barre latérale : système de listes ==========================
+   Un seul gabarit pour TOUS les menus, repris des listes de la modale de
+   preset (.pe-list / .pe-row) : une carte, des lignes de hauteur constante
+   séparées par un filet, l'intitulé à gauche en couleur de texte, le contrôle
+   à droite. Les réglages n'ont plus chacun leur mise en forme improvisée. */
+.slist{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:6px 0}
+/* Carte à contenu libre (champs, boutons) : même cadre, rembourrage porté
+   par la carte au lieu des lignes. */
+.slist.pad{padding:10px 12px}
+.slist.pad>.row:first-child,.slist.pad>.io-cap:first-child{margin-top:0}
+.slist.pad>.row:last-child{margin-bottom:0}
+/* Une ligne = même hauteur, mêmes marges, quel que soit son contenu. */
+.slist>.switchrow,.gated-block>.switchrow{padding:9px 12px;min-height:38px;margin:0;font-size:13px}
+.slist>.switchrow:not(:last-child),.gated-block>.switchrow:not(:last-child){border-bottom:1px solid var(--border)}
+/* Interrupteur à droite (le libellé occupe la place restante). */
+.slist>.switchrow .switch,.gated-block>.switchrow .switch{margin-left:auto;order:2}
+.slist>.switchrow.rev>span:first-child{flex:1}
+/* L'étiquette de la carte fait office d'en-tête : elle garde son retrait. */
+.gated-block>.subhead{margin:10px 12px 6px}
+.gated-block>.row,.gated-block>.pages-bar,.gated-block>div:not(.switchrow):not(.subhead){margin-left:12px;margin-right:12px}
+/* Contrôles : une seule apparence pour les champs et les listes déroulantes. */
+.sctl{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);
+  border-radius:9px;padding:8px 10px;font:inherit;font-size:13px}
+.sctl:focus{outline:none;border-color:var(--dim)}
+textarea.sctl{min-height:80px;resize:vertical;line-height:1.5}
+.slist .sctl{border:0;border-radius:0;background:transparent;padding:0;text-align:right;flex:1}
+/* Les boutons du menu restent discrets : c'est une colonne de réglages. */
+.side button:not(.preset-edit):not(.addbtn):not(.preset-add){font-size:12.5px;padding:7px 12px;border-radius:8px}
+.side .row{display:flex;gap:6px;align-items:center;margin:6px 0}
+.side .row .sctl,.side .row .io-input{flex:1;min-width:0}
+/* Action destructrice : contour rouge, sans style en ligne au cas par cas. */
+.side .btn-danger-o{border-color:var(--err);color:var(--err)}
+.side .btn-danger-o:hover{background:var(--danger-bg);border-color:var(--err);color:var(--err)}
+/* Textes d'état sous un champ : une seule taille dans tout le menu. */
+.side .muted{font-size:12px;line-height:1.5}
+
 /* ===== Réglages d'affichage ======================================
    Chaque option est un interrupteur indépendant (Apparence), porté par un
    attribut sur <html> et persisté dans localStorage + /api/prefs :
@@ -502,9 +546,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
 /* Accès OpenAI / Accès distant : champs lecture seule (URL, clé) + libellés
    compacts, pour une présentation homogène et sans surcharge visuelle. */
-.io-cap{color:var(--dim);font-size:11px;margin:0 0 3px}
-.io-input{flex:1;min-width:0;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;font:inherit;font-size:12px}
-.io-group{margin-top:12px}
+.io-cap{color:var(--dim);font-size:11.5px;font-weight:600;margin:0 0 5px}
+.io-input{flex:1;min-width:0;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font:inherit;font-size:13px}
+.io-group{margin-top:10px}
 
 /* Toggles de la sous-section « Paramètres » du mode agent : chacun dans sa
    propre carte bordée et arrondie (comme les serveurs MCP), plus lisible. */
@@ -631,24 +675,24 @@ button:hover{border-color:var(--dim);color:var(--text)}
     <pre id="svc-log" class="muted" style="font-size:10px;line-height:1.45;max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:6px 0 0"></pre>
   </div>
   <details open><summary>GPU</summary>
-    <div id="vram" class="muted">…</div>
+    <div id="vram" class="slist">…</div>
   </details>
   <details open id="ram-details"><summary>RAM</summary>
-    <div id="ram" class="muted">…</div>
+    <div id="ram" class="slist">…</div>
   </details>
   <details open id="cfg-details"><summary>Config active</summary>
-    <div id="cfg" class="muted">…</div>
+    <div id="cfg" class="slist">…</div>
   </details>
   <details><summary>Presets<button class="preset-add" onclick="event.preventDefault();event.stopPropagation();openPreset('')" title="ajouter">+</button></summary>
     <div id="presets"></div>
   </details>
   <details><summary>Mode agent <span id="agent-badge" style="margin-left:auto;margin-right:12px;font-size:10px"></span></summary>
-    <label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">⚠ active l'<b>accès machine</b> (shell complet via <b>bash</b> sur le serveur) — l'IA peut inspecter, lancer des scripts, lire/éditer des fichiers (timeout 30s, max 300s). Mémoire et accès internet ci-dessous ne fonctionnent que si le mode agent est activé.</span></span></label>
+    <div class="slist"><label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">⚠ active l'<b>accès machine</b> (shell complet via <b>bash</b> sur le serveur) — l'IA peut inspecter, lancer des scripts, lire/éditer des fichiers (timeout 30s, max 300s). Mémoire et accès internet ci-dessous ne fonctionnent que si le mode agent est activé.</span></span></label></div>
     <!-- Mémoire / Accès internet / Paramètres : sous-réglages du mode agent, en cartes. Grisés/inertes quand l'agent est off (voir setAgentGate). -->
     <div id="mem-block" class="gated-block">
       <div class="subhead">Mémoire<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span id="mem-mode-desc" class="tip"></span></span></div>
-      <label class="switchrow" style="justify-content:flex-start;gap:12px"><span>mode</span>
-        <select id="mem-mode" onchange="setMemMode()" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit;font-size:12px">
+      <label class="switchrow"><span>mode</span>
+        <select id="mem-mode" onchange="setMemMode()" class="sctl">
           <option value="always">auto (proactive)</option>
           <option value="ondemand">sur demande</option>
           <option value="off">désactivée</option>
@@ -668,14 +712,14 @@ button:hover{border-color:var(--dim);color:var(--text)}
       <div class="subhead">Accès internet<span id="internet-badge" style="margin-left:6px;font-size:10px"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Ajoute les outils <b>web_search / web_open / web_read / web_grep</b> via un serveur <b>Crawl4AI</b>. Actifs seulement si le serveur répond.</span></span></div>
       <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA</label>
       <div class="row" style="margin-top:6px">
-        <input id="crawl-url" type="text" placeholder="http://localhost:11235" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;font:inherit" onchange="saveCrawlUrl()">
+        <input id="crawl-url" type="text" placeholder="http://localhost:11235" class="sctl" onchange="saveCrawlUrl()">
         <button onclick="saveCrawlUrl()">enregistrer</button>
       </div>
       <!-- Clé d'accès du serveur Crawl4AI (facultative) : envoyée en
            « Authorization: Bearer … ». Jamais relue par l'API, on n'affiche
            qu'un indice sur les 4 derniers caractères. -->
       <div class="row" style="margin-top:6px">
-        <input id="crawl-key" type="password" autocomplete="off" placeholder="clé API (si le serveur en exige une)" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;font:inherit" onchange="saveCrawlKey()">
+        <input id="crawl-key" type="password" autocomplete="off" placeholder="clé API (si le serveur en exige une)" class="sctl" onchange="saveCrawlKey()">
         <button onclick="saveCrawlKey()">enregistrer</button>
         <button id="crawl-key-clear" onclick="clearCrawlKey()" style="display:none">retirer</button>
       </div>
@@ -694,30 +738,37 @@ button:hover{border-color:var(--dim);color:var(--text)}
     </div>
   </details>
   <details><summary>Apparence</summary>
-    <label class="switchrow" style="justify-content:space-between;gap:12px"><span>mode sombre</span>
-      <span class="switch"><input type="checkbox" id="theme-dark" onchange="toggleThemeDark()"><span class="slider"></span></span>
-    </label>
-    <div class="subhead" style="margin-top:14px">Affichage</div>
+    <div class="slist">
+      <label class="switchrow rev"><span>mode sombre</span>
+        <span class="switch"><input type="checkbox" id="theme-dark" onchange="toggleThemeDark()"><span class="slider"></span></span>
+      </label>
+    </div>
+    <div class="subhead">Affichage</div>
+    <div class="slist">
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-hide-reasoning" onchange="toggleView('hide-reasoning')"><span class="slider"></span></span> masquer le raisonnement</label>
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-hide-tools" onchange="toggleView('hide-tools')"><span class="slider"></span></span> masquer les appels d'outils</label>
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-fold-tools" onchange="toggleView('fold-tools')"><span class="slider"></span></span> garder les bulles repliées<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Les bulles de raisonnement et d'outil arrivent <b>déjà fermées</b> au lieu de s'ouvrir puis se refermer. Un clic sur leur étiquette les déplie.</span></span></label>
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-hide-side" onchange="toggleView('hide-side')"><span class="slider"></span></span> barre latérale escamotable<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">La barre latérale devient un tiroir <b>même sur ordinateur</b> : elle reste fermée et s'ouvre avec le bouton ☰. Toute la largeur pour la conversation.</span></span></label>
+    </div>
   </details>
   <details><summary>System prompt</summary>
-    <textarea id="sysprompt" placeholder="(optionnel) ex: tu es un assistant concis en français" oninput="saveSys()" style="width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font:inherit;min-height:70px;resize:vertical"></textarea>
+    <textarea id="sysprompt" placeholder="(optionnel) ex: tu es un assistant concis en français" oninput="saveSys()" class="sctl"></textarea>
   </details>
   <details><summary>Accès OpenAI</summary>
     <div class="subhead">Endpoint compatible OpenAI<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Branchez n'importe quel client compatible OpenAI (OpenCode, Continue, Cursor…) sur ces adresses. Si une clé est définie, le client doit envoyer <code>Authorization: Bearer &lt;clé&gt;</code>.</span></span></div>
     <div class="muted" style="font-size:11px;margin:0 0 10px">Modèle : <code>jean</code></div>
 
+    <div class="slist pad">
     <div class="io-cap">Adresse locale (réseau)</div>
     <div class="row">
       <input id="oai-url" readonly class="io-input">
       <button onclick="copyText(document.getElementById('oai-url').value,'adresse copiée')" title="copier">⧉</button>
     </div>
 
-    <label class="switchrow io-group"><span class="switch"><input type="checkbox" id="oai-public-toggle" onchange="toggleOAIPublic()"><span class="slider"></span></span> exposer en public (ajean.link)<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Rend votre IA joignable depuis <b>n'importe où</b> via <code>https://&lt;machine&gt;.oai.ajean.link/v1</code> (pour brancher un SaaS). Le trafic est chiffré <b>de bout en bout</b> jusqu'à ce serveur — le relais ajean.link ne voit rien. Nécessite l'accès distant actif.</span></span></label>
-    <div id="oai-public-wrap" style="display:none;margin-top:6px">
+    </div>
+    <div class="slist"><label class="switchrow"><span class="switch"><input type="checkbox" id="oai-public-toggle" onchange="toggleOAIPublic()"><span class="slider"></span></span> exposer en public (ajean.link)<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Rend votre IA joignable depuis <b>n'importe où</b> via <code>https://&lt;machine&gt;.oai.ajean.link/v1</code> (pour brancher un SaaS). Le trafic est chiffré <b>de bout en bout</b> jusqu'à ce serveur — le relais ajean.link ne voit rien. Nécessite l'accès distant actif.</span></span></label>
+    </div>
+    <div id="oai-public-wrap" class="slist pad" style="display:none">
       <div class="io-cap">Adresse publique — chiffrée de bout en bout, accessible partout</div>
       <div class="row">
         <input id="oai-public-url" readonly class="io-input">
@@ -725,8 +776,9 @@ button:hover{border-color:var(--dim);color:var(--text)}
       </div>
     </div>
 
-    <div class="subhead io-group">Clé API<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Protège l'endpoint des complétions (llama-server). Indispensable avant d'exposer le serveur sur internet. Modifier la clé <b>redémarre</b> le service.</span></span></div>
-    <div class="row" style="margin-top:4px">
+    <div class="subhead">Clé API<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Protège l'endpoint des complétions (llama-server). Indispensable avant d'exposer le serveur sur internet. Modifier la clé <b>redémarre</b> le service.</span></span></div>
+    <div class="slist pad">
+    <div class="row">
       <input id="oai-key" readonly class="io-input">
       <button id="oai-key-eye" onclick="toggleKeyReveal()" title="afficher / masquer">afficher</button>
       <button onclick="copyApiKey()" title="copier la clé">⧉</button>
@@ -736,29 +788,32 @@ button:hover{border-color:var(--dim);color:var(--text)}
       <button onclick="apiKeySet()">définir…</button>
       <button onclick="apiKeyAction('clear')">retirer</button>
     </div>
+    </div>
   </details>
   <details id="remote-details"><summary>Accès distant <span id="remote-badge" style="margin-left:auto;margin-right:12px;font-size:10px"></span></summary>
     <div class="subhead">ajean.link<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Accédez à ce serveur Jean depuis <b>n'importe où</b>, sans ouvrir de port, à travers le relais <b>ajean.link</b>. Le trafic est chiffré de <b>bout en bout</b> : le relais ne voit rien. Abonnement 4,80 €/mois.</span></span></div>
     <!-- Non connecté : un seul bouton, tout se passe dans la popup (compte + paiement). -->
-    <div id="remote-off">
+    <div id="remote-off" class="slist pad">
       <p class="muted" style="font-size:12px;line-height:1.5;margin:6px 0 10px">Ouvrez l'accès distant à ce serveur en quelques clics, sans terminal.</p>
       <button onclick="remoteConnect()" style="border-color:var(--accent);color:var(--accent)">Connecter à ajean.link</button>
     </div>
     <!-- Connecté : URL publique + appairage + déconnexion. -->
     <div id="remote-on" style="display:none">
+      <div class="slist pad">
       <div class="io-cap">Votre adresse d'accès distant</div>
       <div class="row">
         <input id="remote-url" readonly class="io-input">
         <button onclick="copyText(document.getElementById('remote-url').value,'adresse copiée')" title="copier">⧉</button>
         <button onclick="window.open(document.getElementById('remote-url').value,'_blank')" title="ouvrir">↗</button>
       </div>
-      <div id="remote-status" class="muted" style="font-size:11px;margin-top:6px"></div>
+      <div id="remote-status" class="muted"></div>
+      </div>
       <button id="remote-start" onclick="remoteStart()" style="display:none;margin-top:8px;border-color:var(--accent);color:var(--accent)">démarrer le tunnel</button>
       <div class="subhead" style="margin-top:12px">Première connexion<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">À votre première ouverture du portail distant, confirmez l'<b>empreinte</b> et saisissez le <b>code d'appairage</b> : cela verrouille la boîte noire sur CE serveur (anti-interception). Une seule fois par appareil.</span></span></div>
-      <button onclick="remotePairCode()" style="margin-top:4px">Afficher l'empreinte et le code d'appairage</button>
-      <div id="remote-pair" class="muted" style="font-size:12px;margin-top:8px;display:none;line-height:1.7"></div>
-      <div class="row" style="margin-top:12px">
-        <button onclick="remoteDisconnect()" style="border-color:var(--err);color:var(--err)">déconnecter l'accès distant</button>
+      <div class="slist pad">
+        <div class="row"><button onclick="remotePairCode()">Afficher l'empreinte et le code d'appairage</button></div>
+        <div id="remote-pair" class="muted" style="display:none"></div>
+        <div class="row"><button onclick="remoteDisconnect()" class="btn-danger-o">déconnecter l'accès distant</button></div>
       </div>
     </div>
   </details>
@@ -788,19 +843,23 @@ button:hover{border-color:var(--dim);color:var(--text)}
     </div>
   </details>
   <details><summary>Service</summary>
+    <div class="slist pad">
     <div class="row">
       <button onclick="act('start')">start</button>
       <button onclick="act('restart')">restart</button>
       <button onclick="act('stop')">stop</button>
     </div>
+    </div>
   </details>
   <details id="upd-details"><summary>Actions</summary>
-    <div class="row"><button id="upd-check" onclick="checkUpdate()">↥ Vérifier les mises à jour</button></div>
-    <div id="upd-msg" class="muted" style="font-size:12px;margin-top:6px;line-height:1.5"></div>
-    <div class="row" style="margin-top:6px">
-      <button onclick="loadAll()">↻ refresh</button>
-      <button onclick="resetChat()">⌫ clear chat</button>
-      <button id="btn-bench" onclick="runBenchUI()">bench</button>
+    <div class="slist pad">
+      <div class="row"><button id="upd-check" onclick="checkUpdate()">↥ Vérifier les mises à jour</button></div>
+      <div id="upd-msg" class="muted"></div>
+      <div class="row">
+        <button onclick="loadAll()">↻ refresh</button>
+        <button onclick="resetChat()">⌫ clear chat</button>
+        <button id="btn-bench" onclick="runBenchUI()">bench</button>
+      </div>
     </div>
   </details>
 </div>
@@ -1088,7 +1147,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728150452"></script>
+<script src="/e2e.js?v=20260728151507"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
