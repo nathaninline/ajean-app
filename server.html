@@ -30,7 +30,16 @@
    la carte de saisie se retrouve plaquée en haut de l'écran. Le rebond
    élastique du document est le prix à payer ; il est cosmétique, le clavier
    ne l'est pas. Le défilement du fil reste borné par #chat (overscroll:contain). */
-body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;height:100dvh;overscroll-behavior:none;display:flex;font-size:14px}
+/* Hauteur de la coque : 100% (de <html>, lui-même à 100% de la fenêtre de mise
+   en page) et NON 100dvh. dvh est une unité DYNAMIQUE : en PWA iOS elle est mal
+   résolue au premier rendu (coque ~86 pt trop courte → carte de saisie trop
+   haute, grande bande de fond dessous) et n'est recalculée qu'au premier geste
+   de défilement — d'où le « ça se remet quand je glisse ». Le pourcentage, lui,
+   est statique et juste dès le départ. 100vh reste en repli pour les vieux
+   moteurs. ⚠️ Ne pas y ajouter overflow:hidden : voir plus bas, ça casse le
+   clavier iOS. */
+html{height:100%}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;height:100%;overscroll-behavior:none;display:flex;font-size:14px}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
    pas passer sous l'encoche / la barre système / l'indicateur d'accueil. Les
    env(safe-area-inset-*) valent 0 hors PWA, donc aucun impact ailleurs.
@@ -1204,7 +1213,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260728232530"></script>
+<script src="/e2e.js?v=20260728233015"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
