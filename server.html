@@ -14,6 +14,13 @@
      (iOS n'accepte pas le SVG pour l'icône d'accueil). Aucun fichier externe requis. -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><rect width='12' height='12' rx='2' ry='2' fill='%23000'/><rect x='6' y='3' width='2' height='2' fill='%23fff'/><rect x='6' y='5' width='2' height='2' fill='%23fff'/><rect x='4' y='7' width='2' height='2' fill='%23fff'/></svg>">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABBUlEQVR42u3SAQkAAAwCQfuX3lI4GNxF0E8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIArU2NbcYhDHOIQhzgQB+JAHIgDcSAOxIE4xCEOcYhDHIgDcSAOxIE4EAfiQBziEIc4xCEOcYgDcSAOxIE4EAfiQBziEIc4xCEOcYgDcSAOxIE4EAfiQByIQxziEIc4xIE4EAfiQByIA3EgDsQhDnGIQxziEIc4EAfiQByIAxciDsSBOBAH4kAc4hCHOMQhDnGIA3EgDsSBOBAH4kAc4hCHOMQhDnGIA3EgDsSBOBAH4kAciEMc4hCHOMQBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADfLBHMhi4TnG6EAAAAAElFTkSuQmCC">
+<!-- Marque le mode PWA AVANT le rendu : la hauteur de coque et le défilement du
+     document en dépendent (voir styles.css). ⚠️ On NE PEUT PAS se fier au média
+     `display-mode:standalone` : WebKit l'adosse au `display` du MANIFESTE, or cette
+     app n'en a pas (elle est en `apple-mobile-web-app-capable`) — en PWA iOS il
+     répond donc `browser`. `navigator.standalone` est le signal juste ici ; on
+     garde `display-mode` en second pour les PWA Android/desktop à manifeste. -->
+<script>try{var pwa=(window.navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode:standalone)').matches)||(window.matchMedia&&window.matchMedia('(display-mode:fullscreen)').matches);document.documentElement.setAttribute('data-pwa',pwa?'1':'0');}catch(e){document.documentElement.setAttribute('data-pwa','0');}</script>
 <!-- Applique le thème AVANT le rendu (pas de flash) : lit le choix persisté. -->
 <script>try{var t=localStorage.getItem('jean-theme')||'light';document.documentElement.setAttribute('data-theme',(t==='dark'||t.endsWith('-dark'))?'dark':'light');['hide-reasoning','hide-tools','fold-tools','hide-side'].forEach(function(k){document.documentElement.setAttribute('data-'+k,localStorage.getItem('jean-'+k)==='1'?'1':'0')})}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
 <style>
@@ -49,14 +56,20 @@
      document défile alors que le fil est vide, et le bas de la carte de saisie
      (modèle / contexte) est coupé. Ici c'est 100dvh qu'il faut : la hauteur
      visible du moment.
-   D'où : 100dvh par défaut, et 100vh UNIQUEMENT en display-mode standalone.
+   D'où : 100dvh par défaut, et 100vh UNIQUEMENT en PWA.
+   ⚠️ Le tri se fait sur l'attribut html[data-pwa] (pose par le script du <head>),
+   PAS sur le media `display-mode:standalone` : WebKit adosse ce media au `display`
+   du MANIFESTE, or cette app n'en a pas (elle vit en apple-mobile-web-app-capable).
+   En PWA iOS il repond donc `browser`, la branche navigateur s'appliquait, et la
+   bande morte de 62 pt sous la carte de saisie etait de retour (constate le
+   2026-07-29).
    ⚠️ Ne pas y ajouter overflow:hidden : voir plus haut, ça casse le clavier iOS. */
 body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;height:100dvh;overscroll-behavior:none;display:flex;font-size:14px}
-@media all and (display-mode:standalone),all and (display-mode:fullscreen){body{height:100vh}}
+html[data-pwa="1"] body{height:100vh}
 /* Seul #chat défile ; le document, lui, est figé (cf. l'avertissement ci-dessus).
    Exception PWA : on lui rend son défilement, sinon le clavier iOS casse tout. */
 html,body{overflow:hidden}
-@media all and (display-mode:standalone),all and (display-mode:fullscreen){html,body{overflow:visible}}
+html[data-pwa="1"],html[data-pwa="1"] body{overflow:visible}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
    pas passer sous l'encoche / la barre système / l'indicateur d'accueil. Les
    env(safe-area-inset-*) valent 0 hors PWA, donc aucun impact ailleurs.
@@ -1257,7 +1270,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260729172730"></script>
+<script src="/e2e.js?v=20260729173907"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
