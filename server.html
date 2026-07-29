@@ -37,12 +37,15 @@
    la carte de saisie se retrouve plaquée en haut de l'écran. Le rebond
    élastique du document est le prix à payer ; il est cosmétique, le clavier
    ne l'est pas.
-   EN NAVIGATEUR, en revanche, ce problème de clavier n'existe pas et laisser le
-   document défiler se paie cher : on peut faire glisser toute la page alors que
-   le fil est VIDE, et la carte de saisie — posée en bottom:0 dans le body — part
-   avec, au lieu de rester collée en bas. On coupe donc le défilement du document
-   partout SAUF en PWA. Le fil, lui, défile toujours dans #chat, qui borne son
-   rebond (overscroll:contain). */
+   Laisser le document défiler se paie cher, et EN PWA AUSSI : la coque y fait
+   956 pt (obligatoire pour que la carte atteigne le bas de l'écran) alors que la
+   fenêtre de mise en page n'en fait que 894 → il reste 62 pt de document
+   défilable en permanence, même avec un fil VIDE, et la carte de saisie — posée
+   en bottom:0 dans le body — part avec au lieu de rester collée en bas.
+   On coupe donc le défilement du document PARTOUT (2026-07-29). Le fil, lui,
+   défile toujours dans #chat, qui borne son rebond (overscroll:contain).
+   ⚠️ SI LE CLAVIER iOS SE REMET À TOUT DÉCALER EN PWA, c'est ce overflow:hidden
+   qu'il faut rouvrir en premier — c'était le compromis d'origine. */
 /* Hauteur de la coque : elle DIFFÈRE entre PWA et navigateur, il faut les deux.
    - PWA (écran d'accueil) : 100vh, et SURTOUT ni 100dvh ni 100%. Mesuré sur
      iPhone (2026-07-28) : la vue web couvre tout l'écran (956 pt — le contenu
@@ -69,7 +72,6 @@ html[data-pwa="1"] body{height:100vh}
 /* Seul #chat défile ; le document, lui, est figé (cf. l'avertissement ci-dessus).
    Exception PWA : on lui rend son défilement, sinon le clavier iOS casse tout. */
 html,body{overflow:hidden}
-html[data-pwa="1"],html[data-pwa="1"] body{overflow:visible}
 /* PWA plein écran (viewport-fit=cover) : on décale le contenu des bords pour ne
    pas passer sous l'encoche / la barre système / l'indicateur d'accueil. Les
    env(safe-area-inset-*) valent 0 hors PWA, donc aucun impact ailleurs.
@@ -1270,7 +1272,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260729173907"></script>
+<script src="/e2e.js?v=20260729174908"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
