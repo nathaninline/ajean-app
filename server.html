@@ -336,7 +336,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
   align-items:center;justify-content:center;gap:10px;pointer-events:none;
   opacity:0;transition:opacity .35s ease}
 #chat-empty.show{display:flex;opacity:1}
-#ce-logo{display:inline-flex;align-items:center;color:var(--text)}
+/* Le clone perd les règles d'id de #brand (les id sont retirés), dont l'espace
+   entre le « A » et le mot : on le repose ici, à l'échelle du logo agrandi
+   (2 px pour 10 px de haut → 4 px pour 20 px), sinon le A s'encastre dans le J. */
+#ce-logo{display:inline-flex;align-items:center;gap:4px;color:var(--text)}
 #ce-logo svg{height:20px;width:auto;display:block;shape-rendering:crispEdges;fill:currentColor}
 #ce-logo .ce-word{display:inline-flex;color:var(--accent)}
 #ce-title{font-size:14px;color:var(--dim);letter-spacing:.03em}
@@ -1513,7 +1516,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805200046"></script>
+<script src="/e2e.js?v=20260805200129"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
