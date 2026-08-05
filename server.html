@@ -157,7 +157,6 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .mem-search{width:100%;box-sizing:border-box;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 9px;font:inherit;font-size:12px;margin:0 0 6px}
 .mem-search:focus{outline:none;border-color:var(--accent)}
 .mem-list{max-height:240px;overflow-y:auto;overscroll-behavior:contain}
-.mem-list .preset{margin:3px 0;padding:5px 9px}
 .mem-more{font-size:11px;color:var(--dim);text-align:center;padding:6px 0 2px}
 .ask-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
 .ask-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;width:100%;max-width:420px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.18);animation:askpop .12s ease-out}
@@ -211,6 +210,17 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .preset.active{border-color:var(--accent);color:var(--accent);border-width:1.5px;padding:5.5px 9.5px}
 .preset>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .preset>button{flex-shrink:0}
+/* Liste de lignes cliquables (presets, pages mémoire) posée à fleur de carte :
+   une pile de petites cartes bordées faisait « trop de carrés » là où le reste
+   du menu aligne des lignes séparées par un filet. L'actif se signale par un
+   voile et un liseré à gauche, plus par un cadre propre. */
+.rowlist>.preset{border:0;border-radius:0;margin:0;padding:9px 10px;background:transparent}
+.rowlist>.preset:not(:last-child){border-bottom:1px solid var(--border)}
+.rowlist>.preset:hover{background:var(--accent-bg)}
+.rowlist>.preset.active{background:var(--accent-bg);color:var(--text);font-weight:600;
+  box-shadow:inset 2px 0 0 var(--text)}
+/* Messages et « voir plus » de la liste : alignés sur le retrait des lignes. */
+.rowlist>.muted,.rowlist>.mem-more{padding:9px 10px}
 .preset-info{flex:1;min-width:0}
 .preset-name{min-width:0;overflow-wrap:anywhere;word-break:break-word}
 .preset-edit{flex-shrink:0;align-self:flex-start;margin:-3px -4px 0 0;padding:2px 4px;font-size:13px;line-height:1;background:transparent;border:none;opacity:.6}
@@ -980,7 +990,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
     <div id="cfg" class="slist">…</div>
   </details>
   <details><summary><span class="stitle">Presets</span><button class="preset-add" onclick="event.preventDefault();event.stopPropagation();openPreset('')" title="ajouter">+</button></summary>
-    <div class="slist"><div class="rowbody"><div id="presets"></div></div></div>
+    <div class="slist"><div id="presets" class="rowlist"></div></div>
   </details>
   <details><summary><span class="stitle">Mode agent</span><span id="agent-badge" class="sbadge"></span></summary>
     <div class="slist"><label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">⚠ active l'<b>accès machine</b> (shell complet via <b>bash</b> sur le serveur) — l'IA peut inspecter, lancer des scripts, écrire/lire/éditer des fichiers (timeout 30s, max 300s). Mémoire et accès internet ci-dessous ne fonctionnent que si le mode agent est activé.</span></span></label></div>
@@ -1002,9 +1012,14 @@ button:hover{border-color:var(--dim);color:var(--text)}
           <span class="pages-title">Pages <span id="mem-count" class="mem-count"></span></span>
           <button class="addbtn" onclick="event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button>
         </div>
-        <div id="mem-pages-body" class="rowbody" hidden>
-          <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="display:none">
-          <div id="mem-list" class="mem-list muted" style="font-size:12px"></div>
+        <div id="mem-pages-body" hidden>
+          <!-- Le champ de filtre garde son rembourrage de ligne ; la liste, elle,
+               est à fleur de carte : ses pages sont des LIGNES séparées par un
+               filet, pas une pile de petites cartes. -->
+          <div id="mem-search-row" class="rowbody" style="display:none">
+            <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="margin:0">
+          </div>
+          <div id="mem-list" class="mem-list rowlist muted" style="font-size:12px"></div>
         </div>
       </div>
     </div>
@@ -1559,7 +1574,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805202351"></script>
+<script src="/e2e.js?v=20260805202722"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -2094,7 +2109,7 @@ async function loadAgent(){
   memPages = (s.pages || s.skills || []).slice().sort((a,b)=>a.name.localeCompare(b.name));
   memShown = MEM_PAGE;
   document.getElementById('mem-count').textContent = memPages.length ? '('+memPages.length+')' : '';
-  document.getElementById('mem-search').style.display = memPages.length > MEM_PAGE ? '' : 'none';
+  document.getElementById('mem-search-row').style.display = memPages.length > MEM_PAGE ? '' : 'none';
   renderMemList();
 }
 // Mémoire + accès internet sont des sous-réglages du mode agent : sans agent, ni
