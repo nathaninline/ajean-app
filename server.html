@@ -142,14 +142,15 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 /* en-tête + bouton d'ajout de skill (toujours visible) */
 .skillshead{display:flex;align-items:center;justify-content:space-between;margin:12px 0 5px}
 .skillshead>span{font-size:11.5px;color:var(--dim);font-weight:600}
-.addbtn{font-size:11px;padding:3px 11px 4px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;line-height:1.2}
-.addbtn:hover{border-color:var(--accent);color:var(--accent)}
+.addbtn{font-size:11px;padding:4px 11px;background:var(--panel);color:var(--dim);border:1px solid var(--border);border-radius:999px;cursor:pointer;line-height:1.3;letter-spacing:.02em}
+.addbtn:hover{border-color:var(--dim);color:var(--text);background:var(--accent-bg)}
 .mem-count{font-size:10px;color:var(--dim);font-weight:400;letter-spacing:0;text-transform:none;font-family:var(--font);margin-left:4px}
 /* Titre de sous-section (Mémoire / Accès internet) : simple libellé, PAS de trait
    (le trait est réservé aux sections principales — cf. `details`). La séparation
    visuelle vient de la carte de lignes qui suit (.slist). */
 /* Barre repliable « Pages » : un seul chevron, bouton + ajouter aligné à droite. */
 .pages-bar{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:7px 0;margin-top:4px}
+.pages-bar .pages-caret{width:9px;text-align:center}
 .pages-bar .pages-caret{flex-shrink:0;font-size:9px;color:var(--dim);transition:transform .12s}
 .pages-bar.open .pages-caret{transform:rotate(90deg)}
 .pages-bar .pages-title{font-size:11.5px;color:var(--dim);font-weight:600}
@@ -159,8 +160,7 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .mem-list{max-height:240px;overflow-y:auto;overscroll-behavior:contain}
 .mem-more{font-size:11px;color:var(--dim);text-align:center;padding:6px 0 2px}
 .ask-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
-.ask-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;width:100%;max-width:420px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.18);animation:askpop .12s ease-out}
-@keyframes askpop{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+.ask-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;width:100%;max-width:420px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.18)}
 .ask-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px}
 .ask-msg{font-size:13px;color:var(--dim);line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .ask-input{width:100%;box-sizing:border-box;margin-top:12px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font:inherit;font-size:13px}
@@ -226,10 +226,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .rowlist>.muted,.rowlist>.mem-more{padding:9px 10px}
 .preset-info{flex:1;min-width:0}
 .preset-name{min-width:0;overflow-wrap:anywhere;word-break:break-word}
-/* Icône d'engrenage : calée en HAUT de la ligne, à hauteur du titre (une ligne
-   de preset peut faire deux étages — titre + étiquettes). */
+/* Icône d'engrenage : centrée verticalement sur la ligne (sa silhouette ronde se
+   lit bien au milieu de son coin, là où le crayon penché tirait de travers). */
 .preset-edit{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;
-  align-self:flex-start;margin:0 -2px 0 0;padding:2px;line-height:0;background:transparent;border:none;opacity:.55}
+  margin:0 -2px 0 0;padding:4px;line-height:0;background:transparent;border:none;opacity:.55}
 .preset-edit:hover{opacity:1;color:var(--accent);background:transparent}
 .preset-meta{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap}
 .qtag{flex-shrink:0;font-size:9px;padding:1px 6px;border:1px solid var(--border);color:var(--dim);border-radius:8px;letter-spacing:.03em;text-transform:uppercase}
@@ -459,7 +459,7 @@ details>summary+.subhead{margin-top:4px}
 .slist>.switchrow+.rowbody,.slist>.switchrow+.pages-bar{border-top:0}
 .slist>.rowbody>:first-child{margin-top:0}
 .slist>.rowbody>:last-child{margin-bottom:0}
-.slist>.pages-bar{padding:8px 10px;margin-top:0}
+.slist>.pages-bar{min-height:34px;padding:4px 10px;margin-top:0}
 /* Contrôle posé à droite d'une ligne (liste « mode » de la mémoire) : même place
    que l'interrupteur, largeur ajustée au contenu. */
 .switchrow>.sctl{margin-left:auto;order:2;width:auto;max-width:62%}
@@ -494,9 +494,17 @@ details>summary+.subhead{margin-top:4px}
   border-radius:7px;padding:7px 9px;font:inherit;font-size:12.5px}
 .sctl:focus,.io-input:focus{outline:none;border-color:var(--dim)}
 textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
-.side button:not(.preset-edit):not(.addbtn):not(.preset-add):not(.copybtn){font-size:12px;padding:6px 10px;border-radius:7px}
+.side button:not(.preset-edit):not(.addbtn):not(.preset-add):not(.copybtn):not(.iconbtn){font-size:12px;padding:6px 10px;border-radius:7px}
 .side .row{display:flex;gap:6px;align-items:center;margin:6px 0}
 .side .row .sctl,.side .row .io-input{flex:1;min-width:0}
+/* Bouton d'action à côté d'un champ (copier, ouvrir) : un CARRÉ à la hauteur du
+   champ, icône au trait centrée. Le glyphe seul (⧉, ↗) dans un bouton texte se
+   posait de travers et changeait de largeur d'une police à l'autre. */
+.iconbtn{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;padding:0;margin:0;color:var(--dim);background:var(--panel);
+  border:1px solid var(--border);border-radius:9px;cursor:pointer}
+.iconbtn:hover{color:var(--text);border-color:var(--dim);background:var(--accent-bg)}
+.iconbtn svg{width:15px;height:15px;display:block}
 .side .btn-danger-o{border-color:var(--err);color:var(--err)}
 .side .btn-danger-o:hover{background:var(--danger-bg);border-color:var(--err);color:var(--err)}
 .side .muted{font-size:11.5px;line-height:1.5}
@@ -763,6 +771,17 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 .pe-delmodel input{margin:0}
 /* Éditeur de preset/mémoire — mise en forme propre du modale */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;align-items:center;justify-content:center;padding:20px}
+/* Ouverture/fermeture animées. L'état par défaut est l'état FERMÉ ; la classe
+   .show (posée par showModal/hideModal) fait jouer la transition dans les deux
+   sens — une @keyframes n'aurait animé que l'ouverture. */
+.modal-ov,.ask-overlay{opacity:0;transition:opacity .16s ease}
+.modal-ov.show,.ask-overlay.show{opacity:1}
+.modal-card,.ask-box{transform:translateY(10px) scale(.985);opacity:0;
+  transition:transform .18s cubic-bezier(.2,.8,.3,1),opacity .18s ease}
+.modal-ov.show .modal-card,.ask-overlay.show .ask-box{transform:none;opacity:1}
+@media (prefers-reduced-motion:reduce){
+  .modal-ov,.ask-overlay,.modal-card,.ask-box{transition:none}
+}
 .modal-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 16px 50px rgba(0,0,0,.18)}
 .modal-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .modal-head strong{font-size:14px}
@@ -922,7 +941,7 @@ html[data-hide-stats="1"] #chat .msg .statline{display:none}
 #ctx-fill{background:var(--text);opacity:.75}
 #sendhint{order:4;padding:12px var(--col) 2px}
 /* Reste de l'UI : coins arrondis et contrastes doux, dans le même esprit. */
-button,.addbtn,.mem-search{border-radius:10px}
+button,.mem-search{border-radius:10px}
 /* Champ + bouton accolés : on ne garde l'arrondi que sur les coins extérieurs. */
 .pe-inpbtn .pe-inp{border-radius:10px 0 0 10px}
 .pe-inpbtn button{border-radius:0 10px 10px 0}
@@ -1015,7 +1034,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
         </label>
         <div id="mem-pages-bar" class="pages-bar" onclick="toggleMemPages()">
           <span class="pages-caret">▸</span>
-          <span class="pages-title">Pages <span id="mem-count" class="mem-count"></span></span>
+          <span class="pages-title">Voir la mémoire <span id="mem-count" class="mem-count"></span></span>
           <button class="addbtn" onclick="event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button>
         </div>
         <div id="mem-pages-body" hidden>
@@ -1108,7 +1127,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
         <div class="muted" style="margin:0 0 6px">Adresse locale (réseau) — modèle <code>jean</code></div>
         <div class="row" style="margin:0">
           <input id="oai-url" readonly class="io-input">
-          <button onclick="copyText(document.getElementById('oai-url').value,'adresse copiée')" title="copier">⧉</button>
+          <button class="iconbtn" onclick="copyText(document.getElementById('oai-url').value,'adresse copiée')" title="copier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
         </div>
       </div>
       <label class="switchrow"><span class="switch"><input type="checkbox" id="oai-public-toggle" onchange="toggleOAIPublic()"><span class="slider"></span></span> exposer en public (ajean.link)<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Rend votre IA joignable depuis <b>n'importe où</b> via <code>https://&lt;machine&gt;.oai.ajean.link/v1</code> (pour brancher un SaaS). Le trafic est chiffré <b>de bout en bout</b> jusqu'à ce serveur — le relais ajean.link ne voit rien. Nécessite l'accès distant actif.</span></span></label>
@@ -1116,7 +1135,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
         <div class="muted" style="margin:0 0 6px">Adresse publique — chiffrée de bout en bout, accessible partout</div>
         <div class="row" style="margin:0">
           <input id="oai-public-url" readonly class="io-input">
-          <button onclick="copyText(document.getElementById('oai-public-url').value,'adresse publique copiée')" title="copier">⧉</button>
+          <button class="iconbtn" onclick="copyText(document.getElementById('oai-public-url').value,'adresse publique copiée')" title="copier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
         </div>
       </div>
     </div>
@@ -1125,7 +1144,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
       <div class="row" style="margin:0">
         <input id="oai-key" readonly class="io-input">
         <button id="oai-key-eye" onclick="toggleKeyReveal()" title="afficher / masquer">afficher</button>
-        <button onclick="copyApiKey()" title="copier la clé">⧉</button>
+        <button class="iconbtn" onclick="copyApiKey()" title="copier la clé"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
       </div>
       <div class="row" style="margin-bottom:0">
         <button onclick="apiKeyAction('generate')">générer</button>
@@ -1149,8 +1168,8 @@ button:hover{border-color:var(--dim);color:var(--text)}
         <div class="muted" style="margin:0 0 6px">Votre adresse d'accès distant</div>
         <div class="row" style="margin:0">
           <input id="remote-url" readonly class="io-input">
-          <button onclick="copyText(document.getElementById('remote-url').value,'adresse copiée')" title="copier">⧉</button>
-          <button onclick="window.open(document.getElementById('remote-url').value,'_blank')" title="ouvrir">↗</button>
+          <button class="iconbtn" onclick="copyText(document.getElementById('remote-url').value,'adresse copiée')" title="copier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+          <button class="iconbtn" onclick="window.open(document.getElementById('remote-url').value,'_blank')" title="ouvrir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg></button>
         </div>
         <div id="remote-status" class="muted" style="margin-top:6px"></div>
         <div class="row" style="margin-bottom:0"><button id="remote-start" onclick="remoteStart()" style="display:none;border-color:var(--accent);color:var(--accent)">démarrer le tunnel</button></div>
@@ -1206,14 +1225,12 @@ button:hover{border-color:var(--dim);color:var(--text)}
     </div></div>
   </details>
   <details id="upd-details"><summary><span class="stitle">Actions</span></summary>
-    <div class="subhead">Mise à jour</div>
-    <div class="slist"><div class="rowbody">
-      <div class="row" style="margin:0"><button id="upd-check" onclick="checkUpdate()">↥ Vérifier les mises à jour</button></div>
-      <div id="upd-msg" class="muted" style="margin-top:6px"></div>
-    </div></div>
-    <div class="subhead">Cette session</div>
     <div class="slist"><div class="rowbody">
       <div class="row" style="margin:0">
+        <button id="upd-check" onclick="checkUpdate()">↥ Vérifier les mises à jour</button>
+      </div>
+      <div id="upd-msg" class="muted"></div>
+      <div class="row" style="margin-bottom:0">
         <button onclick="loadAll()">↻ refresh</button>
         <button onclick="resetChat()">⌫ clear chat</button>
         <button id="btn-bench" onclick="runBenchUI()">bench</button>
@@ -1580,7 +1597,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805203858"></script>
+<script src="/e2e.js?v=20260805204545"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1816,6 +1833,25 @@ function setBadge(id, state, text){
   el.className = 'sbadge' + (state===true ? ' on' : (state==='warn' || state==='err') ? ' '+state : '');
   el.textContent = state===null || state===undefined ? '' : (text||'');
 }
+// Ouverture/fermeture des modales. Le display seul apparaissait d'un bloc : on
+// pose la classe .show une frame APRÈS l'affichage pour que la transition CSS
+// parte de son état initial (sans ce reflow forcé, le navigateur applique tout
+// d'un coup et l'animation ne joue pas). À la fermeture on attend la fin de la
+// transition avant de repasser en display:none.
+function showModal(id){
+  const el = typeof id==='string' ? document.getElementById(id) : id;
+  if(!el) return;
+  el.style.display='flex';
+  void el.offsetHeight;
+  el.classList.add('show');
+}
+function hideModal(id){
+  const el = typeof id==='string' ? document.getElementById(id) : id;
+  if(!el) return;
+  el.classList.remove('show');
+  // Rouverte entre-temps ? On ne la cache surtout pas.
+  setTimeout(()=>{ if(!el.classList.contains('show')) el.style.display='none'; }, 180);
+}
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
 // Modales natives (askConfirm/askPrompt/askAlert) — remplacent confirm()/prompt()/
 // alert() par de vraies boîtes stylées. Chacune renvoie une Promise : askConfirm →
@@ -1825,7 +1861,7 @@ let _askResolver=null, _askKind='confirm';
 function askResolve(ok){
   if(!_askResolver) return;
   const r=_askResolver; _askResolver=null;
-  document.getElementById('ask-modal').style.display='none';
+  hideModal('ask-modal');
   document.removeEventListener('keydown', _askKey, true);
   if(_askKind==='prompt') r(ok ? document.getElementById('ask-input').value : null);
   else r(ok);
@@ -1851,7 +1887,7 @@ function _openAsk(kind, message, opts){
   cancel.textContent = opts.cancelText || 'Annuler';
   ok.textContent = opts.okText || (kind==='alert'?'OK':kind==='prompt'?'Valider':'Confirmer');
   ok.classList.toggle('danger', !!opts.danger);
-  document.getElementById('ask-modal').style.display='flex';
+  showModal('ask-modal');
   document.addEventListener('keydown', _askKey, true);
   setTimeout(()=>{ const f = kind==='prompt'?inp:ok; f.focus(); if(kind==='prompt') inp.select(); }, 30);
   return new Promise(res=>{ _askResolver=res; });
@@ -2096,10 +2132,9 @@ async function loadPresets(){
     if(meta.children.length) info.appendChild(meta);
     const edit=document.createElement('button');
     // Engrenage (et non plus un crayon) : la silhouette est ronde, donc elle se
-    // pose proprement dans l'angle supérieur droit, là où le crayon penché tirait
-    // le regard de travers.
+    // lit comme centrée dans son coin, là où le crayon penché tirait de travers.
     edit.className='preset-edit'; edit.title='réglages du preset';
-    edit.innerHTML='<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>';
+    edit.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>';
     edit.onclick=(e)=>{ e.stopPropagation(); openPreset(x.id); };
     row.appendChild(info); row.appendChild(edit);
     cont.appendChild(row);
@@ -2322,8 +2357,8 @@ async function clearCrawlKey(){
 }
 async function loadAll(){ await Promise.all([loadStatus(),loadVram(),loadRam(),loadCfg(),loadPresets(),loadAgent(),loadInternet(),loadMCP(),loadApiKey(),loadPrefs(),loadLlamacpp(),loadRemote()]); }
 async function act(a){ toast(a+'…'); await jpost('/api/'+a); setTimeout(loadAll,1500); }
-function openBenchModal(){ document.getElementById('bench-modal').style.display = 'flex'; }
-function closeBenchModal(){ document.getElementById('bench-modal').style.display = 'none'; }
+function openBenchModal(){ showModal('bench-modal'); }
+function closeBenchModal(){ hideModal('bench-modal'); }
 async function runBenchUI(){
   const btn = document.getElementById('btn-bench');
   const rerun = document.getElementById('bench-rerun');
@@ -2380,15 +2415,20 @@ const KINDS = {
   preset: {label:'Preset', param:'id',   getUrl:'/api/preset', saveUrl:'/api/preset/save', delUrl:'/api/preset/delete', reload:()=>loadPresets()},
   mem:    {label:'Page',   param:'name', getUrl:'/api/mem',    saveUrl:'/api/mem/save',    delUrl:'/api/mem/delete',    reload:()=>loadMem()},
 };
+// ⚠️ La modale s'ouvre AVANT d'aller chercher quoi que ce soit. Elle attendait
+// auparavant la fin de 3 requêtes (contenu + backends + modèles disponibles) :
+// en accès distant, ça faisait un clic sans réaction pendant une seconde, comme
+// si le bouton était mort. On affiche la coquille tout de suite, puis on la
+// remplit. `openSeq` protège du cas « deux ouvertures coup sur coup » : une
+// réponse en retard ne doit jamais écraser la modale ouverte après elle.
+let openSeq = 0;
 async function openItem(kind, key){
   const K = KINDS[kind];
-  const r = await jfetch(K.getUrl + '?' + K.param + '=' + encodeURIComponent(key||''));
-  const d = await r.json();
+  const seq = ++openSeq;
   editingKind = kind; editingKey = key || '';
-  const display = d.name || key || '';
-  document.getElementById('modal-title').textContent = key ? (K.label + ' · ' + display) : ('Nouveau ' + K.label.toLowerCase());
-  document.getElementById('m-name').value = display;
-  document.getElementById('m-content').value = d.content || '';
+  document.getElementById('modal-title').textContent = key ? (K.label + ' · ' + key) : ('Nouveau ' + K.label.toLowerCase());
+  document.getElementById('m-name').value = key || '';
+  document.getElementById('m-content').value = '';
   document.getElementById('m-del').style.display = key ? 'inline-block' : 'none';
   // Model picker is preset-only: it edits the MODEL= line of config.env.
   const modelRow = document.getElementById('m-model-row');
@@ -2403,10 +2443,7 @@ async function openItem(kind, key){
     settingsRow.style.display = 'flex';
     document.getElementById('m-hf-url').value = '';
     resetDlUI();
-    attachDownload(); // téléchargement encore en cours côté serveur ?
     document.getElementById('m-del-model').checked = false;
-    document.getElementById('m-quant').value = currentQuantInTextarea();
-    populateSettings();
     delModelWrap.style.display = key ? 'inline-flex' : 'none';
     // Preset : la config brute est une ligne repliable, fermée par défaut.
     rawHead.textContent = 'Configuration';
@@ -2416,7 +2453,6 @@ async function openItem(kind, key){
     // Dossiers de modèles : replié par défaut (réglage rare), chargé à l'ouverture.
     document.getElementById('m-dir-path').value = '';
     setModelDirsOpen(false);
-    await Promise.all([populateBackend(), populateModelPicker()]);
   } else {
     modelRow.style.display = 'none';
     settingsRow.style.display = 'none';
@@ -2426,7 +2462,22 @@ async function openItem(kind, key){
     rawToggle.style.display = 'none';
     rawBody.style.display = '';
   }
-  document.getElementById('modal').style.display = 'flex';
+  showModal('modal');
+  // --- Remplissage, une fois la modale à l'écran -----------------------------
+  const r = await jfetch(K.getUrl + '?' + K.param + '=' + encodeURIComponent(key||''));
+  const d = await r.json();
+  if(seq !== openSeq) return;              // une autre ouverture a pris la main
+  const display = d.name || key || '';
+  document.getElementById('modal-title').textContent = key ? (K.label + ' · ' + display) : ('Nouveau ' + K.label.toLowerCase());
+  document.getElementById('m-name').value = display;
+  document.getElementById('m-content').value = d.content || '';
+  if(kind === 'preset'){
+    // Ces deux-là LISENT le contenu : elles doivent passer après son arrivée.
+    document.getElementById('m-quant').value = currentQuantInTextarea();
+    populateSettings();
+    attachDownload();                      // téléchargement encore en cours côté serveur ?
+    await Promise.all([populateBackend(), populateModelPicker()]);
+  }
 }
 
 // Pretty-print bytes — handy for the dropdown options.
@@ -2972,7 +3023,7 @@ const openPreset = (id)=>openItem('preset', id);
 const openMem    = (n)=>openItem('mem', n);
 // Fermer la modale n'annule PAS un téléchargement en cours (il vit côté
 // serveur) : on arrête juste de l'interroger.
-function closeModal(){ document.getElementById('modal').style.display = 'none'; stopDlPoll(); }
+function closeModal(){ hideModal('modal'); stopDlPoll(); }
 async function saveItem(){
   const K = KINDS[editingKind];
   const name = document.getElementById('m-name').value.trim();
@@ -3900,12 +3951,12 @@ async function lcRenderCustomCard(){
 }
 
 function openCustomBackends(){
-  document.getElementById('lc-custom-modal').style.display = 'flex';
+  showModal('lc-custom-modal');
   document.getElementById('lc-custom-url').value = '';
   document.getElementById('lc-custom-name').value = '';
   loadCustomBackends();
 }
-function closeCustomBackends(){ document.getElementById('lc-custom-modal').style.display = 'none'; }
+function closeCustomBackends(){ hideModal('lc-custom-modal'); }
 
 // Liste les backends custom dans le modal, avec un bouton supprimer par ligne.
 async function loadCustomBackends(){
@@ -4106,7 +4157,7 @@ function openMcp(name){
   else if(s && s.connected){ st.innerHTML = '<span style="color:var(--accent)">✓</span> connecté — '+(s.tools?s.tools.length:0)+' outil(s)'; }
   document.getElementById('mcp-del').style.display = s ? '' : 'none';
   renderMcpTools(s);
-  document.getElementById('mcp-modal').style.display = 'flex';
+  showModal('mcp-modal');
 }
 
 // Liste des outils découverts du serveur, avec une case par outil pour le
@@ -4141,7 +4192,7 @@ async function toggleMcpTool(server, tool, on){
   if(s && s.tools) document.getElementById('mcp-tools-count').textContent = '('+(s.tools.length-off.size)+'/'+s.tools.length+' actifs)';
 }
 
-function closeMcp(){ document.getElementById('mcp-modal').style.display = 'none'; mcpEditing = null; }
+function closeMcp(){ hideModal('mcp-modal'); mcpEditing = null; }
 
 function mcpTransportUI(t){
   document.getElementById('mcp-stdio-fields').style.display = t==='stdio' ? '' : 'none';
