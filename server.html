@@ -214,11 +214,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
    une pile de petites cartes bordées faisait « trop de carrés » là où le reste
    du menu aligne des lignes séparées par un filet. L'actif se signale par un
    voile et un liseré à gauche, plus par un cadre propre. */
-.rowlist>.preset{border:0;border-radius:0;margin:0;padding:9px 10px;background:transparent}
+.rowlist>.preset{border:0;border-radius:0;margin:0;padding:6px 10px;background:transparent}
 .rowlist>.preset:not(:last-child){border-bottom:1px solid var(--border)}
 .rowlist>.preset:hover{background:var(--accent-bg)}
 .rowlist>.preset.active{background:var(--accent-bg);color:var(--text);font-weight:600;
   box-shadow:inset 2px 0 0 var(--text)}
+/* Ligne à deux étages (titre + étiquettes) : l'interligne interne suffit, on
+   resserre donc le haut et le bas. */
+.rowlist>.preset .preset-meta{margin-top:2px}
 /* Messages et « voir plus » de la liste : alignés sur le retrait des lignes. */
 .rowlist>.muted,.rowlist>.mem-more{padding:9px 10px}
 .preset-info{flex:1;min-width:0}
@@ -1574,7 +1577,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805202722"></script>
+<script src="/e2e.js?v=20260805202930"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
