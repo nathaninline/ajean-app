@@ -147,7 +147,7 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .mem-count{font-size:10px;color:var(--dim);font-weight:400;letter-spacing:0;text-transform:none;font-family:var(--font);margin-left:4px}
 /* Titre de sous-section (Mémoire / Accès internet) : simple libellé, PAS de trait
    (le trait est réservé aux sections principales — cf. `details`). La séparation
-   visuelle vient de la carte englobante .gated-block. */
+   visuelle vient de la carte de lignes qui suit (.slist). */
 /* Barre repliable « Pages » : un seul chevron, bouton + ajouter aligné à droite. */
 .pages-bar{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:7px 0;margin-top:4px}
 .pages-bar .pages-caret{flex-shrink:0;font-size:9px;color:var(--dim);transition:transform .12s}
@@ -176,17 +176,15 @@ h1{margin:0;font-size:18px;color:var(--accent)}
    pastille dans les réglages. */
 #brand.agent #brand-a{color:var(--accent)}
 /* interrupteur (switch) */
-/* Sous-réglage du mode agent inaccessible quand l'agent est off : grisé + inerte. */
-/* Sous-réglages du mode agent présentés en CARTES (bordure + fond) pour ne pas
-   les confondre avec les traits des sections principales. */
-/* Bloc du mode agent = carte de liste : le rembourrage est porté par les
-   lignes (comme .slist), pas par la carte, sinon les retraits se cumulent. */
-/* ⚠️ PAS d'overflow:hidden ici : les bulles d'aide (« ? ») sont positionnées en
-   absolu par rapport à la ligne, donc un débordement caché les TRONQUE — c'est
-   ce qui rendait plusieurs infobulles illisibles. */
-.gated-block{margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:0 0 10px;background:var(--panel);overflow:visible;transition:opacity .15s}
-.gated-block>.switchrow:first-of-type{padding-top:0}
-.gated-block.gated{opacity:.4;pointer-events:none;filter:grayscale(.4)}
+/* Sous-groupe du mode agent (Mémoire, Accès internet, Serveurs MCP, Paramètres).
+   MÊME grammaire que « Machine » ou « Apparence » : étiquette de groupe NUE
+   au-dessus, puis UNE carte .slist qui porte toutes les lignes. Auparavant
+   chaque sous-groupe était une carte qui embarquait son propre titre et du
+   contenu libre aux marges variables — quatre îlots décollés au lieu d'une
+   colonne régulière. Le grisé « agent désactivé » se pose sur le GROUPE
+   (étiquette comprise), plus sur la carte seule. */
+.gated-group{margin:0 0 10px;transition:opacity .15s}
+.gated-group.gated{opacity:.4;pointer-events:none;filter:grayscale(.4)}
 .switch{position:relative;display:inline-block;width:36px;height:20px;flex:none}
 .switch input{position:absolute;opacity:0;width:0;height:0}
 /* Piste décochée : un gris franc (pas --border), sinon le pavé blanc ne se
@@ -415,25 +413,40 @@ details[open]>summary::after{transform:rotate(45deg)}
 .subhead,.io-cap,.pages-bar .pages-title,.skillshead>span{position:relative;display:flex;align-items:center;
   font-size:11px;font-weight:600;color:var(--dim);margin:10px 2px 5px}
 .io-cap{margin:0 2px 5px}
-/* Premier élément d'une carte : sa marge haute s'ajoutait au rembourrage de la
-   carte (18 px de vide au-dessus de « Mémoire », « Accès internet », etc.). */
-.gated-block>:first-child{margin-top:0}
+/* Étiquette de groupe en tête d'un sous-groupe du mode agent : elle suit une
+   carte, elle a donc besoin de son air normal — mais pas d'un cumul de marges. */
+.gated-group>.subhead:first-child{margin-top:12px}
 /* Une étiquette de groupe qui suit immédiatement le titre de section n'a pas
    besoin de reprendre de l'air : le titre en a déjà donné. */
 details>summary+.subhead{margin-top:4px}
 .io-group{margin-top:8px}
 
 /* --- Carte de liste --- */
-/* overflow VISIBLE : cf. la note sur .gated-block — les infobulles doivent
+/* overflow VISIBLE : les infobulles (« ? ») sont positionnées en absolu par
+   rapport à la ligne, un débordement caché les TRONQUERAIT — elles doivent
    pouvoir déborder de la carte. Les lignes n'ont pas de fond propre, l'arrondi
    n'a donc rien à rogner. */
-.slist,.gated-block{background:var(--panel);border:1px solid var(--border);border-radius:9px;
+.slist{background:var(--panel);border:1px solid var(--border);border-radius:9px;
   overflow:visible;margin:0 0 8px}
-.slist:last-child,.gated-block:last-child{margin-bottom:0}
+.slist:last-child{margin-bottom:0}
 /* Contenu libre (champ + boutons) : le rembourrage passe sur la carte. */
-.slist.pad,.gated-block{padding:8px 10px}
+.slist.pad{padding:8px 10px}
 .slist.pad>:first-child{margin-top:0}
 .slist.pad>:last-child{margin-bottom:0}
+/* Contenu libre posé DANS une carte de lignes (champs Crawl4AI, liste MCP,
+   pages mémoire) : même rembourrage et même filet de séparation qu'une ligne,
+   pour qu'il ne flotte pas au milieu de la carte. */
+.slist>.rowbody{padding:9px 10px}
+.slist>.rowbody:not(:first-child),.slist>.pages-bar:not(:first-child){border-top:1px solid var(--border)}
+/* …sauf juste après une ligne de réglage : elle porte DÉJÀ son filet bas, les
+   deux se cumuleraient en un trait double. */
+.slist>.switchrow+.rowbody,.slist>.switchrow+.pages-bar{border-top:0}
+.slist>.rowbody>:first-child{margin-top:0}
+.slist>.rowbody>:last-child{margin-bottom:0}
+.slist>.pages-bar{padding:8px 10px;margin-top:0}
+/* Contrôle posé à droite d'une ligne (liste « mode » de la mémoire) : même place
+   que l'interrupteur, largeur ajustée au contenu. */
+.switchrow>.sctl{margin-left:auto;order:2;width:auto;max-width:62%}
 
 /* --- Ligne de réglage : hauteur constante, contrôle à droite --- */
 .switchrow{position:relative;display:flex;align-items:center;gap:10px;min-height:34px;padding:6px 0;
@@ -801,11 +814,6 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
    compacts, pour une présentation homogène et sans surcharge visuelle. */
 .io-input{flex:1;min-width:0;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font:inherit;font-size:13px}
 
-/* Toggles de la sous-section « Paramètres » du mode agent : chacun dans sa
-   propre carte bordée et arrondie (comme les serveurs MCP), plus lisible. */
-#param-block .switchrow{border:1px solid var(--border);border-radius:8px;padding:9px 11px;background:var(--bg)}
-#param-block .switchrow+.switchrow{margin-top:8px}
-
 /* Modale MCP (ajout/édition) : les champs des groupes stdio/http n'avaient aucun
    espacement vertical (le conteneur n'est pas un flex à gap) → ils se touchaient.
    On aligne leur rythme sur celui du reste du formulaire (.mform). */
@@ -899,7 +907,7 @@ button,.addbtn,.mem-search{border-radius:10px}
 .pe-inpbtn button{border-radius:0 10px 10px 0}
 .input-btn .ctl{border-radius:10px 0 0 10px}
 .input-btn .btn-in{border-radius:0 10px 10px 0}
-.preset,.gated-block,.lc-mode{border-radius:12px}
+.preset,.lc-mode{border-radius:12px}
 /* Les presets restent des cartes (fond + bordure) : à plat, sans fond ni
    cadre, la liste ne se lisait plus comme des lignes distinctes. L'actif se
    signale par sa bordure — un simple voile d'accent (7 % de blanc sur fond
@@ -971,64 +979,77 @@ button:hover{border-color:var(--dim);color:var(--text)}
   </details>
   <details><summary><span class="stitle">Mode agent</span><span id="agent-badge" class="sbadge"></span></summary>
     <div class="slist"><label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">⚠ active l'<b>accès machine</b> (shell complet via <b>bash</b> sur le serveur) — l'IA peut inspecter, lancer des scripts, écrire/lire/éditer des fichiers (timeout 30s, max 300s). Mémoire et accès internet ci-dessous ne fonctionnent que si le mode agent est activé.</span></span></label></div>
-    <!-- Mémoire / Accès internet / Paramètres : sous-réglages du mode agent, en cartes. Grisés/inertes quand l'agent est off (voir setAgentGate). -->
-    <div id="mem-block" class="gated-block">
+    <!-- Sous-réglages du mode agent. MÊME gabarit que « Machine » / « Apparence » :
+         étiquette de groupe nue, puis UNE carte de lignes (.slist). Le groupe
+         entier est grisé/inerte quand l'agent est off (voir setAgentGate). -->
+    <div id="mem-block" class="gated-group">
       <div class="subhead">Mémoire<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span id="mem-mode-desc" class="tip"></span></span></div>
-      <label class="switchrow"><span>mode</span>
-        <select id="mem-mode" onchange="setMemMode()" class="sctl">
-          <option value="always">auto (proactive)</option>
-          <option value="ondemand">sur demande</option>
-          <option value="off">désactivée</option>
-        </select>
-      </label>
-      <div id="mem-pages-bar" class="pages-bar" onclick="toggleMemPages()">
-        <span class="pages-caret">▸</span>
-        <span class="pages-title">Pages <span id="mem-count" class="mem-count"></span></span>
-        <button class="addbtn" onclick="event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button>
-      </div>
-      <div id="mem-pages-body" hidden>
-        <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="display:none">
-        <div id="mem-list" class="mem-list muted" style="font-size:12px"></div>
+      <div class="slist">
+        <label class="switchrow"><span>mode</span>
+          <select id="mem-mode" onchange="setMemMode()" class="sctl">
+            <option value="always">auto (proactive)</option>
+            <option value="ondemand">sur demande</option>
+            <option value="off">désactivée</option>
+          </select>
+        </label>
+        <div id="mem-pages-bar" class="pages-bar" onclick="toggleMemPages()">
+          <span class="pages-caret">▸</span>
+          <span class="pages-title">Pages <span id="mem-count" class="mem-count"></span></span>
+          <button class="addbtn" onclick="event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button>
+        </div>
+        <div id="mem-pages-body" class="rowbody" hidden>
+          <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="display:none">
+          <div id="mem-list" class="mem-list muted" style="font-size:12px"></div>
+        </div>
       </div>
     </div>
-    <div id="net-block" class="gated-block">
+    <div id="net-block" class="gated-group">
       <div class="subhead">Accès internet<span id="internet-badge" class="sbadge"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Ajoute les outils <b>web_search / web_open / web_read / web_grep</b>. Le moteur <b>intégré</b> ne demande aucune installation. Le moteur <b>Crawl4AI</b> exige un serveur que tu héberges toi-même (ex. <code>docker run -d -p 11235:11235 --shm-size=1g unclecode/crawl4ai:latest</code>) mais exécute le JavaScript des pages. Actifs seulement si le <b>mode agent</b> est actif.</span></span></div>
-      <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA</label>
-      <!-- Moteur web : « go » = intégré au binaire (rien à installer, pas de rendu
-           JavaScript) · « crawl4ai » = serveur externe avec Chromium headless. -->
-      <div class="row" style="margin-top:6px">
-        <select id="web-engine" class="sctl" onchange="saveWebEngine()">
-          <option value="go">Moteur Intégré</option>
-          <option value="crawl4ai">Crawl4AI</option>
-        </select>
-      </div>
-      <!-- Réglages propres à Crawl4AI : masqués avec le moteur intégré.
-           URL et clé s'enregistrent en quittant le champ (onchange) : deux boutons
-           « enregistrer » côte à côte n'apportaient rien et brouillaient la carte. -->
-      <div id="crawl-fields">
-        <div class="row" style="margin-top:6px">
-          <input id="crawl-url" type="text" placeholder="http://localhost:11235" class="sctl" onchange="saveCrawlUrl()">
+      <div class="slist">
+        <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> donner internet à l'IA</label>
+        <!-- Moteur web : « go » = intégré au binaire (rien à installer, pas de rendu
+             JavaScript) · « crawl4ai » = serveur externe avec Chromium headless.
+             Réglages propres à Crawl4AI masqués avec le moteur intégré ; l'URL et
+             la clé s'enregistrent en quittant le champ (onchange). -->
+        <div class="rowbody">
+          <div class="row" style="margin:0">
+            <select id="web-engine" class="sctl" onchange="saveWebEngine()">
+              <option value="go">Moteur Intégré</option>
+              <option value="crawl4ai">Crawl4AI</option>
+            </select>
+          </div>
+          <div id="crawl-fields">
+            <div class="row">
+              <input id="crawl-url" type="text" placeholder="http://localhost:11235" class="sctl" onchange="saveCrawlUrl()">
+            </div>
+            <!-- Clé d'accès du serveur Crawl4AI (facultative) : envoyée en
+                 « Authorization: Bearer … ». Jamais relue par l'API, on n'affiche
+                 qu'un indice sur les 4 derniers caractères. -->
+            <div class="row">
+              <input id="crawl-key" type="password" autocomplete="off" placeholder="clé API (si le serveur en exige une)" class="sctl" onchange="saveCrawlKey()">
+              <button id="crawl-key-clear" onclick="clearCrawlKey()" style="display:none">retirer</button>
+            </div>
+            <div class="muted" style="font-size:11px;margin-top:4px">enregistré automatiquement en quittant le champ</div>
+            <div id="crawl-key-state" class="muted" style="font-size:11px;margin-top:3px"></div>
+          </div>
+          <div id="internet-status" class="muted" style="font-size:11px;margin-top:4px"></div>
         </div>
-        <!-- Clé d'accès du serveur Crawl4AI (facultative) : envoyée en
-             « Authorization: Bearer … ». Jamais relue par l'API, on n'affiche
-             qu'un indice sur les 4 derniers caractères. -->
-        <div class="row" style="margin-top:6px">
-          <input id="crawl-key" type="password" autocomplete="off" placeholder="clé API (si le serveur en exige une)" class="sctl" onchange="saveCrawlKey()">
-          <button id="crawl-key-clear" onclick="clearCrawlKey()" style="display:none">retirer</button>
-        </div>
-        <div class="muted" style="font-size:11px;margin-top:4px">enregistré automatiquement en quittant le champ</div>
-        <div id="crawl-key-state" class="muted" style="font-size:11px;margin-top:3px"></div>
       </div>
-      <div id="internet-status" class="muted" style="font-size:11px;margin-top:4px"></div>
     </div>
-    <div id="mcp-block" class="gated-block">
+    <div id="mcp-block" class="gated-group">
       <div class="subhead">Serveurs MCP<span id="mcp-badge" class="sbadge"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Connecte des <b>serveurs MCP</b> (Model Context Protocol) pour donner de nouveaux outils à l'IA : accès fichiers, bases de données, APIs métier… <b>stdio</b> = programme lancé localement (npx/uvx/binaire) · <b>http</b> = serveur distant. ⚠ un serveur stdio exécute du code sur cette machine, au même titre que le shell.</span></span></div>
-      <div id="mcp-list" class="mcp-list"></div>
-      <button class="addbtn" style="margin-top:6px" onclick="openMcp('')">+ ajouter un serveur</button>
+      <div class="slist">
+        <div class="rowbody">
+          <div id="mcp-list" class="mcp-list"></div>
+          <button class="addbtn" style="margin-top:6px" onclick="openMcp('')">+ ajouter un serveur</button>
+        </div>
+      </div>
     </div>
-    <div id="param-block" class="gated-block">
+    <div id="param-block" class="gated-group">
       <div class="subhead">Paramètres</div>
-      <label class="switchrow" style="margin-top:8px"><span class="switch"><input type="checkbox" id="compact-toggle" onchange="toggleCompact()"><span class="slider"></span></span> compactage automatique du contexte<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">activé par défaut : quand la conversation approche de la limite de contexte, les vieux tours sont résumés automatiquement (façon Hermes) au lieu de t'imposer un « vider ». Discussions quasi illimitées sans perdre le fil.</span></span></label>
+      <div class="slist">
+        <label class="switchrow"><span class="switch"><input type="checkbox" id="compact-toggle" onchange="toggleCompact()"><span class="slider"></span></span> compactage automatique du contexte<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">activé par défaut : quand la conversation approche de la limite de contexte, les vieux tours sont résumés automatiquement (façon Hermes) au lieu de t'imposer un « vider ». Discussions quasi illimitées sans perdre le fil.</span></span></label>
+      </div>
     </div>
   </details>
   <details><summary><span class="stitle">Apparence</span></summary>
@@ -1519,7 +1540,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805201345"></script>
+<script src="/e2e.js?v=20260805201937"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
