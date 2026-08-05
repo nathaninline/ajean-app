@@ -759,15 +759,23 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 .pe-adv.pe-raw-plain>summary{display:none}
 .pe-adv.pe-raw-plain .pe-adv-body{padding:0}
 /* Pied de modale. */
-.pe-foot{padding:13px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.pe-foot .foot-r{display:flex;gap:8px}
-.pe-btn{margin:0;padding:9px 18px;border-radius:9px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--text)}
+.pe-foot{padding:9px 12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;
+  align-items:center;gap:8px;flex-wrap:nowrap}
+.pe-foot .foot-l{display:flex;align-items:center;gap:8px;min-width:0}
+.pe-foot .foot-r{display:flex;gap:8px;flex:none}
+.pe-btn{margin:0;padding:7px 15px;font-size:12.5px;border-radius:8px;font-weight:600;cursor:pointer;
+  border:1px solid var(--border);background:var(--panel);color:var(--text);white-space:nowrap}
 .pe-btn:hover{border-color:var(--dim)}
 .pe-btn.primary{border-color:var(--accent);background:var(--accent);color:var(--bg)}
 .pe-btn.primary:hover{filter:brightness(1.08)}
-.pe-btn.ghost-danger{border-color:transparent;background:transparent;color:var(--err);padding:9px 10px}
-.pe-btn.ghost-danger:hover{background:var(--danger-bg)}
-.pe-delmodel{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);cursor:pointer}
+/* Suppression : icône seule, en retrait. Un bouton plein « supprimer » pesait
+   autant que « enregistrer » alors que c'est l'action rare — et à trois boutons
+   larges, le pied passait à deux lignes sur téléphone. */
+.pe-del{flex:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;
+  margin:0;padding:0;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--err);cursor:pointer}
+.pe-del svg{width:15px;height:15px;display:block}
+.pe-del:hover{background:var(--danger-bg);border-color:color-mix(in srgb,var(--err) 40%,transparent)}
+.pe-delmodel{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);cursor:pointer;white-space:nowrap}
 .pe-delmodel input{margin:0}
 /* Éditeur de preset/mémoire — mise en forme propre du modale */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;align-items:center;justify-content:center;padding:20px}
@@ -1595,10 +1603,14 @@ button:hover{border-color:var(--dim);color:var(--text)}
         </div>
       </div>
     </div>
+    <!-- Pied compact, sur UNE ligne : la suppression est une icône (action rare et
+         destructrice, elle n'a pas à peser autant que « enregistrer »), et sa case
+         « supprimer aussi le .gguf » se réduit à l'extension, le libellé complet
+         restant en infobulle. -->
     <div class="pe-foot">
       <div class="foot-l">
-        <button id="m-del" class="pe-btn ghost-danger" onclick="delItem()">supprimer</button>
-        <label id="m-del-model-wrap" class="pe-delmodel" style="display:none"><input type="checkbox" id="m-del-model"> + le modèle .gguf</label>
+        <button id="m-del" class="pe-del" onclick="delItem()" title="supprimer" aria-label="supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+        <label id="m-del-model-wrap" class="pe-delmodel" style="display:none" title="supprimer aussi le fichier .gguf du modèle"><input type="checkbox" id="m-del-model"> + .gguf</label>
       </div>
       <div class="foot-r">
         <button class="pe-btn" onclick="closeModal()">annuler</button>
@@ -1621,7 +1633,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805211033"></script>
+<script src="/e2e.js?v=20260805211317"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -2456,7 +2468,7 @@ async function openItem(kind, key){
   document.getElementById('modal-title').textContent = key ? (K.label + ' · ' + key) : ('Nouveau ' + K.label.toLowerCase());
   document.getElementById('m-name').value = key || '';
   document.getElementById('m-content').value = '';
-  document.getElementById('m-del').style.display = key ? 'inline-block' : 'none';
+  document.getElementById('m-del').style.display = key ? 'inline-flex' : 'none';
   // Model picker is preset-only: it edits the MODEL= line of config.env.
   const modelRow = document.getElementById('m-model-row');
   const settingsRow = document.getElementById('m-settings-row');
