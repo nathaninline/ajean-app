@@ -135,7 +135,6 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .statuspill.loading .dot{animation:pulse 1s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 .statuspill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
-.statuspill .port{opacity:.6;font-weight:400}
 /* en-tête + bouton d'ajout de skill (toujours visible) */
 .skillshead{display:flex;align-items:center;justify-content:space-between;margin:12px 0 5px}
 .skillshead>span{font-size:11.5px;color:var(--dim);font-weight:600}
@@ -1516,7 +1515,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805200455"></script>
+<script src="/e2e.js?v=20260805201121"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1841,7 +1840,7 @@ async function loadStatus(){
   else if(s.load_error){ cls='err'; txt='modèle incompatible'; }
   else if(s.active){ cls='loading'; txt='chargement…'; }
   el.className='statuspill '+cls;
-  el.innerHTML='<span class="dot"></span>'+txt+' <span class="port">:'+s.port+'</span>';
+  el.innerHTML='<span class="dot"></span>'+txt;
   MODEL_READY = !!(s.active && s.health);
   if(s.ctx){ CTX_MAX=s.ctx; updateCtxMeter(); }
   if(s.version){
