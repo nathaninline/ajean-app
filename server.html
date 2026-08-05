@@ -782,7 +782,7 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 @media (prefers-reduced-motion:reduce){
   .modal-ov,.ask-overlay,.modal-card,.ask-box{transition:none}
 }
-.modal-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 16px 50px rgba(0,0,0,.18)}
+.modal-card{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:12px;width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 16px 50px rgba(0,0,0,.18)}
 .modal-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .modal-head strong{font-size:14px}
 /* Croix de fermeture : un CARRÉ, pas un rectangle. Avec un padding asymétrique
@@ -793,12 +793,22 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 /* Modale ouverte mais pas encore remplie : on affiche le voile de chargement À LA
    PLACE du formulaire et du pied. Estomper le formulaire ne suffisait pas — on
    voyait quand même les champs s'écrire un par un derrière le voile. */
-.modal-load{display:none;align-items:center;justify-content:center;padding:56px 0;flex:1}
+/* Fond TRANSPARENT : le formulaire est déjà rendu invisible par `visibility`,
+   un fond opaque ne servirait qu'à masquer aussi le titre de la modale. */
+.modal-load{display:none;position:absolute;inset:0;z-index:2;align-items:center;justify-content:center;
+  pointer-events:none}
 .modal-ov.loading .modal-load{display:flex}
+/* visibility (et non display) : le formulaire garde sa place, donc la carte a
+   déjà sa taille finale — la révéler ne provoque plus d'à-coup de hauteur. */
 .modal-ov.loading .modal-body,
 .modal-ov.loading .pe-body,
 .modal-ov.loading .pe-foot,
-.modal-ov.loading .modal-foot{display:none}
+.modal-ov.loading .modal-foot{visibility:hidden}
+/* Rond qui tourne — les trois points sont la signature du CHAT, pas des modales. */
+.spinner{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
+  border-top-color:var(--dim);animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:2s}}
 .modal-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .foot-l{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .foot-r{display:flex;gap:8px}
@@ -1401,9 +1411,10 @@ button:hover{border-color:var(--dim);color:var(--text)}
       <button class="modal-x" onclick="closeModal()" aria-label="Fermer">×</button>
     </div>
     <!-- Chargement : la modale s'ouvre tout de suite, mais son contenu n'arrive
-         qu'après (jusqu'à 3 requêtes en accès distant). On montre ce voile à la
-         place du formulaire — on ne voit donc jamais les champs se remplir. -->
-    <div class="modal-load"><span class="cl-dots"><span></span><span></span><span></span></span></div>
+         qu'après (jusqu'à 3 requêtes en accès distant). Ce voile se pose PAR-DESSUS
+         le formulaire, qui reste en place (invisible) : la carte garde sa taille
+         finale, donc pas de saut au moment où le contenu apparaît. -->
+    <div class="modal-load"><span class="spinner"></span></div>
     <div class="pe-body">
       <div class="pe-group">
         <div class="pe-gh">Nom</div>
@@ -1610,7 +1621,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805210644"></script>
+<script src="/e2e.js?v=20260805211033"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
