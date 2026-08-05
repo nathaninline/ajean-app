@@ -578,11 +578,16 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
   #lc-chip{height:32px;font-size:11px;left:calc(46px + env(safe-area-inset-left));top:calc(6px + env(safe-area-inset-top))}
 }
 /* --- Backend llama.cpp (2 modes : rapide / optimisée) --------------------- */
-.lc-head{font-size:12px;line-height:1.5;margin-bottom:10px}
-.lc-modes{display:flex;flex-direction:column;gap:8px}
+.lc-head{font-size:12px;line-height:1.5}
+/* Les trois modes sont des LIGNES de la carte d'installation (elles étaient des
+   cartes dans une carte) : pas de cadre propre, un filet entre elles, comme
+   n'importe quelle ligne de réglage du menu. */
+.lc-modes{display:flex;flex-direction:column}
 .lc-modes.busy{opacity:.5;pointer-events:none}
-.lc-mode{border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color .12s,background .12s}
-.lc-mode:hover{border-color:var(--dim)}
+.slist>.lc-modes:not(:first-child){border-top:1px solid var(--border)}
+.lc-mode{padding:10px;cursor:pointer;transition:background .12s}
+.lc-mode:not(:last-child){border-bottom:1px solid var(--border)}
+.lc-mode:hover{background:var(--accent-bg)}
 .lc-mode-t{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
 /* « conseillé » : pilule PLEINE (texte inversé). En contour, elle héritait du
    gris atténué du thème monochrome et devenait illisible en mode sombre. */
@@ -780,7 +785,7 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 .btn-save{border-color:var(--accent);color:var(--accent);margin:0}
 .del-model{align-items:center;gap:5px;font-size:11px;color:var(--dim)}
 .del-model input{margin:0}
-.lc-logbar{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-size:12px;color:var(--dim);font-weight:600;padding:6px 0;margin-top:4px}
+.lc-logbar{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-size:12px;color:var(--dim);font-weight:600;padding:6px 0;margin-top:2px}
 .lc-logbar #lc-log-caret{font-size:9px;transition:transform .12s;display:inline-block}
 .lc-logbar.open #lc-log-caret{transform:rotate(90deg)}
 #lc-log{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:10px;line-height:1.45;max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:0}
@@ -907,7 +912,7 @@ button,.addbtn,.mem-search{border-radius:10px}
 .pe-inpbtn button{border-radius:0 10px 10px 0}
 .input-btn .ctl{border-radius:10px 0 0 10px}
 .input-btn .btn-in{border-radius:0 10px 10px 0}
-.preset,.lc-mode{border-radius:12px}
+.preset{border-radius:12px}
 /* Les presets restent des cartes (fond + bordure) : à plat, sans fond ni
    cadre, la liste ne se lisait plus comme des lignes distinctes. L'actif se
    signale par sa bordure — un simple voile d'accent (7 % de blanc sur fond
@@ -975,7 +980,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
     <div id="cfg" class="slist">…</div>
   </details>
   <details><summary><span class="stitle">Presets</span><button class="preset-add" onclick="event.preventDefault();event.stopPropagation();openPreset('')" title="ajouter">+</button></summary>
-    <div id="presets"></div>
+    <div class="slist"><div class="rowbody"><div id="presets"></div></div></div>
   </details>
   <details><summary><span class="stitle">Mode agent</span><span id="agent-badge" class="sbadge"></span></summary>
     <div class="slist"><label class="switchrow"><span class="switch"><input type="checkbox" id="agent-toggle" onchange="toggleAgent()"><span class="slider"></span></span> activer le mode agent<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">⚠ active l'<b>accès machine</b> (shell complet via <b>bash</b> sur le serveur) — l'IA peut inspecter, lancer des scripts, écrire/lire/éditer des fichiers (timeout 30s, max 300s). Mémoire et accès internet ci-dessous ne fonctionnent que si le mode agent est activé.</span></span></label></div>
@@ -1068,73 +1073,82 @@ button:hover{border-color:var(--dim);color:var(--text)}
     </div>
   </details>
   <details><summary><span class="stitle">System prompt</span></summary>
-    <textarea id="sysprompt" placeholder="(optionnel) ex: tu es un assistant concis en français" oninput="saveSys()" class="sctl"></textarea>
+    <div class="slist"><div class="rowbody">
+      <textarea id="sysprompt" placeholder="(optionnel) ex: tu es un assistant concis en français" oninput="saveSys()" class="sctl"></textarea>
+    </div></div>
   </details>
   <details><summary><span class="stitle">Accès OpenAI</span></summary>
     <div class="subhead">Endpoint compatible OpenAI<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Branchez n'importe quel client compatible OpenAI (OpenCode, Continue, Cursor…) sur ces adresses. Si une clé est définie, le client doit envoyer <code>Authorization: Bearer &lt;clé&gt;</code>.</span></span></div>
-    <div class="muted" style="font-size:11px;margin:0 0 10px">Modèle : <code>jean</code></div>
-
-    <div class="slist pad">
-    <div class="io-cap">Adresse locale (réseau)</div>
-    <div class="row">
-      <input id="oai-url" readonly class="io-input">
-      <button onclick="copyText(document.getElementById('oai-url').value,'adresse copiée')" title="copier">⧉</button>
-    </div>
-
-    </div>
-    <div class="slist"><label class="switchrow"><span class="switch"><input type="checkbox" id="oai-public-toggle" onchange="toggleOAIPublic()"><span class="slider"></span></span> exposer en public (ajean.link)<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Rend votre IA joignable depuis <b>n'importe où</b> via <code>https://&lt;machine&gt;.oai.ajean.link/v1</code> (pour brancher un SaaS). Le trafic est chiffré <b>de bout en bout</b> jusqu'à ce serveur — le relais ajean.link ne voit rien. Nécessite l'accès distant actif.</span></span></label>
-    </div>
-    <div id="oai-public-wrap" class="slist pad" style="display:none">
-      <div class="io-cap">Adresse publique — chiffrée de bout en bout, accessible partout</div>
-      <div class="row">
-        <input id="oai-public-url" readonly class="io-input">
-        <button onclick="copyText(document.getElementById('oai-public-url').value,'adresse publique copiée')" title="copier">⧉</button>
+    <!-- UNE carte pour tout l'endpoint : adresse locale, bascule « public » et
+         adresse publique sont un seul sujet — trois cartes accolées donnaient
+         trois îlots pour un même réglage. -->
+    <div class="slist">
+      <div class="rowbody">
+        <div class="muted" style="margin:0 0 6px">Adresse locale (réseau) — modèle <code>jean</code></div>
+        <div class="row" style="margin:0">
+          <input id="oai-url" readonly class="io-input">
+          <button onclick="copyText(document.getElementById('oai-url').value,'adresse copiée')" title="copier">⧉</button>
+        </div>
+      </div>
+      <label class="switchrow"><span class="switch"><input type="checkbox" id="oai-public-toggle" onchange="toggleOAIPublic()"><span class="slider"></span></span> exposer en public (ajean.link)<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Rend votre IA joignable depuis <b>n'importe où</b> via <code>https://&lt;machine&gt;.oai.ajean.link/v1</code> (pour brancher un SaaS). Le trafic est chiffré <b>de bout en bout</b> jusqu'à ce serveur — le relais ajean.link ne voit rien. Nécessite l'accès distant actif.</span></span></label>
+      <div id="oai-public-wrap" class="rowbody" style="display:none">
+        <div class="muted" style="margin:0 0 6px">Adresse publique — chiffrée de bout en bout, accessible partout</div>
+        <div class="row" style="margin:0">
+          <input id="oai-public-url" readonly class="io-input">
+          <button onclick="copyText(document.getElementById('oai-public-url').value,'adresse publique copiée')" title="copier">⧉</button>
+        </div>
       </div>
     </div>
-
     <div class="subhead">Clé API<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Protège l'endpoint des complétions (llama-server). Indispensable avant d'exposer le serveur sur internet. Modifier la clé <b>redémarre</b> le service.</span></span></div>
-    <div class="slist pad">
-    <div class="row">
-      <input id="oai-key" readonly class="io-input">
-      <button id="oai-key-eye" onclick="toggleKeyReveal()" title="afficher / masquer">afficher</button>
-      <button onclick="copyApiKey()" title="copier la clé">⧉</button>
-    </div>
-    <div class="row" style="margin-top:6px">
-      <button onclick="apiKeyAction('generate')">générer</button>
-      <button onclick="apiKeySet()">définir…</button>
-      <button onclick="apiKeyAction('clear')">retirer</button>
-    </div>
-    </div>
+    <div class="slist"><div class="rowbody">
+      <div class="row" style="margin:0">
+        <input id="oai-key" readonly class="io-input">
+        <button id="oai-key-eye" onclick="toggleKeyReveal()" title="afficher / masquer">afficher</button>
+        <button onclick="copyApiKey()" title="copier la clé">⧉</button>
+      </div>
+      <div class="row" style="margin-bottom:0">
+        <button onclick="apiKeyAction('generate')">générer</button>
+        <button onclick="apiKeySet()">définir…</button>
+        <button onclick="apiKeyAction('clear')">retirer</button>
+      </div>
+    </div></div>
   </details>
   <details id="remote-details"><summary><span class="stitle">Accès distant</span><span id="remote-badge" class="sbadge"></span></summary>
     <div class="subhead">ajean.link<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Accédez à ce serveur Jean depuis <b>n'importe où</b>, sans ouvrir de port, à travers le relais <b>ajean.link</b>. Le trafic est chiffré de <b>bout en bout</b> : le relais ne voit rien. Abonnement 4,80 €/mois.</span></span></div>
     <!-- Non connecté : un seul bouton, tout se passe dans la popup (compte + paiement). -->
-    <div id="remote-off" class="slist pad">
-      <p class="muted" style="font-size:12px;line-height:1.5;margin:6px 0 10px">Ouvrez l'accès distant à ce serveur en quelques clics, sans terminal.</p>
+    <div id="remote-off" class="slist"><div class="rowbody">
+      <p class="muted" style="margin:0 0 8px">Ouvrez l'accès distant à ce serveur en quelques clics, sans terminal.</p>
       <button onclick="remoteConnect()" style="border-color:var(--accent);color:var(--accent)">Connecter à ajean.link</button>
-    </div>
-    <!-- Connecté : URL publique + appairage + déconnexion. -->
+    </div></div>
+    <!-- Connecté : URL publique + appairage + déconnexion. Le bouton « démarrer
+         le tunnel » vit DANS la carte de l'adresse : c'est l'action de cette
+         ligne, il flottait auparavant entre deux cartes. -->
     <div id="remote-on" style="display:none">
-      <div class="slist pad">
-      <div class="io-cap">Votre adresse d'accès distant</div>
-      <div class="row">
-        <input id="remote-url" readonly class="io-input">
-        <button onclick="copyText(document.getElementById('remote-url').value,'adresse copiée')" title="copier">⧉</button>
-        <button onclick="window.open(document.getElementById('remote-url').value,'_blank')" title="ouvrir">↗</button>
-      </div>
-      <div id="remote-status" class="muted"></div>
-      </div>
-      <button id="remote-start" onclick="remoteStart()" style="display:none;margin-top:8px;border-color:var(--accent);color:var(--accent)">démarrer le tunnel</button>
-      <div class="subhead" style="margin-top:12px">Première connexion<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">À votre première ouverture du portail distant, confirmez l'<b>empreinte</b> et saisissez le <b>code d'appairage</b> : cela verrouille la boîte noire sur CE serveur (anti-interception). Une seule fois par appareil.</span></span></div>
-      <div class="slist pad">
-        <div class="row"><button onclick="remotePairCode()">Afficher l'empreinte et le code d'appairage</button></div>
-        <div id="remote-pair" class="muted" style="display:none"></div>
-        <div class="row"><button onclick="remoteDisconnect()" class="btn-danger-o">déconnecter l'accès distant</button></div>
-      </div>
+      <div class="slist"><div class="rowbody">
+        <div class="muted" style="margin:0 0 6px">Votre adresse d'accès distant</div>
+        <div class="row" style="margin:0">
+          <input id="remote-url" readonly class="io-input">
+          <button onclick="copyText(document.getElementById('remote-url').value,'adresse copiée')" title="copier">⧉</button>
+          <button onclick="window.open(document.getElementById('remote-url').value,'_blank')" title="ouvrir">↗</button>
+        </div>
+        <div id="remote-status" class="muted" style="margin-top:6px"></div>
+        <div class="row" style="margin-bottom:0"><button id="remote-start" onclick="remoteStart()" style="display:none;border-color:var(--accent);color:var(--accent)">démarrer le tunnel</button></div>
+      </div></div>
+      <div class="subhead">Première connexion<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">À votre première ouverture du portail distant, confirmez l'<b>empreinte</b> et saisissez le <b>code d'appairage</b> : cela verrouille la boîte noire sur CE serveur (anti-interception). Une seule fois par appareil.</span></span></div>
+      <div class="slist"><div class="rowbody">
+        <div class="row" style="margin:0"><button onclick="remotePairCode()">Afficher l'empreinte et le code d'appairage</button></div>
+        <div id="remote-pair" class="muted" style="display:none;margin-top:6px"></div>
+        <div class="row" style="margin-bottom:0"><button onclick="remoteDisconnect()" class="btn-danger-o">déconnecter l'accès distant</button></div>
+      </div></div>
     </div>
   </details>
   <details id="lc-details"><summary><span class="stitle">Moteur</span></summary>
-    <div id="lc-status" class="lc-head muted">…</div>
+    <div class="subhead">Installation</div>
+    <!-- Une seule carte : état, choix du mode et journal d'installation sont le
+         même sujet. Les trois modes sont des LIGNES de cette carte (elles
+         étaient des cartes dans une carte). -->
+    <div class="slist">
+    <div class="rowbody"><div id="lc-status" class="lc-head muted">…</div></div>
     <div class="lc-modes">
       <div class="lc-mode" id="lc-mode-fast" onclick="lcPick('fast')">
         <div class="lc-mode-t">llama.cpp précompilé <span class="lc-reco">conseillé</span></div>
@@ -1152,33 +1166,38 @@ button:hover{border-color:var(--dim);color:var(--text)}
         <div class="lc-mode-state" id="lc-custom-state"></div>
       </div>
     </div>
-    <div id="lc-job" style="display:none;margin-top:10px">
+    <div id="lc-job" class="rowbody" style="display:none">
       <div id="lc-job-phase" style="font-size:12px;display:flex;align-items:center;gap:6px"></div>
       <div class="lc-logbar" onclick="lcToggleLog()"><span id="lc-log-caret">▸</span> détails</div>
       <pre id="lc-log" hidden></pre>
+    </div>
     </div>
     <!-- Ces trois boutons pilotent le service qui fait tourner llama-server :
          leur place est ici, avec le moteur, et pas dans une section « Service »
          à part qui ne contenait qu'eux. -->
     <div class="subhead">Service du moteur<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Démarre, redémarre ou arrête <b>llama-server</b> — le processus qui charge le modèle et répond. Un redémarrage recharge le modèle du preset actif (quelques secondes à quelques minutes selon sa taille).</span></span></div>
-    <div class="slist pad">
-      <div class="row">
+    <div class="slist"><div class="rowbody">
+      <div class="row" style="margin:0">
         <button onclick="act('start')">démarrer</button>
         <button onclick="act('restart')">redémarrer</button>
         <button onclick="act('stop')">arrêter</button>
       </div>
-    </div>
+    </div></div>
   </details>
   <details id="upd-details"><summary><span class="stitle">Actions</span></summary>
-    <div class="slist pad">
-      <div class="row"><button id="upd-check" onclick="checkUpdate()">↥ Vérifier les mises à jour</button></div>
-      <div id="upd-msg" class="muted"></div>
-      <div class="row">
+    <div class="subhead">Mise à jour</div>
+    <div class="slist"><div class="rowbody">
+      <div class="row" style="margin:0"><button id="upd-check" onclick="checkUpdate()">↥ Vérifier les mises à jour</button></div>
+      <div id="upd-msg" class="muted" style="margin-top:6px"></div>
+    </div></div>
+    <div class="subhead">Cette session</div>
+    <div class="slist"><div class="rowbody">
+      <div class="row" style="margin:0">
         <button onclick="loadAll()">↻ refresh</button>
         <button onclick="resetChat()">⌫ clear chat</button>
         <button id="btn-bench" onclick="runBenchUI()">bench</button>
       </div>
-    </div>
+    </div></div>
   </details>
 </div>
 <div class="main" style="position:relative">
@@ -1540,7 +1559,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805201937"></script>
+<script src="/e2e.js?v=20260805202351"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
