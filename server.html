@@ -775,8 +775,21 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
   margin:0;padding:0;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--err);cursor:pointer}
 .pe-del svg{width:15px;height:15px;display:block}
 .pe-del:hover{background:var(--danger-bg);border-color:color-mix(in srgb,var(--err) 40%,transparent)}
-.pe-delmodel{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);cursor:pointer;white-space:nowrap}
-.pe-delmodel input{margin:0}
+/* Option de la suppression : une PASTILLE à cocher, pas une case système suivie
+   d'un bout de texte — la case native jurait avec le reste du pied et son
+   libellé tronqué (« + .gguf ») ne voulait rien dire. Éteinte : contour discret.
+   Allumée : elle passe au rouge, comme la corbeille qu'elle complète. */
+.pe-delmodel{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  letter-spacing:.02em;color:var(--dim);cursor:pointer;white-space:nowrap;
+  padding:5px 11px;border:1px solid var(--border);border-radius:999px;background:var(--panel);
+  transition:color .12s,border-color .12s,background .12s}
+.pe-delmodel input{position:absolute;opacity:0;width:0;height:0}
+/* Le point tient lieu de case à cocher : creux au repos, plein une fois coché. */
+.pe-delmodel::before{content:"";width:6px;height:6px;border-radius:50%;flex:none;
+  border:1px solid currentColor;background:transparent}
+.pe-delmodel:hover{color:var(--text);border-color:var(--dim)}
+.pe-delmodel:has(input:checked){color:var(--err);border-color:color-mix(in srgb,var(--err) 45%,transparent);background:var(--danger-bg)}
+.pe-delmodel:has(input:checked)::before{background:currentColor}
 /* Éditeur de preset/mémoire — mise en forme propre du modale */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;align-items:center;justify-content:center;padding:20px}
 /* Ouverture/fermeture animées. L'état par défaut est l'état FERMÉ ; la classe
@@ -1610,7 +1623,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
     <div class="pe-foot">
       <div class="foot-l">
         <button id="m-del" class="pe-del" onclick="delItem()" title="supprimer" aria-label="supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
-        <label id="m-del-model-wrap" class="pe-delmodel" style="display:none" title="supprimer aussi le fichier .gguf du modèle"><input type="checkbox" id="m-del-model"> + .gguf</label>
+        <label id="m-del-model-wrap" class="pe-delmodel" style="display:none" title="supprimer aussi le fichier .gguf du modèle"><input type="checkbox" id="m-del-model"><span>avec le .gguf</span></label>
       </div>
       <div class="foot-r">
         <button class="pe-btn" onclick="closeModal()">annuler</button>
@@ -1633,7 +1646,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805211317"></script>
+<script src="/e2e.js?v=20260805211516"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
