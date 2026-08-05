@@ -214,10 +214,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
    une pile de petites cartes bordées faisait « trop de carrés » là où le reste
    du menu aligne des lignes séparées par un filet. L'actif se signale par un
    voile et un liseré à gauche, plus par un cadre propre. */
-/* Retrait DROIT plus court que le gauche : à droite il n'y a qu'un bouton, et
-   un bouton a déjà son propre rembourrage — 10 px de plus le décentraient dans
-   l'angle de la carte. */
-.rowlist>.preset{border:0;border-radius:0;margin:0;padding:6px 6px 6px 10px;background:transparent}
+.rowlist>.preset{border:0;border-radius:0;margin:0;padding:6px 10px;background:transparent}
 .rowlist>.preset:not(:last-child){border-bottom:1px solid var(--border)}
 .rowlist>.preset:hover{background:var(--accent-bg)}
 .rowlist>.preset.active{background:var(--accent-bg);color:var(--text);font-weight:600;
@@ -1580,7 +1577,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805203132"></script>
+<script src="/e2e.js?v=20260805203434"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
