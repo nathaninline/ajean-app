@@ -342,6 +342,15 @@ button:disabled{opacity:.5;cursor:not-allowed}
    défiler. Un seul gabarit, repris des listes de la modale de preset.
    Hauteurs : en-tête de section 34 px, ligne de réglage 34 px. */
 .side{padding:10px 12px}
+/* ⚠️ Le raccourci `padding` ci-dessus écrase les esquives d'encoche posées plus
+   haut (règles tiroir). Quand la barre est un TIROIR (téléphone, ou mode
+   « barre en tiroir » sur ordinateur), elle est en position:fixed : le padding
+   du <body> ne la protège pas, il faut donc reposer les env() ici — sinon
+   « AJEAN » et la pastille d'état passent sous l'encoche en PWA iOS. */
+@media (max-width:720px){
+  .side{padding:calc(10px + env(safe-area-inset-top)) 12px calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
+}
+[data-hide-side="1"] .side{padding:calc(10px + env(safe-area-inset-top)) 12px calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
 .sidehead{margin-bottom:10px}
 
 /* --- En-tête de section --- */
@@ -1482,7 +1491,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805170730"></script>
+<script src="/e2e.js?v=20260805195210"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
