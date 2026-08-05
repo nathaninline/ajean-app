@@ -328,6 +328,19 @@ button:disabled{opacity:.5;cursor:not-allowed}
   align-items:center;justify-content:center;gap:12px;background:var(--bg);
   color:var(--dim);font-size:12px;letter-spacing:.04em;pointer-events:none}
 #chat-loading.show{display:flex}
+/* Accueil du fil vide. Posé en surimpression du chat (et non DANS le fil) pour ne
+   pas perturber le défilement ni le rendu du replay ; pointer-events:none pour
+   qu'il ne vole jamais un clic à la zone de saisie. Il vit sous le voile de
+   chargement (z-index plus bas) : jamais les deux visibles en même temps. */
+#chat-empty{position:absolute;inset:0 0 150px;z-index:3;display:none;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;pointer-events:none;
+  opacity:0;transition:opacity .35s ease}
+#chat-empty.show{display:flex;opacity:1}
+#ce-logo{display:inline-flex;align-items:center;color:var(--text)}
+#ce-logo svg{height:20px;width:auto;display:block;shape-rendering:crispEdges;fill:currentColor}
+#ce-logo .ce-word{display:inline-flex;color:var(--accent)}
+#ce-title{font-size:15px;color:var(--text);letter-spacing:.02em}
+#ce-sub{font-size:12px;color:var(--dim);letter-spacing:.03em}
 .cl-dots{display:inline-flex;gap:5px;align-items:center}
 .cl-dots span{width:7px;height:7px;border-radius:50%;background:var(--dim);animation:typingdot 1.2s infinite ease-in-out}
 .cl-dots span:nth-child(2){animation-delay:.16s}
@@ -1147,6 +1160,15 @@ button:hover{border-color:var(--dim);color:var(--text)}
   <!-- Voile de chargement du fil : sans lui, une connexion lente donne un chat
        VIDE indiscernable d'une conversation vide. Masqué au signal {caught_up}. -->
   <div id="chat-loading"><span class="cl-dots"><span></span><span></span><span></span></span><span id="chat-loading-text">chargement de la conversation…</span></div>
+  <!-- Accueil : affiché UNIQUEMENT quand le fil est réellement vide (et une fois
+       le replay terminé, sinon il clignoterait au chargement de chaque page).
+       Le logo est cloné depuis #brand au démarrage — une seule source de vérité
+       pour le dessin des lettres. -->
+  <div id="chat-empty" aria-hidden="true">
+    <div id="ce-logo"></div>
+    <div id="ce-title">Bon retour, Monsieur</div>
+    <div id="ce-sub">Par quoi commençons-nous ?</div>
+  </div>
   <button id="scrollbtn" onclick="jumpBottom()" title="aller en bas">↓</button>
   <div id="composer">
     <div id="ctxmeta">
@@ -1491,7 +1513,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805195210"></script>
+<script src="/e2e.js?v=20260805195638"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3320,6 +3342,38 @@ function setChatLoading(msg){
   document.getElementById('chat-loading-text').textContent=msg;
   el.classList.add('show');
 }
+// --- Accueil du fil vide ---------------------------------------------------
+// Le logo n'est pas dupliqué dans le HTML : on clone celui de la barre latérale
+// (#brand) en retirant ses id (un id ne peut exister qu'une fois) et le numéro
+// de version. Les couleurs sont reprises par les classes .ce-*.
+function fillEmptyLogo(){
+  const box=document.getElementById('ce-logo'), brand=document.getElementById('brand');
+  if(!box || !brand || box.childElementCount) return;
+  ['brand-a','brand-word'].forEach(id=>{
+    const src=brand.querySelector('#'+id); if(!src) return;
+    const el=src.cloneNode(true); el.removeAttribute('id');
+    if(id==='brand-word') el.classList.add('ce-word');
+    box.appendChild(el);
+  });
+}
+// Affiché seulement quand le fil ne contient AUCUNE bulle et que le replay est
+// terminé — sinon il apparaîtrait une fraction de seconde à chaque chargement,
+// juste avant que les messages rejoués n'arrivent.
+function syncChatEmpty(){
+  const box=document.getElementById('chat-empty'); if(!box) return;
+  fillEmptyLogo();
+  const empty = !REPLAYING && !chatEl().querySelector('.msg');
+  box.classList.toggle('show', empty);
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const c=chatEl(); if(!c) return;
+  // Le fil est peuplé par des dizaines de chemins différents (replay, direct,
+  // reset, effacement). On observe donc le DOM plutôt que d'appeler la synchro
+  // depuis chacun d'eux — le coût est nul, le callback est groupé et sort tout
+  // de suite pendant le replay.
+  new MutationObserver(()=>syncChatEmpty()).observe(c, {childList:true});
+  syncChatEmpty();
+});
 function restoreChat(){
   // On masque le chat le temps du replay pour ne pas voir défiler le haut puis
   // sauter en bas (effet de clignotement). Il est révélé, positionné en bas, au
@@ -3468,6 +3522,9 @@ function handleDelta(d){
     // sur les reconnexions, pour ne pas te ramener en bas si tu lisais plus haut).
     setChatLoading(null);
     if(REPLAYING){ REPLAYING=false; jumpBottom(); syncSendBtn(); const c=chatEl(); c.style.transition='opacity .15s'; c.style.opacity='1'; }
+    // Fil vide : aucune bulle n'a été rejouée, donc aucune mutation ne viendra
+    // déclencher la synchro — c'est ici qu'on décide d'afficher l'accueil.
+    syncChatEmpty();
     return; }
   if(d.reset!==undefined){ PENDING=null; document.getElementById('chat').innerHTML=''; newTurn(); setCtxUsed(0); lastSeq=0; setBusy(false); return; }
   if(d.user!==undefined){ newTurn(); if(!confirmPending(d.user)) addMsg('user', d.user); setBusy(true); T.typingEl=addTyping(); return; }
