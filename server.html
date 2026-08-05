@@ -1166,7 +1166,9 @@ button:hover{border-color:var(--dim);color:var(--text)}
        pour le dessin des lettres. -->
   <div id="chat-empty" aria-hidden="true">
     <div id="ce-logo"></div>
-    <div id="ce-title">Bon retour, Monsieur</div>
+    <!-- Formule NEUTRE en genre : l'UI est utilisée par tout le monde, pas de
+         « Monsieur » / « Madame » ni d'accord qui obligerait à deviner. -->
+    <div id="ce-title">Bon retour</div>
     <div id="ce-sub">Par quoi commençons-nous ?</div>
   </div>
   <button id="scrollbtn" onclick="jumpBottom()" title="aller en bas">↓</button>
@@ -1513,7 +1515,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805195638"></script>
+<script src="/e2e.js?v=20260805195812"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
