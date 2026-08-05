@@ -775,11 +775,11 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
   margin:0;padding:0;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--err);cursor:pointer}
 .pe-del svg{width:15px;height:15px;display:block}
 .pe-del:hover{background:var(--danger-bg);border-color:color-mix(in srgb,var(--err) 40%,transparent)}
-/* Option de la suppression : une PASTILLE à cocher, pas une case système suivie
-   d'un bout de texte — la case native jurait avec le reste du pied et son
-   libellé tronqué (« + .gguf ») ne voulait rien dire. Éteinte : contour discret.
-   Allumée : elle passe au rouge, comme la corbeille qu'elle complète. */
-.pe-delmodel{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+/* Option d'une confirmation : une PASTILLE à cocher, pas une case système suivie
+   d'un bout de texte. Éteinte : contour discret. Allumée : elle passe au rouge,
+   comme l'action destructrice qu'elle étend. Vit dans la boîte de confirmation
+   (#ask-check), plus dans le pied de l'éditeur. */
+.pe-delmodel{align-self:flex-start;margin-top:14px;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
   letter-spacing:.02em;color:var(--dim);cursor:pointer;white-space:nowrap;
   padding:5px 11px;border:1px solid var(--border);border-radius:999px;background:var(--panel);
   transition:color .12s,border-color .12s,background .12s}
@@ -1330,6 +1330,10 @@ button:hover{border-color:var(--dim);color:var(--text)}
     <div id="ask-title" class="ask-title"></div>
     <div id="ask-msg" class="ask-msg"></div>
     <input id="ask-input" class="ask-input" style="display:none">
+    <!-- Option facultative de la confirmation (ex. « supprimer aussi le .gguf ») :
+         sa place est ICI, dans la boîte qui pose la question, plutôt que dans le
+         pied de l'éditeur où elle occupait de la place en permanence. -->
+    <label id="ask-check" class="pe-delmodel" style="display:none"><input type="checkbox" id="ask-check-input"><span id="ask-check-label"></span></label>
     <div class="ask-actions">
       <button id="ask-cancel" onclick="askResolve(false)">Annuler</button>
       <button id="ask-ok" class="ask-ok" onclick="askResolve(true)">Confirmer</button>
@@ -1623,7 +1627,6 @@ button:hover{border-color:var(--dim);color:var(--text)}
     <div class="pe-foot">
       <div class="foot-l">
         <button id="m-del" class="pe-del" onclick="delItem()" title="supprimer" aria-label="supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
-        <label id="m-del-model-wrap" class="pe-delmodel" style="display:none" title="supprimer aussi le fichier .gguf du modèle"><input type="checkbox" id="m-del-model"><span>avec le .gguf</span></label>
       </div>
       <div class="foot-r">
         <button class="pe-btn" onclick="closeModal()">annuler</button>
@@ -1646,7 +1649,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805211516"></script>
+<script src="/e2e.js?v=20260805211822"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1906,10 +1909,14 @@ function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.
 // alert() par de vraies boîtes stylées. Chacune renvoie une Promise : askConfirm →
 // bool, askPrompt → string|null (null si annulé), askAlert → void. Échap/clic dehors
 // = annuler ; Entrée = valider (sur prompt aussi).
-let _askResolver=null, _askKind='confirm';
+let _askResolver=null, _askKind='confirm', _askCheck=false;
+// État de la case optionnelle de la DERNIÈRE confirmation (opts.check). Lu par
+// l'appelant juste après le await — la Promise, elle, ne renvoie que oui/non.
+function askChecked(){ return _askCheck; }
 function askResolve(ok){
   if(!_askResolver) return;
   const r=_askResolver; _askResolver=null;
+  _askCheck = ok && document.getElementById('ask-check-input').checked;
   hideModal('ask-modal');
   document.removeEventListener('keydown', _askKey, true);
   if(_askKind==='prompt') r(ok ? document.getElementById('ask-input').value : null);
@@ -1931,6 +1938,12 @@ function _openAsk(kind, message, opts){
   const inp=document.getElementById('ask-input');
   if(kind==='prompt'){ inp.style.display=''; inp.value=opts.default||''; inp.placeholder=opts.placeholder||''; }
   else inp.style.display='none';
+  // Case facultative (ex. « supprimer aussi le fichier .gguf »).
+  const chk=document.getElementById('ask-check');
+  chk.style.display = opts.check ? 'inline-flex' : 'none';
+  document.getElementById('ask-check-label').textContent = opts.check || '';
+  document.getElementById('ask-check-input').checked = false;
+  _askCheck=false;
   const cancel=document.getElementById('ask-cancel'), ok=document.getElementById('ask-ok');
   cancel.style.display = kind==='alert' ? 'none' : '';
   cancel.textContent = opts.cancelText || 'Annuler';
@@ -2485,7 +2498,6 @@ async function openItem(kind, key){
   // Model picker is preset-only: it edits the MODEL= line of config.env.
   const modelRow = document.getElementById('m-model-row');
   const settingsRow = document.getElementById('m-settings-row');
-  const delModelWrap = document.getElementById('m-del-model-wrap');
   const rawHead = document.getElementById('m-raw-head');
   const rawToggle = document.getElementById('m-raw-toggle');
   const rawBody = document.getElementById('m-raw-body');
@@ -2495,8 +2507,6 @@ async function openItem(kind, key){
     settingsRow.style.display = 'flex';
     document.getElementById('m-hf-url').value = '';
     resetDlUI();
-    document.getElementById('m-del-model').checked = false;
-    delModelWrap.style.display = key ? 'inline-flex' : 'none';
     // Preset : la config brute est une ligne repliable, fermée par défaut.
     rawHead.textContent = 'Configuration';
     rawToggle.style.display = '';
@@ -2508,7 +2518,6 @@ async function openItem(kind, key){
   } else {
     modelRow.style.display = 'none';
     settingsRow.style.display = 'none';
-    delModelWrap.style.display = 'none';
     // Page mémoire : le contenu EST le champ principal — affiché en clair.
     rawHead.textContent = 'Contenu';
     rawToggle.style.display = 'none';
@@ -3097,10 +3106,16 @@ async function delItem(){
   if(!editingKey) return;
   const K = KINDS[editingKind];
   const name = document.getElementById('m-name').value.trim() || editingKey;
-  const delModel = editingKind==='preset' && document.getElementById('m-del-model').checked;
-  let msg = 'Supprimer le ' + K.label.toLowerCase() + ' « ' + name + ' » ?';
-  if(delModel) msg += '\n\n⚠ Le fichier .gguf du modèle sera AUSSI supprimé du disque (irréversible).';
-  if(!await askConfirm(msg, {title:'Suppression', okText:'Supprimer', danger:true})) return;
+  // Le choix « supprimer aussi le .gguf » est posé DANS la confirmation : il n'a
+  // de sens qu'au moment de supprimer, et il occupait le pied de l'éditeur en
+  // permanence. Décoché à chaque ouverture — jamais de modèle effacé parce que
+  // la case serait restée cochée d'une fois sur l'autre.
+  const msg = 'Supprimer le ' + K.label.toLowerCase() + ' « ' + name + ' » ?'
+    + (editingKind==='preset' ? '\n\nLe fichier .gguf du modèle est conservé, sauf si vous cochez ci-dessous (irréversible).' : '');
+  const opts = {title:'Suppression', okText:'Supprimer', danger:true};
+  if(editingKind==='preset') opts.check = 'supprimer aussi le fichier .gguf';
+  if(!await askConfirm(msg, opts)) return;
+  const delModel = editingKind==='preset' && askChecked();
   const payload = editingKind==='preset'
     ? {id: editingKey, deleteModel: delModel}
     : {name: editingKey};
