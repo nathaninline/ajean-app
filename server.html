@@ -339,8 +339,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 #ce-logo{display:inline-flex;align-items:center;color:var(--text)}
 #ce-logo svg{height:20px;width:auto;display:block;shape-rendering:crispEdges;fill:currentColor}
 #ce-logo .ce-word{display:inline-flex;color:var(--accent)}
-#ce-title{font-size:15px;color:var(--text);letter-spacing:.02em}
-#ce-sub{font-size:12px;color:var(--dim);letter-spacing:.03em}
+#ce-title{font-size:14px;color:var(--dim);letter-spacing:.03em}
 .cl-dots{display:inline-flex;gap:5px;align-items:center}
 .cl-dots span{width:7px;height:7px;border-radius:50%;background:var(--dim);animation:typingdot 1.2s infinite ease-in-out}
 .cl-dots span:nth-child(2){animation-delay:.16s}
@@ -1166,10 +1165,9 @@ button:hover{border-color:var(--dim);color:var(--text)}
        pour le dessin des lettres. -->
   <div id="chat-empty" aria-hidden="true">
     <div id="ce-logo"></div>
-    <!-- Formule NEUTRE en genre : l'UI est utilisée par tout le monde, pas de
-         « Monsieur » / « Madame » ni d'accord qui obligerait à deviner. -->
-    <div id="ce-title">Bon retour</div>
-    <div id="ce-sub">Par quoi commençons-nous ?</div>
+    <!-- Une seule ligne, NEUTRE en genre : l'UI est utilisée par tout le monde,
+         pas de civilité ni d'accord qui obligerait à deviner. -->
+    <div id="ce-title">On commence par quoi ?</div>
   </div>
   <button id="scrollbtn" onclick="jumpBottom()" title="aller en bas">↓</button>
   <div id="composer">
@@ -1515,7 +1513,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260805195812"></script>
+<script src="/e2e.js?v=20260805200046"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
