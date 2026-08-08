@@ -22,7 +22,7 @@
      garde `display-mode` en second pour les PWA Android/desktop à manifeste. -->
 <script>try{var pwa=(window.navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode:standalone)').matches)||(window.matchMedia&&window.matchMedia('(display-mode:fullscreen)').matches);document.documentElement.setAttribute('data-pwa',pwa?'1':'0');}catch(e){document.documentElement.setAttribute('data-pwa','0');}</script>
 <!-- Applique le thème AVANT le rendu (pas de flash) : lit le choix persisté. -->
-<script>try{var t=localStorage.getItem('jean-theme')||'light';document.documentElement.setAttribute('data-theme',(t==='dark'||t.endsWith('-dark'))?'dark':'light');['hide-reasoning','hide-tools','fold-tools','hide-side','hide-stats'].forEach(function(k){document.documentElement.setAttribute('data-'+k,localStorage.getItem('jean-'+k)==='1'?'1':'0')})}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
+<script>try{var t=localStorage.getItem('ajean-theme')||'light';document.documentElement.setAttribute('data-theme',(t==='dark'||t.endsWith('-dark'))?'dark':'light');['hide-reasoning','hide-tools','fold-tools','hide-side','hide-stats'].forEach(function(k){document.documentElement.setAttribute('data-'+k,localStorage.getItem('ajean-'+k)==='1'?'1':'0')})}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
 <style>
 /* ===== Palette =====================================================
    Un seul thème (« Clean ») : noir et blanc, sobre. Deux variantes — claire par
@@ -172,7 +172,7 @@ h1{margin:0;font-size:18px;color:var(--accent)}
 .ask-ok.danger{border-color:var(--err);color:var(--err)}
 #brand-a{display:inline-flex;line-height:0;color:var(--text);margin-right:2px}
 /* Mode agent : le A passe en couleur d'accent (il était masqué hors agent,
-   la marque se lisant alors « JEAN »). L'état agent reste signalé par sa
+   la marque se lisant alors « AJEAN »). L'état agent reste signalé par sa
    pastille dans les réglages. */
 #brand.agent #brand-a{color:var(--accent)}
 /* interrupteur (switch) */
@@ -961,7 +961,7 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 /* ===== Mise en page de la conversation =============================
    Colonne de lecture centrée, réponses SANS bulle (texte nu sur le fond),
    question de l'utilisateur en pastille arrondie à droite, composer en
-   « pilule », pas d'étiquettes VOUS/JEAN. Ces règles surchargent la mise en
+   « pilule », pas d'étiquettes VOUS/AJEAN. Ces règles surchargent la mise en
    page générique plus haut : elles doivent donc rester APRÈS elle. */
 body{font-size:15px}
 h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
@@ -975,7 +975,7 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
 /* Question : pastille arrondie à droite, texte lisible sur fond clair OU sombre. */
 #chat .msg.user{background:var(--bubble);color:var(--text);border-radius:20px;padding:11px 18px;max-width:75%;line-height:1.6}
 #chat .msg.user .label{color:var(--dim)}
-/* Étiquettes VOUS / JEAN : inutiles ici (l'alignement suffit), sauf pour les
+/* Étiquettes VOUS / AJEAN : inutiles ici (l'alignement suffit), sauf pour les
    bulles repliables (raisonnement / outils) où le label est le bouton de repli. */
 #chat .msg .label{display:none}
 #chat .msg.collapsible .label{display:block}
@@ -1227,7 +1227,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
          trois îlots pour un même réglage. -->
     <div class="slist">
       <div class="rowbody">
-        <div class="muted" style="margin:0 0 6px">Adresse locale (réseau) — modèle <code>jean</code></div>
+        <div class="muted" style="margin:0 0 6px">Adresse locale (réseau) — modèle <code>ajean</code></div>
         <div class="row" style="margin:0">
           <input id="oai-url" readonly class="io-input">
           <button class="iconbtn" onclick="copyText(document.getElementById('oai-url').value,'adresse copiée')" title="copier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
@@ -1257,7 +1257,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
     </div></div>
   </details>
   <details id="remote-details"><summary><span class="stitle">Accès distant</span><span id="remote-badge" class="sbadge"></span></summary>
-    <div class="subhead">ajean.link<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Accédez à ce serveur Jean depuis <b>n'importe où</b>, sans ouvrir de port, à travers le relais <b>ajean.link</b>. Le trafic est chiffré de <b>bout en bout</b> : le relais ne voit rien. Abonnement 4,80 €/mois.</span></span></div>
+    <div class="subhead">ajean.link<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Accédez à ce serveur AJEAN depuis <b>n'importe où</b>, sans ouvrir de port, à travers le relais <b>ajean.link</b>. Le trafic est chiffré de <b>bout en bout</b> : le relais ne voit rien. Abonnement 4,80 €/mois.</span></span></div>
     <!-- Non connecté : un seul bouton, tout se passe dans la popup (compte + paiement). -->
     <div id="remote-off" class="slist"><div class="rowbody">
       <p class="muted" style="margin:0 0 8px">Ouvrez l'accès distant à ce serveur en quelques clics, sans terminal.</p>
@@ -1286,24 +1286,23 @@ button:hover{border-color:var(--dim);color:var(--text)}
     </div>
   </details>
   <details id="lc-details"><summary><span class="stitle">Moteur</span></summary>
-    <div class="subhead">Installation</div>
     <!-- Une seule carte : état, choix du mode et journal d'installation sont le
          même sujet. Les trois modes sont des LIGNES de cette carte (elles
          étaient des cartes dans une carte). -->
     <div class="slist">
-    <!-- Texte de départ IDENTIQUE (à la variante près) à celui posé après le
-         chargement : un simple « … » faisait grandir la carte sous les yeux dès
-         que l'état arrivait. -->
-    <div class="rowbody"><div id="lc-status" class="lc-head muted">Installez les moteurs ici. Vous choisissez lequel utiliser en éditant un modèle.</div></div>
+    <!-- La pastille « conseillé » n'est PAS écrite ici : le bon choix dépend de
+         la machine (voir lcRenderReco). Sur Linux + NVIDIA le précompilé ne
+         donne que du Vulkan — llama.cpp ne publie aucun binaire CUDA Linux —
+         alors que compiler donne du CUDA natif. -->
     <div class="lc-modes">
       <div class="lc-mode" id="lc-mode-fast" onclick="lcPick('fast')">
-        <div class="lc-mode-t">llama.cpp précompilé <span class="lc-reco">conseillé</span></div>
-        <div class="lc-mode-d">binaire officiel téléchargé tel quel, prêt en ~2 min</div>
+        <div class="lc-mode-t">llama.cpp précompilé <span class="lc-reco" id="lc-reco-fast" hidden>conseillé</span></div>
+        <div class="lc-mode-d" id="lc-desc-fast">binaire officiel téléchargé tel quel, prêt en ~2 min</div>
         <div class="lc-mode-state" id="lc-fast-state"></div>
       </div>
       <div class="lc-mode" id="lc-mode-opt" onclick="lcPick('opt')">
-        <div class="lc-mode-t">llama.cpp compilé</div>
-        <div class="lc-mode-d">compilé ici pour votre machine — plus rapide, plus long à installer</div>
+        <div class="lc-mode-t">llama.cpp compilé <span class="lc-reco" id="lc-reco-opt" hidden>conseillé</span></div>
+        <div class="lc-mode-d" id="lc-desc-opt">compilé ici pour votre machine — plus rapide, plus long à installer</div>
         <div class="lc-mode-state" id="lc-opt-state"></div>
       </div>
       <div class="lc-mode" id="lc-mode-custom" onclick="openCustomBackends()">
@@ -1536,6 +1535,10 @@ button:hover{border-color:var(--dim);color:var(--text)}
               <div id="m-hf-progress" class="pe-note" style="display:none"></div>
               <button id="m-hf-cancel" class="pe-link" onclick="cancelDownload()" style="display:none">Annuler le téléchargement</button>
             </div>
+            <div class="pe-row">
+              <span class="pe-row-l">Destination</span>
+              <span class="pe-selc"><select id="m-hf-dir"></select></span>
+            </div>
             <div id="m-dirs-toggle" class="pe-row" style="cursor:pointer" onclick="toggleModelDirs()">
               <span class="pe-row-l">Dossiers de modèles<span class="pe-sub">chercher les .gguf ailleurs (disque externe…)</span></span>
               <span class="pe-row-c"><span id="m-dirs-caret" class="pe-caret"></span></span>
@@ -1546,7 +1549,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
                 <input id="m-dir-path" class="pe-inp" placeholder="/media/disque-externe/models">
                 <button id="m-dir-add" onclick="addModelDir()" title="Ajouter ce dossier">+</button>
               </div>
-              <div class="pe-note">Les téléchargements, eux, vont toujours dans le dossier AJEAN.</div>
+              <div class="pe-note">Ces dossiers servent aussi de destination de téléchargement.</div>
             </div>
           </div>
         </div>
@@ -1715,7 +1718,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260806115959"></script>
+<script src="/e2e.js?v=20260808101602"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -1850,14 +1853,14 @@ function toggleSide(){ document.getElementById('side').classList.toggle('open');
 let _sysT = null;
 function saveSys(){
   const v = document.getElementById('sysprompt').value;
-  localStorage.setItem('jean.sys', v);
+  localStorage.setItem('ajean.sys', v);
   clearTimeout(_sysT);
   _sysT = setTimeout(()=>{ jpost('/api/sysprompt', {text:v}).catch(()=>{}); }, 600);
 }
 async function loadSys(){
   try{
     const d = await jget('/api/sysprompt');
-    if(d && d.ok){ document.getElementById('sysprompt').value = d.text || ''; localStorage.setItem('jean.sys', d.text || ''); }
+    if(d && d.ok){ document.getElementById('sysprompt').value = d.text || ''; localStorage.setItem('ajean.sys', d.text || ''); }
   }catch(e){}
 }
 // ===== Apparence =============================================================
@@ -1871,7 +1874,7 @@ function applyTheme(id){
   // désormais la variante, déduite du suffixe.
   const dark = id==='dark' || (typeof id==='string' && id.endsWith('-dark'));
   document.documentElement.setAttribute('data-theme', dark?'dark':'light');
-  try{ localStorage.setItem('jean-theme', dark?'dark':'light'); }catch(e){}
+  try{ localStorage.setItem('ajean-theme', dark?'dark':'light'); }catch(e){}
   const sw=document.getElementById('theme-dark'); if(sw) sw.checked=dark;
 }
 function toggleThemeDark(){
@@ -1879,7 +1882,7 @@ function toggleThemeDark(){
   savePrefs();
 }
 function initTheme(){
-  let id='light'; try{ id=localStorage.getItem('jean-theme')||'light'; }catch(e){}
+  let id='light'; try{ id=localStorage.getItem('ajean-theme')||'light'; }catch(e){}
   applyTheme(id);
 }
 // ===== Affichage ============================================================
@@ -1896,7 +1899,7 @@ const VIEW_OPTS=[
 function viewOn(id){ return document.documentElement.getAttribute('data-'+id)==='1'; }
 function applyView(id, on){
   document.documentElement.setAttribute('data-'+id, on?'1':'0');
-  try{ localStorage.setItem('jean-'+id, on?'1':'0'); }catch(e){}
+  try{ localStorage.setItem('ajean-'+id, on?'1':'0'); }catch(e){}
   const box=document.getElementById('view-'+id); if(box) box.checked=!!on;
   // La barre latérale peut rester ouverte quand on repasse en mode fixe.
   if(id==='hide-side' && !on){
@@ -1908,18 +1911,18 @@ function applyView(id, on){
 function toggleView(id){ applyView(id, document.getElementById('view-'+id).checked); savePrefs(); }
 function initView(){
   VIEW_OPTS.forEach(o=>{
-    let v=null; try{ v=localStorage.getItem('jean-'+o.id); }catch(e){}
+    let v=null; try{ v=localStorage.getItem('ajean-'+o.id); }catch(e){}
     applyView(o.id, v==='1');
   });
 }
 // ===== Persistance côté serveur (partagée entre appareils) ==================
-// L'apparence est aussi enregistrée sur la machine jean (/api/prefs) : ainsi le
+// L'apparence est aussi enregistrée sur la machine ajean (/api/prefs) : ainsi le
 // thème/affichage choisi sur un appareil se retrouve sur tous les autres. Le
 // localStorage reste utilisé pour appliquer instantanément au chargement (sans
 // flash), puis loadPrefs() aligne sur la valeur du serveur (source de vérité).
 function savePrefs(){
   let theme='light';
-  try{ theme=localStorage.getItem('jean-theme')||'light'; }catch(e){}
+  try{ theme=localStorage.getItem('ajean-theme')||'light'; }catch(e){}
   const p={theme};
   VIEW_OPTS.forEach(o=>{ p[o.id.replace('-','_')] = viewOn(o.id)?'1':'0'; });
   jpost('/api/prefs', p).catch(()=>{});
@@ -1941,7 +1944,7 @@ async function loadPrefs(){
     }
   }catch(e){}
 }
-document.addEventListener('DOMContentLoaded', ()=>{ initTheme(); initView(); document.getElementById('sysprompt').value = localStorage.getItem('jean.sys') || ''; loadSys(); restoreChat(); });
+document.addEventListener('DOMContentLoaded', ()=>{ initTheme(); initView(); document.getElementById('sysprompt').value = localStorage.getItem('ajean.sys') || ''; loadSys(); restoreChat(); });
 // Pastille d'état d'une section du menu (mode agent, internet, MCP, distant).
 // `state` : true = actif (pilule pleine), false = inactif (contour), 'warn'/'err'
 // = état signalé, null = pastille masquée. Un seul endroit décide de leur allure.
@@ -1993,11 +1996,15 @@ function _askKey(e){
   else if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); askResolve(true); }
 }
 function _openAsk(kind, message, opts){
-  // Compat 2 conventions : (message, opts) [UI jean] ET l'objet unique
+  // Compat 2 conventions : (message, opts) [UI ajean] ET l'objet unique
   // {title,msg,yes,no,placeholder} passé par e2e.js sur ajean.link (server.html,
   // où cette fonction remplace le window.askConfirm du bootstrap boîte noire).
   if(message && typeof message==='object'){ const o=message; opts={title:o.title, okText:o.yes, cancelText:o.no, placeholder:o.placeholder, default:o.default, danger:o.danger}; message=o.msg||''; }
   opts=opts||{};
+  // Une modale déjà ouverte ne doit pas être écrasée en silence : son appelant
+  // attend une réponse, et l'écraser laissait sa promesse pendante POUR
+  // TOUJOURS (requête suspendue, bouton figé). On l'annule proprement d'abord.
+  if(_askResolver){ const prev=_askResolver; _askResolver=null; prev(_askKind==='prompt' ? null : false); }
   _askKind=kind;
   document.getElementById('ask-title').textContent = opts.title || (kind==='alert'?'Info':kind==='prompt'?'Saisie':'Confirmation');
   document.getElementById('ask-msg').textContent = message||'';
@@ -2025,14 +2032,14 @@ function askPrompt(message,opts){ return _openAsk('prompt',message,opts); }
 function askAlert(message,opts){ return _openAsk('alert',message,opts); }
 // Clé de pilotage : envoyée en Authorization: Bearer sur chaque appel /api/*.
 // Sur un 401 on la (re)demande et on rejoue la requête. Stockée en localStorage.
-let TOKEN = localStorage.getItem('jean.key') || '';
+let TOKEN = localStorage.getItem('ajean.key') || '';
 function authHeaders(h){ h = Object.assign({}, h||{}); if(TOKEN) h['Authorization']='Bearer '+TOKEN; return h; }
 // Base d'URL : "" en local (page à "/"), "/u/<id>" servie via le relais ajean.link.
 // Garde les chemins absolus (/api/…) corrects derrière le tunnel.
 const API_BASE = location.pathname.replace(/\/(index\.html)?$/, '');
 // Délai maximal d'un appel /api/* ordinaire. Sans lui, une requête que le
 // navigateur met en file d'attente (plafond de ~6 connexions par domaine, atteint
-// dès qu'on laisse traîner plusieurs onglets Jean) reste suspendue POUR TOUJOURS :
+// dès qu'on laisse traîner plusieurs onglets AJEAN) reste suspendue POUR TOUJOURS :
 // ni réponse, ni erreur, et une UI figée sur « chargement… » sans rien à afficher.
 // Mieux vaut une erreur franche. Les flux longs (SSE) passent leur propre signal
 // et ne sont donc jamais concernés.
@@ -2056,6 +2063,26 @@ async function jfetch(u, opts){
   var body = (opts.body!=null) ? JSON.parse(opts.body) : null;
   var env = await e2ecallEnv(MACHINE, method, path, body);   // {status, body}
   return new Response(JSON.stringify(env.body), {status: env.status||200, headers:{'Content-Type':'application/json'}});
+}
+// askKeyOnce : UNE seule demande de clé à la fois, partagée par tous les appels.
+//
+// Le chargement de l'UI lance une dizaine d'appels /api/* en parallèle, et le
+// rafraîchissement périodique en relance autant. Sans ce partage, CHAQUE 401
+// rouvrait la modale, laquelle vide son champ à l'ouverture : impossible de
+// taper la clé, les caractères disparaissaient au fur et à mesure. Les appels
+// concurrents attendent désormais la même promesse, et repartent tous avec la
+// clé saisie une seule fois.
+let _keyAsk = null;
+function askKeyOnce(){
+  if(!_keyAsk){
+    _keyAsk = askPrompt('Clé de pilotage AJEAN requise :', {title:'Authentification', placeholder:'clé…'})
+      .then(k => {
+        _keyAsk = null;
+        if(k){ TOKEN = k.trim(); localStorage.setItem('ajean.key', TOKEN); }
+        return k;
+      }, e => { _keyAsk = null; throw e; });
+  }
+  return _keyAsk;
 }
 async function jget(u){ const r=await jfetch(u); return r.json(); }
 async function jpost(u,b){ const r=await jfetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})}); return r.json(); }
@@ -2134,7 +2161,7 @@ async function showPaths(){
   el.textContent='…';
   try{
     const p=await jget('/api/paths');
-    const rows=[['Données',p.home],['Configuration',p.config],['Fichiers créés par l\'IA',p.workspace],['Mémoire',p.memory],['Programme',p.exe]];
+    const rows=[['Données',p.home],['Base (config, préférences, conversation)',p.database],['Modèles',p.models],['Presets',p.presets],['Mémoire',p.memory],['Fichiers créés par l\'IA',p.workspace],['Moteur llama.cpp',p.backends],['Programme',p.exe]];
     el.innerHTML=rows.map(r=>'<div style="margin-bottom:4px">'+r[0]+'<br><code style="word-break:break-all">'+escHtml(r[1]||'')+'</code></div>').join('');
   }catch(e){ el.textContent='Erreur'; }
 }
@@ -2237,7 +2264,7 @@ const HRESERVE=['cfg','vram','ram-details','presets','internet-status','mcp-list
 function reserveHeights(){
   HRESERVE.forEach(id=>{
     try{
-      const h=parseInt(localStorage.getItem('jean-h-'+id)||'0',10);
+      const h=parseInt(localStorage.getItem('ajean-h-'+id)||'0',10);
       const el=document.getElementById(id);
       if(el && h>0) el.style.minHeight=h+'px';
     }catch(e){}
@@ -2247,7 +2274,7 @@ function releaseHeights(){
   HRESERVE.forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     el.style.minHeight='';
-    try{ localStorage.setItem('jean-h-'+id, String(el.offsetHeight||0)); }catch(e){}
+    try{ localStorage.setItem('ajean-h-'+id, String(el.offsetHeight||0)); }catch(e){}
   });
 }
 document.addEventListener('DOMContentLoaded', reserveHeights);
@@ -2326,7 +2353,7 @@ async function loadPresets(){
   });
 }
 // « Mode agent » = accès machine + skills réunis en un seul interrupteur.
-// Quand il est actif, un « a » blanc apparaît en fondu devant « jean » → « ajean ».
+// Quand il est actif, un « a » blanc apparaît en fondu devant « ajean » → « ajean ».
 async function loadAgent(){
   const s=await jget('/api/agent');
   const on = s.enabled;
@@ -2602,7 +2629,7 @@ async function switchTo(n,name){
   const r=await jpost('/api/switch',{n:n});
   if(!r.ok){ pendingPreset = 0; toast('erreur'); loadPresets(); return; }
   toast('switched');
-  // Le preset ACTIF, c'est celui dont l'empreinte est dans config.env : le serveur
+  // Le preset ACTIF, c'est celui dont l'empreinte est celle de la configuration : le serveur
   // l'écrit AVANT de répondre (et relance le service en arrière-plan, voir
   // handleSwitch), donc un rafraîchissement immédiat suffit — la barre passe au
   // blanc tout de suite. Le chargement du modèle par llama-server continue
@@ -2649,7 +2676,7 @@ async function openItem(kind, key){
   document.getElementById('m-name').placeholder = K.nameHint;
   document.getElementById('m-content').value = '';
   document.getElementById('m-del').style.display = key ? 'inline-flex' : 'none';
-  // Model picker is preset-only: it edits the MODEL= line of config.env.
+  // Model picker is preset-only: it edits the MODEL= line of the preset.
   const modelRow = document.getElementById('m-model-row');
   const settingsRow = document.getElementById('m-settings-row');
   const rawHead = document.getElementById('m-raw-head');
@@ -2704,7 +2731,7 @@ async function openItem(kind, key){
     document.getElementById('m-quant').value = currentQuantInTextarea();
     populateSettings();
     attachDownload();                      // téléchargement encore en cours côté serveur ?
-    await Promise.all([populateBackend(), populateModelPicker()]);
+    await Promise.all([populateBackend(), populateModelPicker(), populateDlDirs()]);
     if(seq !== openSeq) return;
   }
   // On lève le voile SANS transition (voir la note dans styles.css), puis on rend
@@ -2722,11 +2749,24 @@ function fmtSize(b){
   if(b > 1e3) return (b/1e3).toFixed(0)+' KB';
   return b+' B';
 }
+// Retire les guillemets ENTOURANTS d'une valeur, et seulement eux. Les anciens
+// motifs `"?([^"\n]*)"?` s'arrêtaient au premier guillemet INTERNE : une valeur
+// comme `--chat-template-file "/etc/ajean/tpl.jinja"` était lue tronquée, puis
+// réécrite avec des guillemets non appariés (issue #17).
+function unquoteVal(v){
+  v = String(v==null?'':v).trim();
+  const q = v[0];
+  if(v.length >= 2 && (q === '"' || q === "'") && v[v.length-1] === q) return v.slice(1,-1);
+  return v;
+}
+// Lit la valeur d'une clé KEY= dans un texte au format .env.
+function readEnvKey(txt, key){
+  const m = String(txt).match(new RegExp('^[ \\t]*'+key+'[ \\t]*=(.*)$','m'));
+  return m ? unquoteVal(m[1]) : '';
+}
 // Read the current MODEL= value out of the textarea, handling quotes / spaces.
 function currentModelInTextarea(){
-  const txt = document.getElementById('m-content').value;
-  const m = txt.match(/^\s*MODEL\s*=\s*"?([^"\n]*)"?\s*$/m);
-  return m ? m[1].trim() : '';
+  return readEnvKey(document.getElementById('m-content').value, 'MODEL');
 }
 // Échappe une valeur avant de l'injecter dans du HTML (chemins de fichiers :
 // on ne contrôle pas ce que l'utilisateur y met).
@@ -2745,7 +2785,7 @@ async function populateModelPicker(){
   const list = await jget('/api/models');
   const cur = currentModelInTextarea();
   // Les modèles peuvent venir de plusieurs dossiers (disque externe…) : on les
-  // regroupe par dossier, JEAN_HOME d'abord (l'API les renvoie dans cet ordre).
+  // regroupe par dossier, AJEAN_HOME d'abord (l'API les renvoie dans cet ordre).
   const groups = [];
   for(const m of (list||[])){
     let g = groups.find(x => x.dir === m.dir);
@@ -2764,7 +2804,7 @@ async function populateModelPicker(){
       opts += '<option value="'+escHtml(m.value)+'"'+on+'>'+escHtml(m.name)+'  ('+fmtSize(m.size)+')</option>';
     }
     html += groups.length > 1
-      ? '<optgroup label="'+escHtml(g.home ? 'dossier jean' : g.dir)+'">'+opts+'</optgroup>'
+      ? '<optgroup label="'+escHtml(g.home ? 'dossier ajean' : g.dir)+'">'+opts+'</optgroup>'
       : opts;
   }
   // MODEL pointe vers un fichier qu'on ne trouve dans aucun dossier déclaré :
@@ -2775,7 +2815,7 @@ async function populateModelPicker(){
   sel.innerHTML = html;
   if(cur && !matched) setModelDirsOpen(true);
 }
-// ---- Dossiers de modèles : JEAN_HOME + dossiers ajoutés (disque externe…) ---
+// ---- Dossiers de modèles : AJEAN_HOME + dossiers ajoutés (disque externe…) ---
 // Réglage rare : replié derrière une ligne, comme l'éditeur de .env brut.
 function setModelDirsOpen(open){
   const b = document.getElementById('m-dirs-body');
@@ -2803,7 +2843,8 @@ async function populateModelDirs(){
     const info = document.createElement('span');
     info.className = 'muted';
     const n = x.count >= 0 ? (x.count + ' modèle' + (x.count>1?'s':'')) : 'illisible';
-    info.textContent = '(' + n + (x.home ? ', dossier jean' : '') + ')';
+    const free = x.free >= 0 ? ', ' + fmtSize(x.free) + ' libres' : '';
+    info.textContent = '(' + n + free + (x.home ? ', dossier ajean' : '') + ')';
     row.append(p, info);
     if(!x.home){
       const del = document.createElement('button');
@@ -2824,13 +2865,13 @@ async function addModelDir(){
   if(!r.ok){ toast('erreur : ' + (r.error||'')); return; }
   inp.value = '';
   toast('dossier ajouté');
-  await Promise.all([populateModelDirs(), populateModelPicker()]);
+  await Promise.all([populateModelDirs(), populateModelPicker(), populateDlDirs()]);
 }
 async function removeModelDir(p){
   const r = await jpost('/api/models/dirs', {path: p, action: 'remove'});
   if(!r.ok){ toast('erreur : ' + (r.error||'')); return; }
   toast('dossier retiré');
-  await Promise.all([populateModelDirs(), populateModelPicker()]);
+  await Promise.all([populateModelDirs(), populateModelPicker(), populateDlDirs()]);
 }
 function onPickModel(){
   const val = document.getElementById('m-model').value;
@@ -2849,9 +2890,7 @@ function onPickModel(){
 // qui réécrivent la ligne BIN= du preset. C'est LE point où on décide quel
 // backend fait tourner ce modèle — la barre latérale ne fait qu'installer.
 function currentBinInTextarea(){
-  const txt = document.getElementById('m-content').value;
-  const m = txt.match(/^\s*BIN\s*=\s*"?([^"\n]*)"?\s*$/m);
-  return m ? m[1].trim() : '';
+  return readEnvKey(document.getElementById('m-content').value, 'BIN');
 }
 // Compare deux chemins de binaire en neutralisant séparateurs et casse (Windows).
 function sameBinPath(a, b){
@@ -2874,13 +2913,13 @@ function underDir(p, dir){
 }
 let beFastPath = '', beOptPath = '', beFastDir = '';
 async function populateBackend(){
-  // Chemins des deux moteurs gérés + liste des backends détectés (dossier jean).
+  // Chemins des deux moteurs gérés + liste des backends détectés (dossier ajean).
   let lc = {}; try{ lc = await jget('/api/llamacpp'); }catch(_){}
   beFastPath = (lc.prebuilt && lc.prebuilt.bin) || '';
   beFastDir  = (lc.prebuilt && lc.prebuilt.dir) || '';
   beOptPath  = lc.bin || '';
   // Menu « backend détecté » du mode personnalisé : tout ce qu'on trouve dans
-  // le dossier backends de jean (l'utilisateur peut y déposer son propre build).
+  // le dossier backends de ajean (l'utilisateur peut y déposer son propre build).
   const detected = await jget('/api/backends');
   const sel = document.getElementById('m-backend-detected');
   let html = '<option value="">— ou choisir un backend détecté —</option>';
@@ -3137,8 +3176,8 @@ function onGpuPick(){
 
 // Read/write the QUANT= override line in the preset textarea.
 function currentQuantInTextarea(){
-  const m = document.getElementById('m-content').value.match(/^\s*#?\s*QUANT\s*=\s*"?([^"\n]*)"?\s*$/mi);
-  return m ? m[1].trim() : '';
+  const m = document.getElementById('m-content').value.match(/^\s*#?\s*QUANT\s*=(.*)$/mi);
+  return m ? unquoteVal(m[1]) : '';
 }
 function applyQuant(){
   const val = document.getElementById('m-quant').value.trim();
@@ -3155,8 +3194,7 @@ function applyQuant(){
 // Le fichier de config (textarea m-content) reste la source de vérité : chaque
 // champ lit/écrit sa ligne KEY=… , comme le font déjà MODEL/BIN/QUANT.
 function cfgReadKey(key){
-  const m = document.getElementById('m-content').value.match(new RegExp('^[ \\t]*'+key+'[ \\t]*=[ \\t]*"?([^"\\n]*)"?[ \\t]*$','m'));
-  return m ? m[1].trim() : '';
+  return readEnvKey(document.getElementById('m-content').value, key);
 }
 function cfgWriteKey(key, val){
   const ta = document.getElementById('m-content');
@@ -3214,7 +3252,7 @@ function populateSettings(){
 // --- Décodage spéculatif (--spec-type / --spec-draft-n-max) ----------------
 // Sélectionne le type courant. --spec-type accepte en réalité une LISTE séparée
 // par des virgules ; une valeur composée (ou un type sorti après cette version
-// de jean) ne correspondrait à aucune option et serait silencieusement effacée
+// de ajean) ne correspondrait à aucune option et serait silencieusement effacée
 // au premier changement. On l'ajoute donc telle quelle à la liste plutôt que de
 // la perdre.
 function setSpecType(v){
@@ -3323,17 +3361,50 @@ function resetDlUI(){
   e.prog.style.display='none'; e.bar.style.display='none';
   e.cancel.style.display='none'; e.btn.disabled=false;
 }
+// Remplit le sélecteur de destination avec les dossiers de modèles connus.
+// L'espace libre est dans le libellé de l'option : c'est l'info utile au moment
+// de choisir, et ça évite une ligne de plus dans une modale déjà chargée.
+// Même source que « Dossiers de modèles » : ajouter un disque externe là-bas le
+// rend aussitôt disponible ici.
+let dlDirList = [];
+async function populateDlDirs(){
+  const sel = document.getElementById('m-hf-dir');
+  if(!sel) return;
+  let d = {};
+  try{ d = await jget('/api/models/dirs'); }catch(_){ return; }
+  dlDirList = d.dirs || [];
+  const prev = sel.value;
+  sel.innerHTML = '';
+  for(const x of dlDirList){
+    const o = document.createElement('option');
+    o.value = x.path;
+    o.textContent = x.path + (x.free >= 0 ? ' — ' + fmtSize(x.free) + ' libres' : '');
+    sel.append(o);
+  }
+  if(prev && dlDirList.some(x => samePath(x.path, prev))) sel.value = prev;
+}
 async function startDownload(){
   const url = document.getElementById('m-hf-url').value.trim();
   if(!url){ toast('colle un lien .gguf'); return; }
+  const dir = (document.getElementById('m-hf-dir')||{}).value || '';
   const e = dlEls();
   e.btn.disabled = true;
   e.prog.style.display = 'block';
-  e.prog.textContent = 'démarrage…';
+  e.prog.textContent = 'vérification de la taille et de l’espace disque…';
   e.bar.style.display = 'block';
   e.bar.className = 'pe-bar indet';
   e.bar.firstElementChild.style.width = '';
-  const r = await jpost('/api/models/download', {url});
+  // Sonde d'abord : on connaît la taille exacte du fichier et l'espace restant
+  // AVANT d'écrire quoi que ce soit, plutôt que d'échouer à 90 % du transfert.
+  const p = await jpost('/api/models/download/probe', {url, dir});
+  if(!p.ok || !p.enough){
+    e.prog.innerHTML = '<span style="color:var(--err)">erreur : '+escHtml(p.error||'espace insuffisant')+'</span>';
+    e.bar.style.display = 'none'; e.btn.disabled=false;
+    await populateDlDirs();
+    return;
+  }
+  e.prog.textContent = fmtSize(p.size)+' à télécharger — '+fmtSize(p.free)+' libres';
+  const r = await jpost('/api/models/download', {url, dir});
   if(!r.ok){
     e.prog.innerHTML = '<span style="color:var(--err)">erreur : '+(r.error||'')+'</span>';
     e.bar.style.display = 'none'; e.btn.disabled=false; return;
@@ -3376,8 +3447,12 @@ function watchDownload(fname){
       e.prog.innerHTML = '<span style="color:var(--ok)">✓ '+fname+' téléchargé ('+fmtSize(st.done)+')</span>';
       e.bar.className = 'pe-bar done'; e.bar.firstElementChild.style.width = '100%';
       stop();
-      await populateModelPicker();
-      document.getElementById('m-model').value = fname; onPickModel();
+      await Promise.all([populateModelPicker(), populateDlDirs()]);
+      // Le modèle a pu atterrir hors du dossier ajean : l'option porte alors le
+      // chemin complet, pas le simple nom de fichier.
+      const sel = document.getElementById('m-model');
+      const opt = Array.from(sel.options).find(o => samePath(baseName(o.value), fname));
+      if(opt){ sel.value = opt.value; onPickModel(); }
       return;
     }
     const pct = st.total>0 ? st.done*100/st.total : 0;
@@ -3528,7 +3603,7 @@ function setLabelCounts(el, add, del){
   if(del) cnt.appendChild(Object.assign(document.createElement('span'),{className:'d',textContent:'-'+del}));
   lab.appendChild(cnt);
 }
-// Ligne de mesures sous une réponse (prefill / decode). Les étiquettes VOUS/JEAN
+// Ligne de mesures sous une réponse (prefill / decode). Les étiquettes VOUS/AJEAN
 // sont masquées dans cette mise en page, donc les chiffres qu'on y écrivait
 // avaient disparu : ils ont leur propre ligne, discrète, sous le texte. Masquée
 // par la préférence d'affichage « masquer la vitesse de génération » (CSS).
@@ -3689,7 +3764,7 @@ async function compactContext(){
 }
 // Persistance de la conversation : on garde user+assistant en localStorage pour
 // survivre à un refresh (les bulles tool/reasoning sont éphémères, non stockées).
-function saveChat(){ try{ localStorage.setItem('jean.chat', JSON.stringify(msgs)); }catch(e){} }
+function saveChat(){ try{ localStorage.setItem('ajean.chat', JSON.stringify(msgs)); }catch(e){} }
 // Source de vérité = SERVEUR. Au chargement on ouvre le flux d'abonnement
 // permanent (connectStream), qui rejoue tout le fil depuis le serveur — texte,
 // appels d'outils, vitesses, raisonnement — puis suit le direct. Plus de
@@ -3768,7 +3843,7 @@ function autoGrow(ta){
   ta.style.overflowY = ta.scrollHeight>max ? 'auto' : 'hidden';
 }
 // ===== Conversation SERVEUR (source de vérité, partagée entre appareils) =====
-// L'historique et la génération vivent sur le serveur jean. Le client ouvre un
+// L'historique et la génération vivent sur le serveur ajean. Le client ouvre un
 // flux d'ABONNEMENT permanent (SSE) qui rejoue le journal depuis lastSeq puis
 // suit le direct. Fermer l'onglet n'arrête plus la génération (détachée côté
 // serveur) ; se reconnecter rejoue tout le fil, détails compris.
@@ -3966,7 +4041,7 @@ function handleDelta(d){
 }
 // Flux d'abonnement permanent + reconnexion auto (from=lastSeq → pas de
 // re-téléchargement complet après une coupure / bascule d'appareil).
-// Un onglet caché RELÂCHE son flux SSE. Sans ça, chaque onglet Jean laissé
+// Un onglet caché RELÂCHE son flux SSE. Sans ça, chaque onglet AJEAN laissé
 // ouvert monopolise une des ~6 connexions simultanées autorisées par domaine :
 // au-delà, toute requête (journal, installation du moteur…) reste en file
 // d'attente sans jamais partir ni échouer — un blocage silencieux très
@@ -4063,12 +4138,7 @@ async function loadLlamacpp(){
   const fastInstalled = !!pb.bin;
   const optInstalled  = !!s.bin;
 
-  const head = document.getElementById('lc-status');
-  if(!fastInstalled && !optInstalled){
-    head.innerHTML = 'Installez le moteur d\'IA. Le <b>précompilé</b> convient à presque tout le monde.';
-  } else {
-    head.innerHTML = 'Installez les moteurs ici. Vous choisissez lequel utiliser en éditant un modèle (bouton ⚙).';
-  }
+  lcRenderReco(s.reco);
   lcRenderMode('fast', fastInstalled);
   lcRenderMode('opt', optInstalled);
   lcRenderCustomCard();
@@ -4124,6 +4194,23 @@ function lcChipOpen(){
   if(!document.getElementById('lc-chip').classList.contains('failed')) return;
   lcSeenEnd = true;
   lcChipSync(null);
+}
+
+// Place la pastille « conseillé » sur la carte que le SERVEUR recommande pour
+// cette machine (voir recommendedMode) : le précompilé partout, sauf sur Linux
+// avec une carte NVIDIA où il ne donnerait que du Vulkan. La raison est ajoutée
+// à la description de la carte, pour expliquer plutôt que d'imposer.
+function lcRenderReco(reco){
+  const mode = (reco && reco.mode) || 'fast';
+  for(const m of ['fast','opt']){
+    const badge = document.getElementById('lc-reco-'+m);
+    if(badge) badge.hidden = (m !== mode);
+  }
+  // La raison REMPLACE la description générique de la carte conseillée : elle
+  // dit déjà ce que fait l'option et pourquoi c'est le bon choix ici. (loadAll
+  // repasse par là, donc pas d'accumulation possible.)
+  const desc = document.getElementById('lc-desc-'+mode);
+  if(desc && reco && reco.why) desc.textContent = reco.why;
 }
 
 function lcRenderMode(mode, installed){
@@ -4510,7 +4597,7 @@ async function deleteMcp(){
 // Accès distant (ajean.link) — piloté depuis l'UI, sans terminal.
 // « Connecter » ouvre une popup app.ajean.link/connect.html qui gère compte +
 // abonnement, puis renvoie une clé de liaison par postMessage. On la POSTe à
-// l'agent local (/api/link/connect) qui fait le `jean link` (token + service).
+// l'agent local (/api/link/connect) qui fait le `ajean link` (token + service).
 
 const AJEAN_APP_ORIGIN = 'https://app.ajean.link';
 
