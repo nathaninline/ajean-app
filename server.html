@@ -1072,6 +1072,28 @@ button:hover{border-color:var(--dim);color:var(--text)}
 /* Sélecteurs segmentés : noir plein quand c'est coché, pas de couleur. */
 .pe-seg>label:has(input:checked),.seg>label:has(input:checked){background:var(--text);border-color:var(--text);color:var(--bg)}
 
+
+/* Curseur de portée de l'export. Même vocabulaire visuel que la répartition GPU
+   (piste arrondie + pastille cerclée), mais une seule valeur : la position tout
+   à droite vaut « toute la conversation ». Le libellé sous la piste donne le
+   compte RÉEL d'échanges et le poids du fichier, la question qu'on se pose
+   vraiment avant d'exporter. */
+.xr{position:relative;display:flex;align-items:center;height:22px}
+.xr-track{width:100%;height:10px;border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--dim) 20%,transparent)}
+.xr-fill{height:100%;background:var(--accent);border-radius:999px;transition:width .12s}
+.xr-range{position:absolute;inset:0;width:100%;height:22px;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:ew-resize}
+.xr-range:focus{outline:none}
+.xr-range::-webkit-slider-runnable-track{height:22px;background:transparent;border:none}
+.xr-range::-moz-range-track{height:22px;background:transparent;border:none}
+.xr-range::-moz-range-progress{background:transparent}
+.xr-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;margin-top:3px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.3);cursor:ew-resize}
+.xr-range::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.3);cursor:ew-resize}
+.xr-range:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent-bg)}
+.xr-range:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent-bg)}
+.xr-range:disabled{cursor:default;opacity:.5}
+/* Conversation vide : un seul message centré à la place des réglages. */
+.xempty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:44px 20px;text-align:center;color:var(--text);font-size:14px}
+.xempty-i{font-size:30px;line-height:1;color:var(--dim);opacity:.7}
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()">☰</button>
 <!-- Installation d'un moteur en cours : le détail vit dans le panneau, qui est
@@ -1341,18 +1363,20 @@ button:hover{border-color:var(--dim);color:var(--text)}
         <button id="upd-check" onclick="checkUpdate()">↥ Vérifier les mises à jour</button>
       </div>
       <div id="upd-msg" class="muted"></div>
-      <div class="row" style="margin-bottom:0">
-        <button onclick="loadAll()">↻ refresh</button>
-        <button onclick="resetChat()">⌫ clear chat</button>
-        <button id="btn-bench" onclick="runBenchUI()">bench</button>
-      </div>
       <!-- Export du fil. Depuis la 0.8 la conversation vit dans ajean.db (bbolt,
            binaire et verrouillé tant que le service tourne) : sans ce bouton,
            plus personne ne peut relire ni archiver ses échanges, ce que
            permettait l'ancien conversation.json. -->
       <div class="row" style="margin-bottom:0">
-        <button onclick="exportChat('md')" title="conversation complète, raisonnements compris">⤓ exporter (.md)</button>
-        <button onclick="exportChat('json')" title="format fidèle : vue modèle + journal d'affichage">.json</button>
+        <button onclick="loadAll()">↻ refresh</button>
+        <button id="btn-bench" onclick="runBenchUI()">bench</button>
+        <button onclick="openExportModal()" title="choisir le format et ce qu'on emporte">⤓ exporter…</button>
+      </div>
+      <!-- « clear chat » est en DERNIER, et seul sur sa ligne : c'est la seule
+           action destructive du panneau, elle ne doit pas se trouver sous le
+           doigt qui visait « refresh ». -->
+      <div class="row" style="margin-bottom:0">
+        <button onclick="resetChat()">⌫ clear chat</button>
       </div>
     </div></div>
   </details>
@@ -1401,6 +1425,68 @@ button:hover{border-color:var(--dim);color:var(--text)}
     <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:6px">
       <button onclick="closeBenchModal()">fermer</button>
       <button id="bench-rerun" onclick="runBenchUI()" style="border-color:var(--accent);color:var(--accent)">relancer</button>
+    </div>
+  </div>
+</div>
+<!-- Fenêtre d'export. Un fil relu pour retrouver une réponse n'a que faire des
+     mille lignes de raisonnement qui l'ont produite : on choisit ce qu'on
+     emporte plutôt que de tout prendre ou rien. Les options de CONTENU sont les
+     mêmes pour les deux formats : le format ne décide que du contenant. -->
+<div id="export-modal" class="modal-ov" style="display:none" onclick="if(event.target===this)closeExportModal()">
+  <div class="modal-card" style="max-width:460px">
+    <div class="modal-head">
+      <strong>Exporter la conversation</strong>
+      <button class="modal-x" onclick="closeExportModal()" title="fermer">×</button>
+    </div>
+    <!-- Conversation vide : pas d'options à régler, un seul message. Proposer
+         des réglages pour un fichier qui ne contiendrait rien n'a aucun sens. -->
+    <div id="x-empty" class="xempty" style="display:none">
+      <div class="xempty-i">⤓</div>
+      <div>Rien à exporter</div>
+      <div class="pe-note">La conversation est vide.</div>
+    </div>
+    <div id="x-body" class="pe-body" style="gap:20px">
+      <div class="pe-group">
+        <div class="pe-gh">Format</div>
+        <div class="pe-seg">
+          <label><input type="radio" name="x-fmt" value="md" checked onchange="onExportFormat()"><span>Markdown</span><span class="be-note">à lire</span></label>
+          <label><input type="radio" name="x-fmt" value="json" onchange="onExportFormat()"><span>JSON</span><span class="be-note">à retraiter</span></label>
+        </div>
+      </div>
+      <div class="pe-group">
+        <div class="pe-gh">Portée</div>
+        <div class="pe-list">
+          <div class="pe-row stack">
+            <div class="xr">
+              <div class="xr-track"><div class="xr-fill" id="x-fill"></div></div>
+              <input type="range" class="xr-range" id="x-turns" min="1" max="1" value="1" oninput="onExportPreview()" aria-label="nombre d'échanges à exporter">
+            </div>
+            <div class="pe-note" id="x-scope"></div>
+          </div>
+        </div>
+      </div>
+      <div class="pe-group">
+        <div class="pe-gh">Contenu</div>
+        <div class="pe-list">
+          <div class="pe-row">
+            <span class="pe-row-l">Raisonnements<span class="pe-sub">la réflexion du modèle, souvent plus longue que la réponse</span></span>
+            <span class="pe-row-c"><label class="pe-switch"><input type="checkbox" id="x-reasoning" checked onchange="onExportPreview()"><span class="pe-sl"></span></label></span>
+          </div>
+          <div class="pe-row">
+            <span class="pe-row-l">Appels d'outils<span class="pe-sub">commandes, lectures et écritures de fichiers</span></span>
+            <span class="pe-row-c"><label class="pe-switch"><input type="checkbox" id="x-tools" checked onchange="onExportPreview()"><span class="pe-sl"></span></label></span>
+          </div>
+          <div class="pe-row">
+            <span class="pe-row-l">Sorties des outils<span class="pe-sub">ce que chaque outil a répondu</span></span>
+            <span class="pe-row-c"><label class="pe-switch"><input type="checkbox" id="x-results" checked onchange="onExportPreview()"><span class="pe-sl"></span></label></span>
+          </div>
+        </div>
+      </div>
+      <div class="pe-note" id="x-note"></div>
+    </div>
+    <div class="modal-foot" style="justify-content:flex-end">
+      <button class="pe-btn" onclick="closeExportModal()">annuler</button>
+      <button class="pe-btn primary" id="x-go" onclick="runExport()">⤓ télécharger</button>
     </div>
   </div>
 </div>
@@ -1732,7 +1818,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260808200313"></script>
+<script src="/e2e.js?v=20260808212031"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -2521,27 +2607,124 @@ function renderApiKey(d){
 }
 async function loadApiKey(){ renderApiKey(await jget('/api/apikey')); }
 // --- Export de la conversation ---------------------------------------------
+// xTurnsTotal : nombre d'échanges du fil, borne haute du curseur. Vient de
+// /api/chat/state ; 0 = conversation vide, et la fenêtre n'a alors rien à régler.
+let xTurnsTotal = 0;
+async function openExportModal(){
+  showModal('export-modal');
+  try{
+    const st = await jget('/api/chat/state');
+    xTurnsTotal = (st && st.turns) || 0;
+  }catch(e){ xTurnsTotal = 0; }
+  // Rien à exporter : on remplace les réglages par un message, plutôt que de
+  // proposer de tailler un fichier qui serait vide de toute façon.
+  const vide = xTurnsTotal === 0;
+  document.getElementById('x-empty').style.display = vide ? '' : 'none';
+  document.getElementById('x-body').style.display = vide ? 'none' : '';
+  document.getElementById('x-go').style.display = vide ? 'none' : '';
+  if(vide) return;
+  const el = document.getElementById('x-turns');
+  el.max = String(xTurnsTotal);
+  el.value = el.max;               // par défaut : tout le fil
+  el.disabled = xTurnsTotal < 2;   // un seul échange : rien à trancher
+  onExportFormat();
+}
+function closeExportModal(){ hideModal('export-modal'); }
+// Le format ne change QUE le contenant : les options de contenu sont les mêmes
+// des deux côtés. Il n'y a donc plus rien à montrer ou cacher ici, seulement le
+// résumé à rafraîchir.
+function onExportFormat(){ onExportPreview(); }
+function exportFormat(){
+  const r = document.querySelector('input[name=x-fmt]:checked');
+  return r ? r.value : 'md';
+}
+// Construit la requête d'export à partir des cases. On n'envoie QUE ce qui
+// s'écarte du défaut : l'URL reste lisible, et un export complet redevient le
+// simple /api/chat/export.
+function exportQuery(){
+  const p = new URLSearchParams();
+  if(exportFormat() === 'json') p.set('format','json');
+  const on = id => document.getElementById(id).checked;
+  if(!on('x-reasoning')) p.set('reasoning','0');
+  if(!on('x-tools')) p.set('tools','0');
+  if(!on('x-results')) p.set('results','0');
+  const t = exportTurns();
+  if(t > 0) p.set('turns', String(t));
+  const q = p.toString();
+  return '/api/chat/export' + (q ? '?'+q : '');
+}
+// Valeur de portée à envoyer : 0 = tout le fil. La butée DROITE du curseur vaut
+// « toute la conversation », donc on n'envoie rien plutôt qu'un nombre qui se
+// périmerait à l'échange suivant.
+function exportTurns(){
+  const v = parseInt(document.getElementById('x-turns').value, 10) || 0;
+  if(!xTurnsTotal || v >= xTurnsTotal) return 0;
+  return v;
+}
+function onExportPreview(){
+  // Sortie d'outil sans bulle d'outil n'a aucun sens : la case suit.
+  const tools = document.getElementById('x-tools');
+  const results = document.getElementById('x-results');
+  results.disabled = !tools.checked;
+  if(!tools.checked) results.checked = false;
+  paintExportRange();
+  const off = [];
+  if(!document.getElementById('x-reasoning').checked) off.push('raisonnements');
+  if(!tools.checked) off.push('outils');
+  else if(!results.checked) off.push('sorties d\'outils');
+  document.getElementById('x-note').textContent = off.length
+    ? 'Export sans ' + off.join(' ni ') + '.'
+    : '';
+}
+// Remplit la piste du curseur et son libellé. Purement local : appelé à chaque
+// pixel de glissement, il ne doit RIEN demander au serveur.
+function paintExportRange(){
+  const el = document.getElementById('x-turns');
+  const n = parseInt(el.value, 10) || 0;
+  const max = Math.max(1, xTurnsTotal);
+  // La pastille ne parcourt pas toute la largeur : elle va de THUMB/2 à
+  // largeur - THUMB/2. On coupe le remplissage dans SON repère, sinon la piste
+  // colorée déborde à côté d'elle aux extrémités (même calcul que la barre GPU).
+  const frac = max > 1 ? (n - 1) / (max - 1) : 1;
+  const fill = document.getElementById('x-fill');
+  if(fill) fill.style.width = 'calc(' + (frac*100).toFixed(2) + '% - ' + ((frac - .5) * GPU_THUMB).toFixed(2) + 'px)';
+  const scope = document.getElementById('x-scope');
+  if(!scope) return;
+  scope.textContent = n >= xTurnsTotal
+    ? 'toute la conversation (' + xTurnsTotal + ' échange' + (xTurnsTotal>1?'s':'') + ')'
+    : n + ' dernier' + (n>1?'s':'') + ' échange' + (n>1?'s':'') + ' sur ' + xTurnsTotal;
+}
+async function runExport(){
+  const btn = document.getElementById('x-go');
+  btn.disabled = true;
+  try{ await downloadExport(exportQuery()); closeExportModal(); }
+  finally{ btn.disabled = false; }
+}
 // On passe par jfetch (et pas par un simple <a href>) pour deux raisons : la clé
 // de pilotage voyage dans un en-tête Authorization, qu'un lien ne porterait pas,
 // et le chemin de base change derrière le tunnel (/u/<id>).
-async function exportChat(format){
+async function downloadExport(url){
   toast('préparation de l\'export…');
   try{
-    const r = await jfetch('/api/chat/export?format=' + encodeURIComponent(format||'md'));
+    const r = await jfetch(url);
     if(!r.ok){ toast('erreur : HTTP ' + r.status); return; }
     const blob = await r.blob();
-    // Nom du fichier : celui proposé par le serveur (horodaté), à défaut un nom local.
-    let name = 'ajean-conversation.' + (format==='json' ? 'json' : 'md');
+    // Nom du fichier : celui proposé par le serveur (horodaté), à défaut un nom
+    // local déduit du type renvoyé.
     const cd = r.headers.get('Content-Disposition') || '';
     const m = cd.match(/filename="([^"]+)"/);
-    if(m) name = m[1];
-    const url = URL.createObjectURL(blob);
+    const name = m ? m[1]
+      : 'ajean-conversation.' + ((r.headers.get('Content-Type')||'').includes('json') ? 'json' : 'md');
+    // ⚠️ blobURL, surtout pas `url` : ce nom est déjà celui du paramètre, et le
+    // redéclarer ici mettrait la ligne `jfetch(url)` ci-dessus dans la zone morte
+    // du const — l'export échouerait avant même de partir.
+    const blobURL = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = name;
+    a.href = blobURL; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     // Révocation différée : Safari annule le téléchargement si l'URL disparaît
     // dans la foulée du clic.
-    setTimeout(()=>URL.revokeObjectURL(url), 10000);
+    setTimeout(()=>URL.revokeObjectURL(blobURL), 10000);
     toast('exporté : ' + name);
   }catch(e){ toast('erreur : ' + e.message); }
 }
