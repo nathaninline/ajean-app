@@ -38,6 +38,8 @@ header .sp{flex:1}
 .sec .sp{flex:1}
 .lead{color:var(--dim);font-size:13px;line-height:1.5;margin-top:6px}
 .btn{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 14px;cursor:pointer;font:inherit;font-size:13px;font-weight:600;transition:.12s}
+.dlrow{display:flex;flex-wrap:wrap;gap:10px}
+.dlrow a.btn{text-decoration:none}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:var(--bg)}
 .btn.primary:hover{opacity:.82;color:var(--bg)}
@@ -176,6 +178,18 @@ header .sp{flex:1}
     <div class="sec"><h2>Mes serveurs</h2><span class="ct" id="srvCt">0</span><span class="sp"></span>
       <button class="btn subtle" onclick="openKeys()">Gérer les clés</button></div>
     <div class="grid" id="grid" style="margin-top:14px"></div>
+
+    <div class="sec" style="margin-top:32px"><h2>🎛️ Piloter un autre PC</h2></div>
+    <p class="muted" style="margin:2px 0 12px;max-width:640px">
+      Installe le petit client <b>ajean-remote</b> sur un PC pour que ton IA puisse agir dessus (shell, fichiers) — chiffré de bout en bout, le relais ne voit rien.
+      Ouvre ensuite ton serveur ci-dessus → réglages → <b>Postes distants</b> pour générer un code d'appairage.
+    </p>
+    <div class="dlrow" id="remoteDl">
+      <a class="btn" href="https://github.com/nathaninline/ajean/releases/latest/download/ajean-remote-windows.exe">🪟 Windows</a>
+      <a class="btn" href="https://github.com/nathaninline/ajean/releases/latest/download/ajean-remote-macos-arm">🍎 macOS (Apple)</a>
+      <a class="btn" href="https://github.com/nathaninline/ajean/releases/latest/download/ajean-remote-macos">🍎 macOS (Intel)</a>
+      <a class="btn" href="https://github.com/nathaninline/ajean/releases/latest/download/ajean-remote-linux">🐧 Linux</a>
+    </div>
   </div>
 
   <div class="tabview" id="view-help">
