@@ -1987,7 +1987,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260814112032"></script>
+<script src="/e2e.js?v=20260814113043"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -2032,7 +2032,7 @@ var MACHINE_READY=(async function(){
   var list=((await r.json()).machines)||[];
   MACHINE=list.find(function(x){return x.id===mid;});
   if(!MACHINE){alert('Serveur introuvable sur ton compte.');location.href='/';return;}
-  document.title='Jean';
+  document.title='AJEAN';
 })();
 var _sessP=null;
 function ensureSession(){if(_sessP)return _sessP;
