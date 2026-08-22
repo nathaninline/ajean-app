@@ -738,6 +738,12 @@ textarea.sctl{min-height:76px;resize:vertical;line-height:1.5}
 .pe-row-l{font-size:14px;color:var(--text);flex:1;min-width:0;line-height:1.3}
 .pe-row-l .pe-sub{display:block;font-size:11px;color:var(--dim);margin-top:2px}
 .pe-row-c{flex:none;display:flex;align-items:center;gap:6px;max-width:62%;justify-content:flex-end}
+/* Modèle de draft : le nom de fichier peut être long. On garde le libellé sur UNE
+   ligne (largeur naturelle) et on laisse le select céder la place et se tronquer
+   (ellipsis) plutôt que d'écraser le libellé qui passait alors sur deux lignes. */
+#s-spec-draft-row .pe-row-l{flex:0 0 auto;white-space:nowrap}
+#s-spec-draft-row .pe-row-c{flex:1 1 auto;min-width:0;max-width:none;overflow:hidden}
+#s-spec-draft-row .pe-selc{min-width:0;overflow:hidden}
 /* Valeur éditable sans bordure, alignée à droite (nombre / texte). */
 .pe-val{border:none;background:transparent;color:var(--accent);font:inherit;text-align:right;padding:4px 0;width:110px;max-width:44vw}
 .pe-val::placeholder{color:var(--dim)}
@@ -2244,9 +2250,9 @@ button:hover{border-color:var(--dim);color:var(--text)}
           <!-- Modèle de draft : apparaît pour tous les types à brouillon (draft-*).
                Obligatoire pour EAGLE-3/dFlash/dSpark/modèle séparé, OPTIONNEL pour
                MTP (souvent intégré au modèle). Masqué pour les n-grammes / « aucun ». -->
-          <div class="pe-row stack" id="s-spec-draft-row" style="display:none">
+          <div class="pe-row" id="s-spec-draft-row" style="display:none">
             <span class="pe-row-l">Modèle de draft<span class="pe-sub">le brouillon qui anticipe</span></span>
-            <span class="pe-selc wide"><select id="m-spec-draft" onchange="onPickSpecDraft()"></select></span>
+            <span class="pe-row-c"><span class="pe-selc"><select id="m-spec-draft" onchange="onPickSpecDraft()"></select></span></span>
           </div>
           <div class="pe-row" id="s-spec-n-row" style="display:none">
             <span class="pe-row-l">Jetons anticipés<span class="pe-sub">par étape — défaut 3</span></span>
@@ -2362,7 +2368,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260822134357"></script>
+<script src="/e2e.js?v=20260822134701"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
