@@ -2244,9 +2244,9 @@ button:hover{border-color:var(--dim);color:var(--text)}
           <!-- Modèle de draft : apparaît pour tous les types à brouillon (draft-*).
                Obligatoire pour EAGLE-3/dFlash/dSpark/modèle séparé, OPTIONNEL pour
                MTP (souvent intégré au modèle). Masqué pour les n-grammes / « aucun ». -->
-          <div class="pe-row" id="s-spec-draft-row" style="display:none">
+          <div class="pe-row stack" id="s-spec-draft-row" style="display:none">
             <span class="pe-row-l">Modèle de draft<span class="pe-sub">le brouillon qui anticipe</span></span>
-            <span class="pe-row-c"><span class="pe-selc"><select id="m-spec-draft" onchange="onPickSpecDraft()"></select></span></span>
+            <span class="pe-selc wide"><select id="m-spec-draft" onchange="onPickSpecDraft()"></select></span>
           </div>
           <div class="pe-row" id="s-spec-n-row" style="display:none">
             <span class="pe-row-l">Jetons anticipés<span class="pe-sub">par étape — défaut 3</span></span>
@@ -2362,7 +2362,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260822133740"></script>
+<script src="/e2e.js?v=20260822134357"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
