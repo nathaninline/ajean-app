@@ -69,7 +69,7 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
     <!-- Étape abonnement -->
     <div id="stage-sub" class="hidden">
       <h1>Abonnement requis</h1>
-      <p>L'accès distant à votre serveur Jean nécessite un abonnement ajean.link.</p>
+      <p>L'accès distant à votre serveur AJEAN nécessite un abonnement ajean.link.</p>
       <p class="price">4,80 €/mois · sans engagement.</p>
       <p class="err hidden" id="subErr"></p>
       <button class="btn btn-primary" id="subBtn" type="button" onclick="startCheckout()">S'abonner →</button>
@@ -89,7 +89,7 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
     <!-- Étape finale -->
     <div id="stage-done" class="hidden">
       <h1 class="ok">✓ Serveur connecté</h1>
-      <p>Votre serveur Jean est maintenant accessible à distance. Vous pouvez fermer cette fenêtre.</p>
+      <p>Votre serveur AJEAN est maintenant accessible à distance. Vous pouvez fermer cette fenêtre.</p>
       <button class="btn" type="button" onclick="window.close()" style="margin-top:16px">Fermer</button>
     </div>
   </div></div>
@@ -194,11 +194,11 @@ async function doConnect(){
   // recliquer « Connecter » depuis Jean (abonnement désormais actif → livraison
   // immédiate à la 2ᵉ tentative).
   if(!window.opener||!PARENT_ORIGIN){
-    el('stage-done').querySelector('p').textContent="Abonnement actif ✓ — retournez dans Jean et recliquez « Connecter à ajean.link » pour finaliser (un instant).";
+    el('stage-done').querySelector('p').textContent="Abonnement actif ✓ — retournez dans AJEAN et recliquez « Connecter à ajean.link » pour finaliser (un instant).";
     stage('done');return;
   }
   try{
-    var label='Jean — '+HOST;
+    var label='AJEAN — '+HOST;
     var r=await jpost('/app/key/new',{label:label});
     if(!r.ok||!r.token){show('consentErr','Impossible de générer la clé.');b.disabled=false;b.textContent='Autoriser et connecter →';return;}
     // Renvoie la clé à l'instance de Jean qui a ouvert la popup. Origine restreinte.
