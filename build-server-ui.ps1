@@ -114,7 +114,7 @@ var _sessP=null;
 function ensureSession(){if(_sessP)return _sessP;
   _sessP=(async function(){
     await MACHINE_READY;
-    if(!MACHINE||!MACHINE.pubkey)throw new Error('boîte noire indisponible (agent sans clé E2E) — mets à jour Jean côté serveur');
+    if(!MACHINE||!MACHINE.pubkey)throw new Error('boîte noire indisponible (agent sans clé E2E) — mets à jour AJEAN côté serveur');
     var s=await e2eFor(MACHINE);
     if(!s){var ok=await e2eConfirm(MACHINE);if(ok)s=await e2eFor(MACHINE);}
     if(!s)throw new Error('boîte noire requise : confirme l\'empreinte E2E de ton serveur');
