@@ -12,7 +12,10 @@ html[data-theme="dark"],html[data-theme="dark"] body{background:#0a0a0a}
 #l{position:fixed;inset:0;display:grid;place-items:center;color:#7d8590;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px}</style>
 </head><body>
-<div id="l">ajean<span style="color:#58a6ff">.link</span></div>
+<!-- « .link » en gris discret (et non plus bleu vif) : ce loader ne s'affiche qu'une
+     fraction de seconde et le « .link » bleu ressortait en flash. On l'aligne sur le
+     traitement du portail (.dom = gris atténué). -->
+<div id="l">ajean<span style="opacity:.6">.link</span></div>
 <script>
 // BOOTSTRAP anti-cache. Ce fichier est servi à la RACINE et reste donc en cache CDN
 // jusqu'à 10 min — mais il ne change (presque) jamais, donc ce cache est inoffensif.
