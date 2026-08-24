@@ -2,8 +2,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><rect width='12' height='12' rx='2' ry='2' fill='%23000'/><rect x='6' y='3' width='2' height='2' fill='%23fff'/><rect x='6' y='5' width='2' height='2' fill='%23fff'/><rect x='4' y='7' width='2' height='2' fill='%23fff'/></svg>">
 <title>AJEAN</title>
+<!-- Thème AVANT rendu (même clé que le portail : jean-theme) pour éviter un flash
+     blanc au lancement en mode sombre. Défaut clair, comme app.html. -->
+<script>try{var t=localStorage.getItem('jean-theme')||'light';if(t==='dark'||/-dark$/.test(t))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <style>:root{--bg:#ffffff;--panel:#fafafa;--panel2:#f5f5f5;--border:#e5e5e5;--line2:#d4d4d4;--soft:#f5f5f5;--text:#0a0a0a;
 --dim:#6b6b6b;--accent:#0a0a0a;--blue:#0a0a0a;--ok:#0a0a0a;--warn:#6b6b6b;--err:#c0392b;--mag:#6b6b6b}
+:root[data-theme="dark"]{--bg:#0a0a0a;--panel:#141414;--panel2:#1c1c1c;--border:#262626;--line2:#333333;--soft:#1c1c1c;
+--text:#f5f5f5;--dim:#8e8e8e;--accent:#f5f5f5;--blue:#f5f5f5;--ok:#f5f5f5;--warn:#8e8e8e;--err:#f2777a;--mag:#8e8e8e}
+html{background:var(--bg)}
 *{box-sizing:border-box;margin:0;padding:0}
 body.auth{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:22px;background:var(--bg);
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif;color:var(--text);font-size:15px;-webkit-font-smoothing:antialiased}
