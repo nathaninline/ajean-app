@@ -93,7 +93,29 @@ async function boot(){
   showShell(true);
   if(back)welcome();
   await load();
+  maybeAutoOpen();          // PWA installée : file droit sur le dernier serveur
   pollSupportBadge();}
+// maybeAutoOpen : au LANCEMENT de la PWA (écran d'accueil), ouvre directement le
+// dernier serveur utilisé au lieu de rester sur « Mes serveurs ». Contraintes :
+//  - UNIQUEMENT en PWA installée (standalone) — dans un navigateur on garde la liste ;
+//  - une seule fois PAR SESSION (drapeau sessionStorage) : si on revient à la liste
+//    (swipe-retour iOS, possible car on navigue en location.href = historique), on
+//    n'est pas re-catapulté ; un nouveau lancement à froid ré-ouvre le serveur ;
+//  - pas si ?pick=1 (retour explicite à la liste) ni ?sub=ok (retour de paiement) ;
+//  - seulement si le serveur mémorisé existe et est EN LIGNE, sinon on montre la liste.
+function maybeAutoOpen(){
+  try{
+    if(sessionStorage.getItem('ajk-autoopen'))return;
+    var sp=new URLSearchParams(location.search);
+    if(sp.get('pick')==='1'||sp.get('sub')==='ok')return;
+    var standalone=(navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode:standalone)').matches);
+    if(!standalone)return;
+    var id=localStorage.getItem('ajk-home');if(!id)return;
+    var m=machineById(id);if(!m||!m.online)return;
+    sessionStorage.setItem('ajk-autoopen','1');
+    location.href='server.html?m='+encodeURIComponent(id)+'&v='+BUILD;
+  }catch(e){}
+}
 // showShell : masque tabs + contenu + bouton compte tant que le mur est en place.
 function showShell(on){
   var tb=document.querySelector('nav.tabs'),wr=document.querySelector('.wrap'),ab=document.getElementById('acctBtn');

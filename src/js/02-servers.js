@@ -44,7 +44,9 @@ function serverCard(m){var d=document.createElement('div');d.className='tile srv
       '<span class="subln"><span class="host">'+esc(m.hostname||m.id.slice(0,8))+'</span><span class="st-t">'+status+'</span></span></span>'+
       '<span class="dot '+(m.online?'on':'')+'"></span></div>'+body;
   // Serveur en ligne → on l'ouvre dans la vraie UI jean web (boîte noire). Hors ligne → édition.
-  d.onclick=function(){if(m.online)location.href='server.html?m='+encodeURIComponent(m.id)+'&v='+BUILD;else editServer(m.id,m.name);};
+  // On MÉMORISE le dernier serveur ouvert : au prochain lancement de la PWA on y
+  // retourne direct (voir maybeAutoOpen), au lieu de repasser par « Mes serveurs ».
+  d.onclick=function(){if(m.online){try{localStorage.setItem('ajk-home',m.id);}catch(e){}location.href='server.html?m='+encodeURIComponent(m.id)+'&v='+BUILD;}else editServer(m.id,m.name);};
   if(m.online&&PROBE[m.id])updateProbe(d,PROBE[m.id]);
   return d;}
 
