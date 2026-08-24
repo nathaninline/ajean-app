@@ -564,10 +564,6 @@ details>summary+.subhead{margin-top:4px}
   font-size:12.5px;cursor:pointer;user-select:none}
 .slist>.switchrow{padding:6px 10px}
 .slist>.switchrow:not(:last-child){border-bottom:1px solid var(--border)}
-/* Filet HAUT explicite : pour une ligne qui suit le navigateur de pages
-   (.pages-bar/.mem-pages-body ne portent pas de filet bas), sinon elle se colle
-   à la liste au-dessus sans séparation. */
-.slist>.switchrow.septop{border-top:1px solid var(--border)}
 .switchrow .switch{margin-left:auto;order:2;flex:none}
 .switchrow>span:first-child{min-width:0}
 
@@ -1482,10 +1478,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
          entier est grisé/inerte quand l'agent est off (voir setAgentGate). -->
     <div id="mem-block" class="gated-group">
       <div class="subhead">Mémoire<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span id="mem-mode-desc" class="tip"></span></span></div>
-      <!-- Carte unique, trois lignes nettes séparées par un filet :
-           1) mode d'utilisation · 2) navigateur de pages · 3) chiffrement. -->
       <div class="slist">
-        <!-- 1. Mode : quand l'IA se sert de sa mémoire. -->
         <label class="switchrow"><span>mode</span>
           <select id="mem-mode" onchange="setMemMode()" class="sctl">
             <option value="always">auto</option>
@@ -1493,41 +1486,18 @@ button:hover{border-color:var(--dim);color:var(--text)}
             <option value="off">désactivée</option>
           </select>
         </label>
-        <!-- 2. Pages : liste dépliable + recherche + ajout. -->
         <div id="mem-pages-bar" class="pages-bar" onclick="toggleMemPages()">
           <span class="pages-title">Voir la mémoire <span id="mem-count" class="mem-count"></span></span>
           <button class="addbtn" onclick="event.stopPropagation();openMem('')" title="ajouter une page mémoire">+ ajouter</button>
         </div>
         <div id="mem-pages-body" hidden>
+          <!-- Le champ de filtre garde son rembourrage de ligne ; la liste, elle,
+               est à fleur de carte : ses pages sont des LIGNES séparées par un
+               filet, pas une pile de petites cartes. -->
           <div id="mem-search-row" class="rowbody" style="display:none">
             <input id="mem-search" class="mem-search" type="search" placeholder="filtrer la mémoire…" oninput="renderMemList()" style="margin:0">
           </div>
           <div id="mem-list" class="mem-list rowlist muted" style="font-size:12px"></div>
-        </div>
-        <!-- 3. Chiffrement (off par défaut) : UN seul interrupteur. Chiffre la
-             mémoire ET les conversations. Ton mot de passe ouvre le coffre et ton
-             navigateur le retient : déverrouillage automatique ensuite, jamais à
-             retaper. Filet haut explicite (le navigateur de pages n'en porte pas). -->
-        <label class="switchrow septop"><span class="switch"><input type="checkbox" id="mem-enc-toggle" onchange="toggleMemEncrypt()"><span class="slider"></span></span> activer le chiffrement<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Chiffre ta <b>mémoire</b> ET tes <b>conversations</b> au repos (AES-256). Ton mot de passe ouvre le coffre qui contient la clé ; ton navigateur le retient, donc tu ne le retapes plus, et le serveur ne peut <b>jamais</b> déchiffrer sans toi. Une <b>clé de récupération</b> t'est donnée à l'activation (garde-la). Rien n'est perdu : snapshots automatiques avant chaque bascule.</span></span></label>
-        <div id="mem-enc-body" hidden style="padding:0 10px 6px">
-          <div id="mem-enc-status" class="muted" style="font-size:11.5px;padding:5px 0"></div>
-          <div id="mem-enc-actions" class="row"></div>
-        </div>
-      </div>
-    </div>
-    <!-- Sauvegarde ajean.link (abonnés) : mémoire + presets + réglages, chiffrés
-         côté serveur avant l'envoi, relais aveugle. Section entière masquée si le
-         serveur n'est pas lié à un compte ajean.link. -->
-    <div id="backup-block" style="display:none">
-      <div class="subhead">Sauvegarde ajean.link<span id="backup-badge" class="sbadge"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Sauvegarde ta mémoire, tes presets et tes réglages sur ajean.link. Tout est <b>chiffré sur ton serveur avant l'envoi</b> : le relais ne voit qu'un blob opaque, illisible même s'il était piraté. Restaurable sur un serveur vierge avec ton mot de passe de sauvegarde.</span></span></div>
-      <div class="slist">
-        <label class="switchrow"><span class="switch"><input type="checkbox" id="backup-auto-toggle" onchange="toggleBackupAuto()"><span class="slider"></span></span> sauvegarde automatique quotidienne</label>
-        <div class="rowbody">
-          <div id="backup-status" class="muted" style="font-size:12px;line-height:1.5"></div>
-          <div class="row" style="margin-top:8px">
-            <button onclick="backupNow()">Sauvegarder maintenant</button>
-            <button onclick="backupRestore()">Restaurer…</button>
-          </div>
         </div>
       </div>
     </div>
@@ -2484,7 +2454,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260825002525"></script>
+<script src="/e2e.js?v=20260824185559"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3304,119 +3274,6 @@ async function loadAgent(){
   document.getElementById('mem-count').textContent = memPages.length ? '('+memPages.length+')' : '';
   document.getElementById('mem-search-row').style.display = memPages.length > MEM_PAGE ? '' : 'none';
   renderMemList();
-  loadMemEnc();
-}
-
-// --- Chiffrement de la mémoire ----------------------------------------------
-// État affiché sous la liste des pages : chiffré/verrouillé, actions contextuelles.
-function _memEncBtn(parent,label,fn){
-  const b=document.createElement('button'); b.textContent=label; b.onclick=fn; parent.appendChild(b);
-}
-// Clé de chiffrement retenue sur CET appareil (comme la clé de pilotage) : sert
-// au déverrouillage automatique. Le serveur ne la stocke jamais.
-const ENCKEY='ajean.enckey';
-let memAutoTried=false;
-async function loadMemEnc(){
-  let h; try{ h=await jget('/api/mem/health'); }catch(e){ return; }
-  const tog=document.getElementById('mem-enc-toggle'); if(!tog) return;
-  tog.checked=!!h.encrypted;
-  const body=document.getElementById('mem-enc-body');
-  const st=document.getElementById('mem-enc-status');
-  const act=document.getElementById('mem-enc-actions'); act.textContent='';
-  body.hidden=!h.encrypted;
-  if(!h.encrypted) return loadBackup();
-  if(h.locked){
-    // Déverrouillage AUTOMATIQUE avec la clé retenue par le navigateur (une seule
-    // tentative par chargement pour ne pas boucler si la clé n'est plus la bonne).
-    const saved=localStorage.getItem(ENCKEY);
-    if(saved && !memAutoTried){
-      memAutoTried=true;
-      const r=await jpost('/api/mem/unlock',{secret:saved});
-      if(r.ok){ loadMem(); return; }
-      localStorage.removeItem(ENCKEY); // clé périmée (mot de passe changé ?)
-    }
-    st.textContent='🔒 chiffré — verrouillé';
-    _memEncBtn(act,'Déverrouiller',memUnlock);
-  } else {
-    st.textContent='🔓 chiffré (mémoire + conversations) — déverrouillage automatique sur cet appareil';
-  }
-  loadBackup();
-}
-async function toggleMemEncrypt(){
-  const tog=document.getElementById('mem-enc-toggle');
-  if(tog.checked){
-    const ok=await askConfirm('Ta mémoire ET tes conversations seront chiffrées au repos (AES-256). Ton mot de passe ouvre le coffre ; cet appareil le retient, tu ne le retaperas plus. Tu recevras une CLÉ DE RÉCUPÉRATION à noter absolument. Un snapshot de sécurité est pris avant.',{title:'Activer le chiffrement ?',okText:'Continuer'});
-    if(!ok){ tog.checked=false; return; }
-    const pw=await askPrompt('Choisis un mot de passe de chiffrement. Cet appareil le retient : tu ne le retaperas plus (sauf sur un nouvel appareil).',{title:'Mot de passe de chiffrement',placeholder:'mot de passe'});
-    if(!pw){ tog.checked=false; return; }
-    const pw2=await askPrompt('Confirme le mot de passe :',{title:'Confirmation'});
-    if(pw2!==pw){ await askAlert('Les deux saisies ne correspondent pas. Rien n\'a été changé.',{title:'Annulé'}); tog.checked=false; return; }
-    let r; try{ r=await jpost('/api/mem/encrypt',{password:pw}); }catch(e){ await askAlert('Échec : '+e); tog.checked=false; return; }
-    if(!r.ok){ await askAlert('Échec : '+(r.error||'inconnu')); tog.checked=false; loadMemEnc(); return; }
-    localStorage.setItem(ENCKEY, pw); memAutoTried=true; // retenu pour déverrouillage auto
-    await askAlert('Note-la MAINTENANT, elle ne sera plus jamais affichée :\n\n'+r.recovery+'\n\nRange-la hors ligne. Elle rouvre tout même si tu perds ton mot de passe.',{title:'⚠️ Clé de récupération'});
-    toast('Chiffrement activé'); loadMem();
-  } else {
-    const ok=await askConfirm('Ta mémoire et tes conversations seront réécrites EN CLAIR sur le disque. Un snapshot de sécurité est pris avant. Continuer ?',{title:'Désactiver le chiffrement ?',okText:'Déchiffrer',danger:true});
-    if(!ok){ tog.checked=true; return; }
-    let r; try{ r=await jpost('/api/mem/decrypt',{}); }catch(e){ await askAlert('Échec : '+e); tog.checked=true; return; }
-    if(!r.ok){ await askAlert('Échec : '+(r.error||'inconnu')); tog.checked=true; loadMemEnc(); return; }
-    localStorage.removeItem(ENCKEY);
-    toast('Chiffrement désactivé'); loadMem();
-  }
-}
-async function memUnlock(){
-  const s=await askPrompt('Mot de passe de chiffrement (ou clé de récupération) :',{title:'Déverrouiller',placeholder:'mot de passe ou clé de récupération'});
-  if(!s) return;
-  let r; try{ r=await jpost('/api/mem/unlock',{secret:s}); }catch(e){ await askAlert('Échec : '+e); return; }
-  if(!r.ok){ await askAlert('Secret incorrect.',{title:'Refusé'}); return; }
-  localStorage.setItem(ENCKEY, s); // retenu : plus besoin de retaper ensuite
-  toast('Déverrouillé'); loadMem();
-}
-
-// --- Sauvegarde ajean.link ---------------------------------------------------
-async function loadBackup(){
-  const block=document.getElementById('backup-block'); if(!block) return;
-  let s; try{ s=await jget('/api/backup/status'); }catch(e){ block.style.display='none'; return; }
-  if(!s.linked){ block.style.display='none'; return; } // réservé aux serveurs liés à ajean.link
-  block.style.display='';
-  document.getElementById('backup-auto-toggle').checked=!!s.auto;
-  setBadge('backup-badge', !!s.auto, s.auto?'auto':'manuel');
-  const st=document.getElementById('backup-status');
-  let msg='';
-  if(s.last){ const d=new Date(s.last); msg='Dernière sauvegarde : '+(isNaN(d)?s.last:d.toLocaleString()); }
-  else msg='Aucune sauvegarde encore.';
-  if(Array.isArray(s.versions)) msg+=' · '+s.versions.length+' version(s) sur le relais';
-  if(s.error) msg+='\n⚠️ '+s.error;
-  st.textContent=msg; st.style.whiteSpace='pre-line';
-}
-async function toggleBackupAuto(){
-  const on=document.getElementById('backup-auto-toggle').checked;
-  await jpost('/api/backup/auto',{on});
-  if(on) await askAlert('La sauvegarde automatique tournera une fois par jour. Après un redémarrage du serveur, lance une sauvegarde manuelle une fois pour la ré-armer (ton mot de passe n\'est jamais stocké).',{title:'Sauvegarde auto activée'});
-  loadBackup();
-}
-async function backupNow(){
-  const pw=await askPrompt('Mot de passe de sauvegarde (il protège le paquet chiffré ; note-le, il te faudra le même pour restaurer) :',{title:'Sauvegarder maintenant',placeholder:'mot de passe de sauvegarde'});
-  if(!pw) return;
-  toast('Sauvegarde en cours…');
-  let r; try{ r=await jpost('/api/backup/now',{password:pw}); }catch(e){ await askAlert('Échec : '+e); return; }
-  if(!r.ok){ await askAlert('Échec : '+(r.error||'inconnu')); return; }
-  toast('Sauvegarde envoyée'); loadBackup();
-}
-async function backupRestore(){
-  let s; try{ s=await jget('/api/backup/status'); }catch(e){ await askAlert('Relais injoignable.'); return; }
-  const vers=(s.versions||[]);
-  if(!vers.length){ await askAlert('Aucune sauvegarde disponible sur le relais.'); return; }
-  const latest=vers[0];
-  const when=latest.when? new Date(latest.when).toLocaleString():latest.id;
-  if(!await askConfirm('Restaurer la sauvegarde la plus récente ('+when+') ? Cela remplacera ta mémoire, tes presets et tes réglages actuels. Un snapshot de sécurité est pris avant.',{title:'Restaurer',okText:'Restaurer',danger:true})) return;
-  const secret=await askPrompt('Mot de passe de sauvegarde (ou clé de récupération) :',{title:'Restaurer',placeholder:'mot de passe de sauvegarde'});
-  if(!secret) return;
-  toast('Restauration…');
-  let r; try{ r=await jpost('/api/backup/restore',{id:latest.id,secret}); }catch(e){ await askAlert('Échec : '+e); return; }
-  if(!r.ok){ await askAlert('Échec : '+(r.error||'inconnu')); return; }
-  await askAlert('Restauration terminée.',{title:'OK'}); loadMem();
 }
 // Mémoire + accès internet sont des sous-réglages du mode agent : sans agent, ni
 // les outils mem_* ni les outils web ne sont fournis (voir globalCaps côté Go). On
