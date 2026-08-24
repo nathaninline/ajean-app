@@ -172,4 +172,17 @@ $mkDst = Join-Path $here 'marked.min.js'
 if ((Test-Path $mkSrc) -and ((-not (Test-Path $mkDst)) -or ((Get-FileHash $mkSrc).Hash -ne (Get-FileHash $mkDst).Hash))) {
   Copy-Item -Force $mkSrc $mkDst; Write-Host "marked.min.js copié."
 }
+
+# Notifications Web Push : le service worker et le manifeste doivent être servis
+# à la RACINE de l'origine Pages (app.ajean.link), comme fichiers statiques — le
+# navigateur les récupère directement (ils ne passent PAS par la boîte noire E2E,
+# qui ne réécrit que window.fetch, pas serviceWorker.register / <link manifest>).
+# Source de vérité unique = jean web, comme marked.min.js. Voir push.go / sw.js.
+foreach ($f in @('sw.js', 'manifest.webmanifest')) {
+  $pSrc = Join-Path $here ('..\jean\internal\ajean\ui\' + $f)
+  $pDst = Join-Path $here $f
+  if ((Test-Path $pSrc) -and ((-not (Test-Path $pDst)) -or ((Get-FileHash $pSrc).Hash -ne (Get-FileHash $pDst).Hash))) {
+    Copy-Item -Force $pSrc $pDst; Write-Host "$f copié."
+  }
+}
 Write-Host "OK -> $dst"
