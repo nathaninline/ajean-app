@@ -12,10 +12,10 @@ html[data-theme="dark"],html[data-theme="dark"] body{background:#0a0a0a}
 #l{position:fixed;inset:0;display:grid;place-items:center;color:#7d8590;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px}</style>
 </head><body>
-<!-- « .link » en gris discret (et non plus bleu vif) : ce loader ne s'affiche qu'une
-     fraction de seconde et le « .link » bleu ressortait en flash. On l'aligne sur le
-     traitement du portail (.dom = gris atténué). -->
-<div id="l">ajean<span style="opacity:.6">.link</span></div>
+<!-- Pas de texte de chargement : ce bootstrap ne dure qu'une fraction de seconde,
+     et le « ajean.link » ressortait comme un flash disgracieux. On ne laisse que le
+     fond (déjà au bon thème) le temps de rediriger vers app.html. -->
+<div id="l"></div>
 <script>
 // BOOTSTRAP anti-cache. Ce fichier est servi à la RACINE et reste donc en cache CDN
 // jusqu'à 10 min — mais il ne change (presque) jamais, donc ce cache est inoffensif.
