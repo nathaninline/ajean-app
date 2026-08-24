@@ -280,10 +280,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260824173724"></script>
+<script src="/e2e.js?v=20260824182151"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20260824173724'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20260824182151'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
@@ -417,7 +417,9 @@ function serverCard(m){var d=document.createElement('div');d.className='tile srv
       '<span class="subln"><span class="host">'+esc(m.hostname||m.id.slice(0,8))+'</span><span class="st-t">'+status+'</span></span></span>'+
       '<span class="dot '+(m.online?'on':'')+'"></span></div>'+body;
   // Serveur en ligne → on l'ouvre dans la vraie UI jean web (boîte noire). Hors ligne → édition.
-  d.onclick=function(){if(m.online)location.href='server.html?m='+encodeURIComponent(m.id)+'&v='+BUILD;else editServer(m.id,m.name);};
+  // On MÉMORISE le dernier serveur ouvert : au prochain lancement de la PWA on y
+  // retourne direct (voir maybeAutoOpen), au lieu de repasser par « Mes serveurs ».
+  d.onclick=function(){if(m.online){try{localStorage.setItem('ajk-home',m.id);}catch(e){}location.href='server.html?m='+encodeURIComponent(m.id)+'&v='+BUILD;}else editServer(m.id,m.name);};
   if(m.online&&PROBE[m.id])updateProbe(d,PROBE[m.id]);
   return d;}
 
@@ -537,7 +539,30 @@ async function boot(){
   showShell(true);
   if(back)welcome();
   await load();
+  maybeAutoOpen();          // PWA installée : file droit sur le dernier serveur
   pollSupportBadge();}
+// maybeAutoOpen : au LANCEMENT de la PWA (écran d'accueil), ouvre directement le
+// dernier serveur utilisé au lieu de rester sur « Mes serveurs ». Contraintes :
+//  - UNIQUEMENT en PWA installée (standalone) — dans un navigateur on garde la liste,
+//    l'utilisateur a sa barre d'adresse / ses onglets ;
+//  - une seule fois PAR SESSION (drapeau sessionStorage) : si on revient à la liste
+//    (swipe-retour iOS, possible car on navigue en location.href = historique), on
+//    n'est pas re-catapulté ; un nouveau lancement à froid ré-ouvre le serveur ;
+//  - pas si ?pick=1 (retour explicite à la liste) ni ?sub=ok (retour de paiement) ;
+//  - seulement si le serveur mémorisé existe et est EN LIGNE, sinon on montre la liste.
+function maybeAutoOpen(){
+  try{
+    if(sessionStorage.getItem('ajk-autoopen'))return;
+    var sp=new URLSearchParams(location.search);
+    if(sp.get('pick')==='1'||sp.get('sub')==='ok')return;
+    var standalone=(navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode:standalone)').matches);
+    if(!standalone)return;
+    var id=localStorage.getItem('ajk-home');if(!id)return;
+    var m=machineById(id);if(!m||!m.online)return;
+    sessionStorage.setItem('ajk-autoopen','1');
+    location.href='server.html?m='+encodeURIComponent(id)+'&v='+BUILD;
+  }catch(e){}
+}
 // showShell : masque tabs + contenu + bouton compte tant que le mur est en place.
 function showShell(on){
   var tb=document.querySelector('nav.tabs'),wr=document.querySelector('.wrap'),ab=document.getElementById('acctBtn');
