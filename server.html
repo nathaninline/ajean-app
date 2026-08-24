@@ -451,6 +451,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .cl-dots span{width:7px;height:7px;border-radius:50%;background:var(--dim);animation:typingdot 1.2s infinite ease-in-out}
 .cl-dots span:nth-child(2){animation-delay:.16s}
 .cl-dots span:nth-child(3){animation-delay:.32s}
+/* Les 3 points « qui sautent » du voile de chargement. Ce keyframes avait disparu
+   (renommé/supprimé lors d'un ménage), laissant l'animation pointer dans le vide →
+   points figés. On le redéfinit : petit saut vers le haut, échelonné par les délais
+   ci-dessus. */
+@keyframes typingdot{0%,80%,100%{transform:translateY(0);opacity:.45}40%{transform:translateY(-6px);opacity:1}}
 .msg .label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;display:block}
 /* Bulles repliables (reasoning / tool) : une fois la réponse arrivée, on les
    replie en douceur pour désencombrer le fil, tout en gardant le label (et son
@@ -2449,7 +2454,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260824183114"></script>
+<script src="/e2e.js?v=20260824184438"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
