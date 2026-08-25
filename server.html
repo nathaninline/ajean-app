@@ -1616,6 +1616,7 @@ button:hover{border-color:var(--dim);color:var(--text)}
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-hide-tools" onchange="toggleView('hide-tools')"><span class="slider"></span></span> masquer les appels d'outils</label>
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-fold-tools" onchange="toggleView('fold-tools')"><span class="slider"></span></span> garder les bulles repliées<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Les bulles de raisonnement et d'outil arrivent <b>déjà fermées</b> au lieu de s'ouvrir puis se refermer. Un clic sur leur étiquette les déplie.</span></span></label>
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-hide-side" onchange="toggleView('hide-side')"><span class="slider"></span></span> barre latérale escamotable<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">La barre latérale devient un tiroir <b>même sur ordinateur</b> : elle reste fermée et s'ouvre avec le bouton ☰. Toute la largeur pour la conversation.</span></span></label>
+    <label class="switchrow"><span class="switch"><input type="checkbox" id="view-enter-newline" onchange="toggleView('enter-newline')"><span class="slider"></span></span> Entrée = retour à la ligne<span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip">Par défaut, <b>Entrée</b> envoie le message et <b>Maj+Entrée</b> fait un retour à la ligne. Activez ceci pour inverser : Entrée va à la ligne, et <b>Maj+Entrée</b> (ou Ctrl+Entrée) envoie.</span></span></label>
     </div>
   </details>
   <details><summary><span class="stitle">System prompt</span></summary>
@@ -2481,7 +2482,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260825105457"></script>
+<script src="/e2e.js?v=20260825160653"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -2658,6 +2659,7 @@ const VIEW_OPTS=[
   {id:'hide-tools',     label:"masquer les appels d'outils"},
   {id:'fold-tools',     label:'garder les bulles repliées'},
   {id:'hide-side',      label:'barre latérale escamotable'},
+  {id:'enter-newline',  label:'Entrée = retour à la ligne'},
 ];
 function viewOn(id){ return document.documentElement.getAttribute('data-'+id)==='1'; }
 function applyView(id, on){
@@ -3329,8 +3331,14 @@ async function loadMemEnc(){
       const r=await jpost('/api/mem/unlock',{secret:legacy});
       if(r.ok){ if(apiKey) await jpost('/api/mem/addkey',{secret:apiKey}); localStorage.removeItem('ajean.enckey'); loadMem(); return; }
     }
-    const s=await askPrompt('Entre ta clé d\'API (ou ton ancien mot de passe de chiffrement) pour ouvrir ta mémoire et tes conversations. Ta clé d\'API sera ensuite mémorisée : tu ne retaperas plus rien.',{title:'Déverrouiller',placeholder:'clé d\'API ou ancien mot de passe'});
-    if(s){ const r=await jpost('/api/mem/unlock',{secret:s}); if(r.ok){ if(apiKey && s!==apiKey) await jpost('/api/mem/addkey',{secret:apiKey}); loadMem(); return; } await askAlert('Clé incorrecte.',{title:'Refusé'}); memUnlockDone=false; }
+    // Boucle : une clé fausse redemande tout de suite (plus besoin de rafraîchir).
+    while(true){
+      const s=await askPrompt('Entre ta clé d\'API (ou ton ancien mot de passe de chiffrement) pour ouvrir ta mémoire et tes conversations. Ta clé d\'API sera ensuite mémorisée : tu ne retaperas plus rien.',{title:'Déverrouiller',placeholder:'clé d\'API ou ancien mot de passe'});
+      if(!s){ memUnlockDone=false; break; } // annulé : nouvelle tentative au prochain chargement
+      const r=await jpost('/api/mem/unlock',{secret:s});
+      if(r.ok){ if(apiKey && s!==apiKey) await jpost('/api/mem/addkey',{secret:apiKey}); loadMem(); return; }
+      await askAlert('Clé incorrecte, réessaie.',{title:'Refusé'});
+    }
   }
   loadBackup();
 }
@@ -3381,14 +3389,14 @@ async function loadBackup(){
 async function toggleBackupAuto(){
   const on=document.getElementById('backup-auto-toggle').checked;
   await jpost('/api/backup/auto',{on});
-  if(on) await askAlert('La sauvegarde automatique tournera une fois par jour. Après un redémarrage du serveur, lance une sauvegarde manuelle une fois pour la ré-armer (ton mot de passe n\'est jamais stocké).',{title:'Sauvegarde auto activée'});
+  if(on) await askAlert('La sauvegarde automatique tournera une fois par jour, tant que ta mémoire est déverrouillée (le paquet est chiffré avec ta clé, jamais stockée sur le serveur).',{title:'Sauvegarde auto activée'});
   loadBackup();
 }
 async function backupNow(){
-  const pw=await askPrompt('Mot de passe de sauvegarde (il protège le paquet chiffré ; note-le, il te faudra le même pour restaurer) :',{title:'Sauvegarder maintenant',placeholder:'mot de passe de sauvegarde'});
-  if(!pw) return;
+  // Aucun mot de passe : le paquet est chiffré avec la clé de ta mémoire (déjà
+  // ouverte). La restauration se fera avec ta clé d'API.
   toast('Sauvegarde en cours…');
-  let r; try{ r=await jpost('/api/backup/now',{password:pw}); }catch(e){ await askAlert('Échec : '+e); return; }
+  let r; try{ r=await jpost('/api/backup/now',{}); }catch(e){ await askAlert('Échec : '+e); return; }
   if(!r.ok){ await askAlert('Échec : '+(r.error||'inconnu')); return; }
   toast('Sauvegarde envoyée'); loadBackup();
 }
@@ -3399,12 +3407,15 @@ async function backupRestore(){
   const latest=vers[0];
   const when=latest.when? new Date(latest.when).toLocaleString():latest.id;
   if(!await askConfirm('Restaurer la sauvegarde la plus récente ('+when+') ? Cela remplacera ta mémoire, tes presets et tes réglages actuels. Un snapshot de sécurité est pris avant.',{title:'Restaurer',okText:'Restaurer',danger:true})) return;
-  const secret=await askPrompt('Mot de passe de sauvegarde (ou clé de récupération) :',{title:'Restaurer',placeholder:'mot de passe de sauvegarde'});
-  if(!secret) return;
-  toast('Restauration…');
-  let r; try{ r=await jpost('/api/backup/restore',{id:latest.id,secret}); }catch(e){ await askAlert('Échec : '+e); return; }
-  if(!r.ok){ await askAlert('Échec : '+(r.error||'inconnu')); return; }
-  await askAlert('Restauration terminée.',{title:'OK'}); loadMem();
+  // Boucle : une clé fausse redemande tout de suite.
+  while(true){
+    const secret=await askPrompt('Ta clé d\'API (ou ta clé de récupération) pour ouvrir la sauvegarde :',{title:'Restaurer',placeholder:'clé d\'API ou clé de récupération'});
+    if(!secret) return; // annulé
+    toast('Restauration…');
+    let r; try{ r=await jpost('/api/backup/restore',{id:latest.id,secret}); }catch(e){ await askAlert('Échec : '+e); return; }
+    if(r.ok){ await askAlert('Restauration terminée.',{title:'OK'}); loadMem(); return; }
+    await askAlert((r.error&&r.error.indexOf('incorrecte')>=0)?'Clé incorrecte, réessaie.':('Échec : '+(r.error||'inconnu')),{title:'Refusé'});
+  }
 }
 // Mémoire + accès internet sont des sous-réglages du mode agent : sans agent, ni
 // les outils mem_* ni les outils web ne sont fournis (voir globalCaps côté Go). On
@@ -4719,6 +4730,21 @@ function closeModal(){ hideModal('modal'); document.getElementById('modal').clas
 async function saveItem(){
   const K = KINDS[editingKind];
   const name = document.getElementById('m-name').value.trim();
+  // Interrupteur « Raisonnement » : on matérialise son état dans le preset AVANT
+  // de lire le contenu. onchange ne part que sur une interaction : un switch
+  // laissé sur off à la création n'écrivait donc jamais REASONING=, et la clé
+  // ABSENTE laisse le moteur raisonner malgré l'interrupteur affiché sur off
+  // (issue #46). Décoché → REASONING=off explicite. Coché → on, sauf si une
+  // valeur active plus précise (auto/deepseek) est déjà là : on ne l'écrase pas.
+  if(editingKind==='preset'){
+    const rsw = document.getElementById('s-reasoning');
+    if(rsw){
+      const cur = cfgReadKey('REASONING');
+      const active = /^(on|1|true|auto|deepseek)$/i.test(cur);
+      if(!rsw.checked){ if(!/^off$/i.test(cur)) cfgWriteKey('REASONING', 'off'); }
+      else if(!active){ cfgWriteKey('REASONING', 'on'); }
+    }
+  }
   const content = document.getElementById('m-content').value;
   if(!name){ toast('nom requis'); return; }
   // Presets: keyed by id (filename); duplicate display names are allowed.
@@ -5427,7 +5453,16 @@ function restoreChat(){
   setTimeout(()=>{ setChatLoading(null); }, 15000);
   connectStream();
 }
-function onKey(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } }
+// Deux modes, réglables dans Apparence (issue #44). Par défaut : Entrée envoie,
+// Maj+Entrée fait un retour à la ligne. Avec « Entrée = retour à la ligne » coché,
+// on inverse : Entrée insère un saut de ligne et c'est Maj/Ctrl/Cmd+Entrée qui
+// envoie. isComposing évite d'envoyer en pleine saisie IME (accents, japonais…).
+function onKey(e){
+  if(e.key!=='Enter' || e.isComposing) return;
+  const withMod = e.shiftKey || e.ctrlKey || e.metaKey;
+  const shouldSend = viewOn('enter-newline') ? withMod : !e.shiftKey;
+  if(shouldSend){ e.preventDefault(); send(); }
+}
 // La zone de saisie s'ajuste à son contenu : une ligne au repos, puis elle
 // grandit jusqu'à sa max-height (au-delà, elle défile). Appelée à la frappe, à
 // l'envoi et au chargement.
