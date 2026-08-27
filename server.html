@@ -1160,8 +1160,15 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
 /* Étiquettes VOUS / AJEAN : inutiles ici (l'alignement suffit), sauf pour les
    bulles repliables (raisonnement / outils) où le label est le bouton de repli. */
 #chat .msg .label{display:none}
-#chat .msg.collapsible .label{display:block;position:relative;padding-right:16px;width:fit-content;
+#chat .msg.collapsible .label{display:inline-flex;align-items:center;gap:6px;position:relative;padding-right:16px;width:fit-content;
   text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--dim)}
+/* Icône SVG de l'étiquette : au trait, alignée au texte, suit la couleur (--dim du
+   label). Le shimmer clippe un dégradé sur le TEXTE seul (background-clip:text) ;
+   le SVG, élément à part, n'est pas affecté → il reste net et lisible pendant
+   l'animation. Slot vide (bulles sans icône) : replié pour ne pas manger le gap. */
+#chat .msg.collapsible .label .ic-slot{display:inline-flex;flex:0 0 auto;line-height:0}
+#chat .msg.collapsible .label .ic-slot:empty{display:none}
+#chat .msg.collapsible .label .ic{width:15px;height:15px;display:block;opacity:.85}
 /* Chevron de repli, à droite du texte. Posé en ::after avec sa propre couleur :
    le shimmer met -webkit-text-fill-color:transparent sur le label, ce qui se
    propagerait au chevron — on le ré-affirme ici pour qu'il reste visible pendant
@@ -2534,7 +2541,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260827234954"></script>
+<script src="/e2e.js?v=20260828002104"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -5142,18 +5149,41 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 
-// Libellé initial d'une bulle repliable, AVANT que le flux ne pose le vrai texte
-// (tokens de raisonnement, nom d'outil). Sert le tout premier rendu : sans lui on
-// voyait le rôle technique brut (« reasoning » / « tool »). Icône + français.
+// Jeu d'icônes SVG au trait (style Lucide, 24×24, stroke currentColor). Pas d'emoji :
+// rendu net, monochrome, qui suit la couleur du thème (clair/sombre) et le dim des
+// étiquettes. Le contenu est développeur (statique) → innerHTML sûr.
+const ICONS = {
+  brain:'<path d="M12 5a3 3 0 1 0-5.997.142 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.142 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>',
+  terminal:'<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>',
+  file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  globe:'<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+  db:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+  monitor:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+  plug:'<path d="M9 2v6"/><path d="M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6z"/><path d="M12 17v5"/>',
+  wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2 2.8-2.8z"/>',
+};
+function iconSvg(key){
+  const p = ICONS[key] || ICONS.wrench;
+  return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>';
+}
+// Icône du rôle d'une bulle à sa création, avant que le flux ne pose le vrai libellé.
+function roleIcon(role){ return role==='reasoning' ? 'brain' : role==='tool' ? 'wrench' : ''; }
 function roleLabel(role){
-  if(role==='reasoning') return '🧠 Réflexion en cours…';
-  if(role==='tool') return '🔧 Outil…';
+  if(role==='reasoning') return 'Réflexion en cours…';
+  if(role==='tool') return 'Outil…';
   return role;
 }
+// Pose (ou retire) l'icône d'une étiquette sans toucher au texte.
+function setIcon(el, key){ const s=el&&el.querySelector('.label .ic-slot'); if(s) s.innerHTML = key ? iconSvg(key) : ''; }
 function addMsg(role, text){
   const el=document.createElement('div');
   el.className='msg '+role;
   const collapsible = (role==='reasoning' || role==='tool');
+  const labelHTML='<span class="label"><span class="ic-slot"></span><span class="txt"></span></span>';
   // .body must be a real block so <p>/<pre>/<ul> margins behave properly.
   if(collapsible){
     // 'working' = bulle active : son étiquette (la ligne-résumé, qui survit au repli)
@@ -5162,13 +5192,13 @@ function addMsg(role, text){
     // PAS par le repli. Pas de shimmer pour les bulles historiques rejouées.
     el.classList.add('collapsible');
     if(!(typeof REPLAYING!=='undefined' && REPLAYING)) el.classList.add('working');
-    el.innerHTML='<span class="label"></span><div class="bodywrap"><div class="body"></div></div>';
-    el.querySelector('.label').textContent=roleLabel(role);
+    el.innerHTML=labelHTML+'<div class="bodywrap"><div class="body"></div></div>';
     el.querySelector('.label').onclick=()=>toggleCollapse(el);
   } else {
-    el.innerHTML='<span class="label"></span><div class="body"></div>';
-    el.querySelector('.label').textContent=roleLabel(role);
+    el.innerHTML=labelHTML+'<div class="body"></div>';
   }
+  setIcon(el, roleIcon(role));
+  setLabel(el, roleLabel(role));
   el.querySelector('.body').textContent=text;
   chatEl().appendChild(el);
   scrollMaybe();
@@ -5225,7 +5255,14 @@ function collapseInstant(el){
   bw.style.height='0px'; bw.style.width='0px';
   requestAnimationFrame(()=>{ bw.style.transition=''; });
 }
-function setLabel(el, text){ el.querySelector('.label').textContent = text; }
+// Écrit le texte de l'étiquette dans son slot .txt (préserve l'icône .ic-slot).
+// Repli sur l'ancien comportement (textContent entier) pour une étiquette non
+// structurée, au cas où.
+function setLabel(el, text){
+  const lab=el.querySelector('.label'); if(!lab) return;
+  const txt=lab.querySelector('.txt');
+  if(txt) txt.textContent=text; else lab.textContent=text;
+}
 // Ajoute « +N -N » colorés à l'étiquette d'une bulle. L'étiquette reste visible
 // une fois la bulle repliée : c'est le seul endroit où le volume d'une écriture
 // survit au repli, donc on le met là plutôt que dans le corps seul.
@@ -5263,28 +5300,28 @@ function renderBody(el, text){ const b=bodyOf(el); b.innerHTML = md(encodeMdLink
 function renderToolMsg(el, tu){
   // Métadonnées d'affichage par outil : nom court + en-tête. Les outils web
   // (web_search/open/read/grep) ont leur propre libellé, pas le fallback mémoire.
-  // `ic` = icône (emoji) affichée devant l'étiquette pour repérer d'un coup d'œil
-  // le type d'action. Emoji volontaire (pas de SVG) : rendu natif, iOS compris.
+  // `ico` = clé d'icône SVG (voir ICONS) affichée devant l'étiquette pour repérer
+  // d'un coup d'œil le type d'action.
   const META = {
-    bash:       {ic:'💻', lbl:'terminal',  head:'commande'},
-    write:      {ic:'📝', lbl:'fichier',   head:'écriture'},
-    edit:       {ic:'✏️', lbl:'édition',   head:'édition'},
-    web_search: {ic:'🔍', lbl:'recherche', head:'recherche web'},
-    web_open:   {ic:'🌐', lbl:'page web',  head:'ouverture'},
-    web_read:   {ic:'🌐', lbl:'page web',  head:'lecture'},
-    web_grep:   {ic:'🌐', lbl:'page web',  head:'recherche'},
-    mem_search: {ic:'💾', lbl:'mémoire',   head:'recherche mémoire'},
-    mem_read:   {ic:'💾', lbl:'mémoire',   head:'lecture mémoire'},
-    mem_add:    {ic:'💾', lbl:'mémoire',   head:'nouvelle page'},
-    mem_edit:   {ic:'💾', lbl:'mémoire',   head:'édition mémoire'},
-    mem_delete: {ic:'💾', lbl:'mémoire',   head:'suppression mémoire'},
-    task_list:  {ic:'⏰', lbl:'tâches',    head:'tâches planifiées'},
-    task_create:{ic:'⏰', lbl:'tâche',     head:'nouvelle tâche'},
-    task_update:{ic:'⏰', lbl:'tâche',     head:'modification tâche'},
-    task_delete:{ic:'⏰', lbl:'tâche',     head:'suppression tâche'},
-    see_image:  {ic:'🖼️', lbl:'image',     head:'vision'},
-    machines_list:{ic:'🖥️', lbl:'machines', head:'postes disponibles'},
-    machines_use: {ic:'🖥️', lbl:'machines', head:'bascule de machine'},
+    bash:       {ico:'terminal', lbl:'terminal',  head:'commande'},
+    write:      {ico:'file',     lbl:'fichier',   head:'écriture'},
+    edit:       {ico:'edit',     lbl:'édition',   head:'édition'},
+    web_search: {ico:'search',   lbl:'recherche', head:'recherche web'},
+    web_open:   {ico:'globe',    lbl:'page web',  head:'ouverture'},
+    web_read:   {ico:'globe',    lbl:'page web',  head:'lecture'},
+    web_grep:   {ico:'globe',    lbl:'page web',  head:'recherche'},
+    mem_search: {ico:'db',       lbl:'mémoire',   head:'recherche mémoire'},
+    mem_read:   {ico:'db',       lbl:'mémoire',   head:'lecture mémoire'},
+    mem_add:    {ico:'db',       lbl:'mémoire',   head:'nouvelle page'},
+    mem_edit:   {ico:'db',       lbl:'mémoire',   head:'édition mémoire'},
+    mem_delete: {ico:'db',       lbl:'mémoire',   head:'suppression mémoire'},
+    task_list:  {ico:'clock',    lbl:'tâches',    head:'tâches planifiées'},
+    task_create:{ico:'clock',    lbl:'tâche',     head:'nouvelle tâche'},
+    task_update:{ico:'clock',    lbl:'tâche',     head:'modification tâche'},
+    task_delete:{ico:'clock',    lbl:'tâche',     head:'suppression tâche'},
+    see_image:  {ico:'image',    lbl:'image',     head:'vision'},
+    machines_list:{ico:'monitor', lbl:'machines', head:'postes disponibles'},
+    machines_use: {ico:'monitor', lbl:'machines', head:'bascule de machine'},
   };
   // Outils MCP (nom mcp__<serveur>__<outil>) : en-tête = nom du serveur, libellé lisible,
   // pas le fallback générique. On extrait serveur et outil du nom namespacé.
@@ -5293,10 +5330,11 @@ function renderToolMsg(el, tu){
     const parts = tu.name.slice(5).split('__');
     const server = parts.shift() || 'mcp';
     const tool = parts.join('__') || tu.name;
-    meta = {ic:'🔌', lbl: tool, head: server};
+    meta = {ico:'plug', lbl: tool, head: server};
   }
-  meta = meta || {ic:'🔧', lbl:'outil', head:'outil'};
-  let lbl = (meta.ic ? meta.ic+' ' : '') + meta.lbl;
+  meta = meta || {ico:'wrench', lbl:'outil', head:'outil'};
+  setIcon(el, meta.ico);
+  let lbl = meta.lbl;
   // Indication du volume de la réponse de l'outil (~tokens, estimation 1 tok ≈ 4 car).
   if(tu.result){ lbl += '  ·  ' + Math.max(1, Math.round(tu.result.length/4)) + ' tok'; }
   setLabel(el, lbl);
@@ -5849,7 +5887,7 @@ function renderStats(el, s){
   // Réponse de l'assistant : ligne de mesures dédiée sous le texte (son étiquette
   // est masquée dans cette mise en page). Bulle repliable : l'étiquette EST le
   // bouton de repli, on y écrit comme avant.
-  if(el.classList.contains('collapsible')) setLabel(el, ['🧠 Réflexion'].concat(parts).join('  ·  '));
+  if(el.classList.contains('collapsible')){ setIcon(el,'brain'); setLabel(el, ['Réflexion'].concat(parts).join('  ·  ')); }
   else setStats(el, parts.join('  ·  '));
 }
 // Label d'une bulle de raisonnement : rôle + nombre de tokens. PAS de vitesse
@@ -5863,7 +5901,7 @@ function labelTokens(el, role, n, firstTs, lastTs){
   // décompte de tokens final. Les autres rôles gardent leur libellé brut + tokens.
   if(role==='reasoning'){
     const active = el.classList.contains('working');
-    setLabel(el, active ? '🧠 Réflexion en cours…' : '🧠 Réflexion  ·  '+n+' tok');
+    setLabel(el, active ? 'Réflexion en cours…' : 'Réflexion  ·  '+n+' tok');
     return;
   }
   setLabel(el, role+'  ·  '+n+' tok');
