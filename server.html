@@ -485,7 +485,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @keyframes labelshimmer{0%{background-position:100% 0}70%,100%{background-position:0% 0}}
 @media (prefers-reduced-motion:reduce){
   #chat .msg.collapsible.working .label .txt{animation:none;background:none;-webkit-text-fill-color:var(--dim);color:var(--dim)}
-  #chat .msg.collapsible.working .label .ic{animation:none;color:var(--dim);opacity:.85}
 }
 /* ===== Barre latérale ==============================================
    Colonne de réglages dense : 12 sections repliées doivent tenir sans faire
@@ -1173,14 +1172,7 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
    l'animation. Slot vide (bulles sans icône) : replié pour ne pas manger le gap. */
 #chat .msg.collapsible .label .ic-slot{display:inline-flex;flex:0 0 auto;line-height:0}
 #chat .msg.collapsible .label .ic-slot:empty{display:none}
-#chat .msg.collapsible .label .ic{width:15px;height:15px;display:block;opacity:.85;margin-top:-1px}
-/* La lueur du shimmer passe AUSSI sur l'icône. Le SVG (stroke currentColor) ne peut
-   pas recevoir le dégradé clippé sur le texte : on synchronise une pulsation de sa
-   couleur (dim→text→dim) calée sur l'instant où la bande claire atteint le bord
-   gauche du texte, côté icône (~70% du cycle labelshimmer). Même durée/rythme, donc
-   la lueur semble filer d'un trait sur l'icône puis le texte. */
-#chat .msg.collapsible.working .label .ic{animation:iconshimmer 2s linear infinite}
-@keyframes iconshimmer{0%,45%{color:var(--dim);opacity:.85}70%{color:var(--text);opacity:1}100%{color:var(--dim);opacity:.85}}
+#chat .msg.collapsible .label .ic{width:15px;height:15px;display:block;opacity:.85;margin-top:-2px}
 /* Chevron de repli, à droite du texte. Posé en ::after avec sa propre couleur :
    le shimmer met -webkit-text-fill-color:transparent sur le label, ce qui se
    propagerait au chevron — on le ré-affirme ici pour qu'il reste visible pendant
@@ -2553,7 +2545,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260828004319"></script>
+<script src="/e2e.js?v=20260828004627"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
