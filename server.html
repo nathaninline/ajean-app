@@ -1198,29 +1198,23 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
 #chat .msg.reasoning,#chat .msg.tool{background:none;border:none;border-radius:0;color:var(--dim);padding:0}
 #chat .msg.reasoning{color:var(--dim)}
 #chat .msg.assistant .body pre,#chat .msg.reasoning .body pre{border-radius:12px;padding:12px 14px}
-/* --- Appel d'outil : UNE carte unifiée (commande + résultat) --------------
-   Avant : en-tête redondant + deux encarts bordés empilés avec des mini-titres
-   en capitales = lourd. Maintenant : une seule carte (fond code, filet), une fine
-   barre d'accent à gauche qui signale l'action ; commande et résultat partagent le
-   même fond, séparés par un simple filet — plus aucune bordure interne. */
-#chat .msg.tool .body{background:var(--code-bg);border:1px solid var(--border);
-  border-left:2px solid var(--accent);border-radius:10px;overflow:hidden;margin-top:3px}
+/* --- Appel d'outil : épuré ------------------------------------------------
+   Pas de carte, pas de bordure, pas de barre d'accent. Juste des blocs de code
+   souples (fond code discret, coins arrondis) empilés avec un peu d'air, chacun
+   précédé d'un libellé minuscule et léger. Cohérent avec le reste (le raisonnement
+   n'a pas d'encadré non plus). */
+#chat .msg.tool .body{background:none;border:none;border-radius:0;padding:0;margin-top:2px;
+  display:flex;flex-direction:column;gap:5px}
 #chat .msg.tool .body:empty{display:none}
-#chat .msg.tool .body pre{background:transparent;border:none;border-radius:0;margin:0;max-height:280px}
-/* Commande : marqueur d'invite « › » discret à gauche. */
-#chat .msg.tool pre.tool-cmd{padding:11px 14px 11px 30px;position:relative}
-#chat .msg.tool pre.tool-cmd::before{content:'\203A';position:absolute;left:13px;top:9px;
-  color:var(--accent);font-weight:700;opacity:.5;font-size:1.15em;line-height:1}
-#chat .msg.tool .body pre:not(.tool-cmd){padding:8px 14px 12px}
-/* Titre de section (RÉPONSE / MODIFICATIONS / …) posé sur le filet de séparation. */
-#chat .msg.tool .tool-sub{margin:0;padding:7px 14px 6px;border-top:1px solid var(--border);
-  background:var(--accent-bg);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.09em}
-#chat .msg.tool .body>.tool-sub:first-child{border-top:none}
-#chat .msg.tool pre.diff{padding:6px 0}
-#chat .msg.tool pre.diff .dl{padding:1px 14px}
-#chat .msg.tool .tool-wait{padding:9px 14px;margin:0;color:var(--dim)}
-/* Bouton copier : recalé dans la carte (le pre n'a plus de padding propre en bas). */
-#chat .msg.tool .body pre .copybtn{bottom:8px;right:8px}
+#chat .msg.tool .body pre{background:var(--code-bg);border:none;border-radius:10px;margin:0;
+  padding:10px 13px;max-height:280px}
+/* Libellé de section (réponse / modifications / …) : discret, en minuscules, léger. */
+#chat .msg.tool .tool-sub{margin:0;padding:0 2px;border:none;background:none;
+  font-size:10px;color:var(--dim);text-transform:none;letter-spacing:0;opacity:.65}
+#chat .msg.tool pre.diff{padding:8px 0}
+#chat .msg.tool pre.diff .dl{padding:1px 13px}
+#chat .msg.tool .tool-wait{padding:0 2px;margin:0;color:var(--dim)}
+#chat .msg.tool .body pre .copybtn{bottom:7px;right:7px}
 #chat .msg.assistant .body a{text-decoration:underline;text-underline-offset:2px}
 /* Composer = UNE seule carte posée PAR-DESSUS le fil : la conversation
    continue de défiler DERRIÈRE elle et s'efface en fondu (dégradé vers le fond)
@@ -2567,7 +2561,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260828005300"></script>
+<script src="/e2e.js?v=20260828005608"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
