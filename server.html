@@ -485,6 +485,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @keyframes labelshimmer{0%{background-position:100% 0}70%,100%{background-position:0% 0}}
 @media (prefers-reduced-motion:reduce){
   #chat .msg.collapsible.working .label .txt{animation:none;background:none;-webkit-text-fill-color:var(--dim);color:var(--dim)}
+  #chat .msg.collapsible.working .label .ic{animation:none;color:var(--dim);opacity:.85}
 }
 /* ===== Barre latérale ==============================================
    Colonne de réglages dense : 12 sections repliées doivent tenir sans faire
@@ -1173,6 +1174,13 @@ h1{color:var(--text);font-weight:600;letter-spacing:-.01em}
 #chat .msg.collapsible .label .ic-slot{display:inline-flex;flex:0 0 auto;line-height:0}
 #chat .msg.collapsible .label .ic-slot:empty{display:none}
 #chat .msg.collapsible .label .ic{width:15px;height:15px;display:block;opacity:.85;margin-top:-1px}
+/* La lueur du shimmer passe AUSSI sur l'icône. Le SVG (stroke currentColor) ne peut
+   pas recevoir le dégradé clippé sur le texte : on synchronise une pulsation de sa
+   couleur (dim→text→dim) calée sur l'instant où la bande claire atteint le bord
+   gauche du texte, côté icône (~70% du cycle labelshimmer). Même durée/rythme, donc
+   la lueur semble filer d'un trait sur l'icône puis le texte. */
+#chat .msg.collapsible.working .label .ic{animation:iconshimmer 2s linear infinite}
+@keyframes iconshimmer{0%,45%{color:var(--dim);opacity:.85}70%{color:var(--text);opacity:1}100%{color:var(--dim);opacity:.85}}
 /* Chevron de repli, à droite du texte. Posé en ::after avec sa propre couleur :
    le shimmer met -webkit-text-fill-color:transparent sur le label, ce qui se
    propagerait au chevron — on le ré-affirme ici pour qu'il reste visible pendant
@@ -2545,7 +2553,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260828002322"></script>
+<script src="/e2e.js?v=20260828004319"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -5307,25 +5315,25 @@ function renderToolMsg(el, tu){
   // `ico` = clé d'icône SVG (voir ICONS) affichée devant l'étiquette pour repérer
   // d'un coup d'œil le type d'action.
   const META = {
-    bash:       {ico:'terminal', lbl:'terminal',  head:'commande'},
-    write:      {ico:'file',     lbl:'fichier',   head:'écriture'},
-    edit:       {ico:'edit',     lbl:'édition',   head:'édition'},
-    web_search: {ico:'search',   lbl:'recherche', head:'recherche web'},
-    web_open:   {ico:'globe',    lbl:'page web',  head:'ouverture'},
-    web_read:   {ico:'globe',    lbl:'page web',  head:'lecture'},
-    web_grep:   {ico:'globe',    lbl:'page web',  head:'recherche'},
-    mem_search: {ico:'db',       lbl:'mémoire',   head:'recherche mémoire'},
-    mem_read:   {ico:'db',       lbl:'mémoire',   head:'lecture mémoire'},
-    mem_add:    {ico:'db',       lbl:'mémoire',   head:'nouvelle page'},
-    mem_edit:   {ico:'db',       lbl:'mémoire',   head:'édition mémoire'},
-    mem_delete: {ico:'db',       lbl:'mémoire',   head:'suppression mémoire'},
-    task_list:  {ico:'clock',    lbl:'tâches',    head:'tâches planifiées'},
-    task_create:{ico:'clock',    lbl:'tâche',     head:'nouvelle tâche'},
-    task_update:{ico:'clock',    lbl:'tâche',     head:'modification tâche'},
-    task_delete:{ico:'clock',    lbl:'tâche',     head:'suppression tâche'},
-    see_image:  {ico:'image',    lbl:'image',     head:'vision'},
-    machines_list:{ico:'monitor', lbl:'machines', head:'postes disponibles'},
-    machines_use: {ico:'monitor', lbl:'machines', head:'bascule de machine'},
+    bash:       {ico:'terminal', lbl:'Terminal',            head:'commande'},
+    write:      {ico:'file',     lbl:'Écriture fichier',    head:'écriture'},
+    edit:       {ico:'edit',     lbl:'Édition fichier',     head:'édition'},
+    web_search: {ico:'search',   lbl:'Recherche web',       head:'recherche web'},
+    web_open:   {ico:'globe',    lbl:'Ouverture de page',   head:'ouverture'},
+    web_read:   {ico:'globe',    lbl:'Lecture de page',     head:'lecture'},
+    web_grep:   {ico:'globe',    lbl:'Recherche dans page', head:'recherche'},
+    mem_search: {ico:'db',       lbl:'Recherche mémoire',   head:'recherche mémoire'},
+    mem_read:   {ico:'db',       lbl:'Lecture mémoire',     head:'lecture mémoire'},
+    mem_add:    {ico:'db',       lbl:'Nouvelle note',       head:'nouvelle page'},
+    mem_edit:   {ico:'db',       lbl:'Édition mémoire',     head:'édition mémoire'},
+    mem_delete: {ico:'db',       lbl:'Suppression mémoire', head:'suppression mémoire'},
+    task_list:  {ico:'clock',    lbl:'Tâches planifiées',   head:'tâches planifiées'},
+    task_create:{ico:'clock',    lbl:'Nouvelle tâche',      head:'nouvelle tâche'},
+    task_update:{ico:'clock',    lbl:'Mise à jour tâche',   head:'modification tâche'},
+    task_delete:{ico:'clock',    lbl:'Suppression tâche',   head:'suppression tâche'},
+    see_image:  {ico:'image',    lbl:'Vision',              head:'vision'},
+    machines_list:{ico:'monitor', lbl:'Machines',           head:'postes disponibles'},
+    machines_use: {ico:'monitor', lbl:'Changement machine', head:'bascule de machine'},
   };
   // Outils MCP (nom mcp__<serveur>__<outil>) : en-tête = nom du serveur, libellé lisible,
   // pas le fallback générique. On extrait serveur et outil du nom namespacé.
@@ -5336,7 +5344,7 @@ function renderToolMsg(el, tu){
     const tool = parts.join('__') || tu.name;
     meta = {ico:'plug', lbl: tool, head: server};
   }
-  meta = meta || {ico:'wrench', lbl:'outil', head:'outil'};
+  meta = meta || {ico:'wrench', lbl:'Outil', head:'outil'};
   setIcon(el, meta.ico);
   let lbl = meta.lbl;
   // Indication du volume de la réponse de l'outil (~tokens, estimation 1 tok ≈ 4 car).
