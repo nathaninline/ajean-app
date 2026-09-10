@@ -48,7 +48,7 @@ async function e2eFor(m){if(!m||!m.pubkey)return null;
 // dans le log « jean link »). En cas de succès l'agent autorise uPub.
 async function e2ePair(m,code){
   await e2eInit();
-  var R=await e2eRoot();if(!R)throw new Error('clé absente (reconnecte-toi)');
+  var R=await e2eRoot();if(!R)throw new Error('clé absente (reconnectez-vous)');
   var up=e2eUserPub(b64e(R));if(!up||!up.ok)throw new Error('identité');
   var payload=_te.encode(JSON.stringify({upub:up.upub,code:code}));
   var sealed=e2eSeal(m.pubkey,b64e(payload));if(!sealed||!sealed.ok)throw new Error('scellement');
@@ -77,14 +77,14 @@ async function e2eConfirm(m){if(!m||!m.pubkey)return false;
   if(fpOk&&localStorage.getItem('pair:'+m.id)==='1')return true;
   if(!fpOk){
     var ok=await _ask({title:'Activer la boîte noire (1/2)',
-      msg:'Vérifie que cette empreinte est bien celle affichée par « jean link » sur ton serveur : '+fp,
+      msg:'Vérifiez que cette empreinte est bien celle affichée par « ajean link » sur votre serveur : '+fp,
       yes:'Elle correspond',no:'Plus tard'});
     if(!ok)return false;
     localStorage.setItem('fp:'+m.id,fp);
   }
   if(localStorage.getItem('pair:'+m.id)!=='1'){
     var code=await _prompt({title:'Activer la boîte noire (2/2)',
-      msg:'Saisis le code d\'appairage affiché par « jean link » sur ton serveur (juste sous l\'empreinte).',
+      msg:'Saisissez le code d\'appairage affiché par « ajean link » sur votre serveur (juste sous l\'empreinte).',
       placeholder:'ex: K7QZ9F2A',yes:'Appairer',no:'Plus tard'});
     if(!code)return false;
     try{await e2ePair(m,code);localStorage.setItem('pair:'+m.id,'1');_toast('Boîte noire activée 🔒');}

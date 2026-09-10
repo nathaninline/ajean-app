@@ -190,10 +190,10 @@ header .sp{flex:1}
 
   <div class="tabview" id="view-support">
     <div class="sec"><h2>Support</h2><span class="sp"></span></div>
-    <p class="lead" style="margin-bottom:12px">Une question, un souci ? Écris-moi directement — je te réponds ici. En général dans l'heure ou dans la journée, très rarement au-delà de 48 h.</p>
+    <p class="lead" style="margin-bottom:12px">Une question, un souci ? Écrivez-moi directement — je vous réponds ici. En général dans l'heure ou dans la journée, très rarement au-delà de 48 h.</p>
     <div class="chat" id="supChat"></div>
     <div class="chatbar">
-      <textarea id="supInput" rows="1" placeholder="Ton message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSupport();}"></textarea>
+      <textarea id="supInput" rows="1" placeholder="Votre message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSupport();}"></textarea>
       <button class="btn primary" onclick="sendSupport()">Envoyer</button>
     </div>
   </div>
@@ -210,10 +210,10 @@ header .sp{flex:1}
 
 <div class="modal" id="keyModal"><div class="sheet">
   <h3>Clés de liaison</h3>
-  <p class="muted">Génère une clé de liaison (une par serveur) puis gère-les ici. Sur la machine, une fois AJEAN installé, lance la commande affichée.</p>
+  <p class="muted">Générez une clé de liaison (une par serveur) puis gérez-les ici. Sur la machine, une fois AJEAN installé, lancez la commande affichée.</p>
   <div id="keyReveal" style="display:none">
     <div class="reveal"><code id="keyCmd"></code><button class="btn" onclick="copyCmd()">Copier</button></div>
-    <p class="hint">⚠️ Copie-la maintenant — elle ne sera plus affichée en clair. Le serveur apparaîtra ici dès qu'il se connecte.</p>
+    <p class="hint">⚠️ Copiez-la maintenant — elle ne sera plus affichée en clair. Le serveur apparaîtra ici dès qu'il se connecte.</p>
   </div>
   <button class="btn primary" id="genBtn" onclick="genKey()" style="margin-top:10px">+ Générer une clé</button>
   <div class="keys-head">Clés existantes</div>
@@ -251,7 +251,7 @@ header .sp{flex:1}
 <div class="modal" id="welcomeModal"><div class="sheet" style="text-align:center">
   <div style="font-size:44px;line-height:1;margin-bottom:12px">🎉</div>
   <h3 style="color:var(--ok)">Bienvenue sur ajean.link !</h3>
-  <p class="muted" style="margin-bottom:16px">Merci — ton abonnement est <b style="color:var(--ok)">actif</b>. Tu peux maintenant accéder à tes serveurs AJEAN à distance, chiffré de bout en bout.</p>
+  <p class="muted" style="margin-bottom:16px">Merci — votre abonnement est <b style="color:var(--ok)">actif</b>. Vous pouvez maintenant accéder à vos serveurs AJEAN à distance, chiffré de bout en bout.</p>
   <div class="kv"><span>Formule</span><b>4,80 €/mois · résiliable à tout moment</b></div>
   <p class="hint" style="text-align:left;margin-top:12px">Prochaine étape : ouvre « Gérer les clés » pour lier un serveur avec <code>ajean link</code>.</p>
   <div class="row"><button class="btn primary" onclick="closeWelcome()" style="margin:0 auto">Commencer →</button></div>
@@ -259,7 +259,7 @@ header .sp{flex:1}
 
 <div class="modal" id="subModal"><div class="sheet">
   <h3>S'abonner à ajean.link</h3>
-  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide et le support direct.</p>
+  <p class="muted" id="subMsg">Accès distant illimité à vos serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide et le support direct.</p>
   <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
   <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
   <div class="row"><button class="btn subtle" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
@@ -280,10 +280,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20260908194343"></script>
+<script src="/e2e.js?v=20260910131905"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20260908194343'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20260910131905'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
@@ -351,7 +351,7 @@ function openKeys(){document.getElementById('keyReveal').style.display='none';
 function closeKeys(){document.getElementById('keyModal').classList.remove('show');}
 async function loadKeys(){var r=await j('/app/keys');if(!r)return;var d=await r.json();
   var el=document.getElementById('keyList');
-  if(!d.keys.length){el.innerHTML='<p class="muted">Aucune clé. Génère-en une ci-dessus.</p>';return;}
+  if(!d.keys.length){el.innerHTML='<p class="muted">Aucune clé. Générez-en une ci-dessus.</p>';return;}
   el.innerHTML='';d.keys.forEach(function(k){var row=document.createElement('div');row.className='keyrow';
     var srv=(k.servers||[]);
     var assoc=srv.length?'<span class="kassoc">🔗 '+srv.map(function(s){return esc(s.name)+(s.online?' ●':'')}).join(', ')+'</span>':'<span class="kfree">libre</span>';
@@ -410,7 +410,7 @@ function fillProbe(m,card){probe(m).then(function(p){PROBE[m.id]=p;updateProbe(c
     st.onclick=function(e){e.stopPropagation();e2eConfirm(m).then(function(){fillProbe(m,card);});};}}});}
 
 function serverCard(m){var d=document.createElement('div');d.className='tile srv'+(m.online?'':' off');
-  var body=m.online?probeSkeleton():'<div class="body"><div class="offhint">Clique pour renommer ou retirer</div></div>';
+  var body=m.online?probeSkeleton():'<div class="body"><div class="offhint">Cliquez pour renommer ou retirer</div></div>';
   var status=m.online?'connexion…':'hors ligne';
   d.innerHTML='<div class="top">'+
       '<span class="hcol"><span class="name">'+esc(m.name)+'</span>'+
@@ -424,7 +424,7 @@ function serverCard(m){var d=document.createElement('div');d.className='tile srv
   return d;}
 
 function renderServers(){var g=document.getElementById('grid');g.innerHTML='';SCARDS={};
-  if(!MACHINES.length){g.innerHTML='<div class="empty">Aucun serveur connecté.<br>Clique « Gérer les clés » pour générer une clé de liaison.</div>';return;}
+  if(!MACHINES.length){g.innerHTML='<div class="empty">Aucun serveur connecté.<br>Cliquez « Gérer les clés » pour générer une clé de liaison.</div>';return;}
   MACHINES.forEach(function(m){var c=serverCard(m);SCARDS[m.id]=c;g.appendChild(c);});}
 
 async function load(){
@@ -474,7 +474,7 @@ async function loadSupport(){var r=await j('/app/support/thread');if(!r)return;v
 }
 function renderSupport(msgs){var c=document.getElementById('supChat');
   var sig=JSON.stringify(msgs);if(sig===SUP_SIG)return;SUP_SIG=sig;
-  if(!msgs.length){c.innerHTML='<div class="empty2">Aucun message.<br>Pose ta question, je te réponds dès que possible.</div>';return;}
+  if(!msgs.length){c.innerHTML='<div class="empty2">Aucun message.<br>Posez votre question, je vous réponds dès que possible.</div>';return;}
   c.innerHTML=msgs.map(function(m){return '<div class="msg '+m.from+'">'+esc(m.text)+'<span class="mt">'+ago(m.ts)+'</span></div>';}).join('');
   c.scrollTop=c.scrollHeight;}
 async function sendSupport(){var el=document.getElementById('supInput'),txt=el.value.trim();if(!txt)return;
