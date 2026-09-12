@@ -45,7 +45,9 @@
     <p class="lead" style="margin-bottom:12px">Une question, un souci ? Écris-moi directement — je te réponds ici. En général dans l'heure ou dans la journée, très rarement au-delà de 48 h.</p>
     <div class="chat" id="supChat"></div>
     <div class="chatbar">
-      <textarea id="supInput" rows="1" placeholder="Ton message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSupport();}"></textarea>
+      <textarea id="supInput" rows="1" placeholder="Ton message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSupport();}" onpaste="pasteSupportImg(event)"></textarea>
+      <input type="file" id="supFile" accept="image/*" class="hidden" onchange="sendSupportImg(this)">
+      <button class="btn iconbtn" title="Joindre une capture" onclick="document.getElementById('supFile').click()">📎</button>
       <button class="btn primary" onclick="sendSupport()">Envoyer</button>
     </div>
   </div>
