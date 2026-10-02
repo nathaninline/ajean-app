@@ -2742,7 +2742,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261002125258"></script>
+<script src="/e2e.js?v=20261002131525"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -8405,7 +8405,7 @@ function sessionRow(c, active){
   name.appendChild(document.createTextNode(c.title || t('chat.session.default_name')));
   const meta = document.createElement('div'); meta.className = 'sess-meta';
   const n = c.turns || 0;
-  const pn = (c.project && c.project !== (ACTIVE_PROJECT||HIST_DEFAULT_PROJ)) ? (HIST_PROJ_NAMES[c.project] || c.project) : '';
+  const pn = (c.project && c.mode!=='fast' && c.mode!=='base' && c.project !== (ACTIVE_PROJECT||HIST_DEFAULT_PROJ)) ? (HIST_PROJ_NAMES[c.project] || c.project) : '';
   if(pn){ const pj=document.createElement('span'); pj.className='sess-proj'; pj.textContent=pn; meta.appendChild(pj); }
   meta.appendChild(document.createTextNode(fmtHistDate(c.saved_at) + ' · ' + n + ' ' + (n>1?t('chat.session.messages'):t('chat.session.message')) + (active?' · '+t('chat.session.ongoing'):'')));
   info.appendChild(name); info.appendChild(meta);
@@ -8419,7 +8419,7 @@ function openHistRowMenu(anchor, c){
   popMenu(anchor, [
     {icon:'star', label:c.fav?t('chat.session.unfav'):t('chat.session.fav'), run:()=>favHistory(c.id, !c.fav)},
     {icon:'pencil', label:t('chat.session.rename'), run:()=>renameHistory(c.id, c.title)},
-    PROJECTS.length > 1 && c.id !== HIST_ST.active && {icon:'move', label:t('projects.move_to'), run:()=>moveSessionUI(c, anchor)}, 
+    PROJECTS.length > 1 && c.id !== HIST_ST.active && c.mode!=='fast' && c.mode!=='base' && {icon:'move', label:t('projects.move_to'), run:()=>moveSessionUI(c, anchor)}, 
     {icon:EXPORT_IC, label:t('projects.export'), run:()=>downloadExport('/api/chat/export?id='+encodeURIComponent(c.id))},
     {icon:'trash', label:t('chat.session.delete_permanently'), danger:true, run:()=>deleteHistory(c.id, c.title)},
   ], {side:'below'});
@@ -8428,8 +8428,8 @@ let HIST_PROJ_NAMES = {}, HIST_DEFAULT_PROJ = '';
 const HIST_PAGE = 60;
 let HIST_ST = {off:0, total:0, active:'', section:'', loading:false, sig:''};
 let HIST_Q = '', HIST_QT = 0;
-const histScope = ()=>(MODE==='fast'||MODE==='base') ? 'quick' : '';
-const histUrl = (off)=>'/api/chat/history?'+(HIST_Q?'all=1&':(histScope()?'scope=quick&':''))+'offset='+off+'&limit='+HIST_PAGE+(HIST_Q?'&q='+encodeURIComponent(HIST_Q):'');
+const histScope = ()=>(MODE==='fast'||MODE==='base') ? MODE : ''; 
+const histUrl = (off)=>'/api/chat/history?'+(HIST_Q?'all=1&':(histScope()?'scope='+histScope()+'&':''))+'offset='+off+'&limit='+HIST_PAGE+(HIST_Q?'&q='+encodeURIComponent(HIST_Q):'');
 function onHistSearch(){
   clearTimeout(HIST_QT);
   HIST_QT = setTimeout(()=>{ HIST_Q = document.getElementById('hist-q').value.trim(); loadHistory(); }, 180);
@@ -8482,6 +8482,8 @@ async function loadMoreHistory(){
   }catch(_){}
   HIST_ST.loading = false;
 }
+let HIST_RT=0;
+function histRefreshSoon(){ if(typeof REPLAYING!=='undefined' && REPLAYING) return; clearTimeout(HIST_RT); HIST_RT=setTimeout(loadHistory, 700); }
 function histInit(){
   const side = document.getElementById('side');
   if(side) side.addEventListener('scroll', ()=>{
@@ -8936,11 +8938,13 @@ function handleDelta(d){
     OLDER=null; 
     if(d.id!==undefined) CONV_ID=d.id||''; 
     if(d.mode) setModeFromConv(d.mode);
+    histRefreshSoon();
     TURN_ENDED=true; elapsedStop(); smoothReset(); if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; } renderPending=null; PENDS=[];
     if(d.replay) hideChatForReplay(); else chatClearAnimated();
     newTurn(); setCtxUsed(0); setCompactCount(0); lastSeq=0; setBusy(false); return; }
   if(d.history_more!==undefined){ showHistoryMore(d.history_more, d.before); return; }
   if(d.user!==undefined){
+    histRefreshSoon();
     newTurn();
     let el=confirmPending(d.user);
     if(!el) el=addMsg('user', d.user);
@@ -8960,6 +8964,7 @@ function handleDelta(d){
   if(d.compact_noop){ setCompacting(false); if(!REPLAYING) toast(t('chat.compact_noop')); return; }
   if(d.ctx_used!==undefined){ setCtxUsed(d.ctx_used); return; }
   if(d.compact_count!==undefined){ setCompactCount(d.compact_count); return; }
+  if(d.stats) histRefreshSoon();
   if(d.stats){ T.serverStats=d.stats;
     if(d.stats.prompt_tokens_total){ setCtxUsed((d.stats.prompt_tokens_total||0)+(d.stats.gen_tokens||0)); }
     return; }
@@ -9234,8 +9239,8 @@ function histHeadLabel(){
   const jean=MODE==='jean';
   document.body.classList.toggle('hist-jean', jean);
   if(jean||MODE==='fast'||MODE==='base'){
-    hl.textContent=t(jean?'chat.mode_jean':'chat.mode_fast');
-    const src=document.querySelector('#mode-menu button[data-mode="'+(jean?'jean':'fast')+'"] svg.mm-ic');
+    hl.textContent=t(MODE_KEYS[MODE]);
+    const src=document.querySelector('#mode-menu button[data-mode="'+MODE+'"] svg.mm-ic');
     if(ic && src){ const s=src.cloneNode(true); s.removeAttribute('class'); s.setAttribute('width','13'); s.setAttribute('height','13'); ic.replaceChildren(s); }
     return;
   }
@@ -11666,8 +11671,10 @@ var JeanAvatar = (()=>{
     document.addEventListener('keydown', e=>{
       if(!inStage() || inputOpen || e.ctrlKey || e.metaKey || e.altKey || e.key.length!==1) return;
       const a=document.activeElement;
-      if(a && a.id!=='input' && (a.tagName==='INPUT' || a.tagName==='TEXTAREA' || a.isContentEditable)) return;
-      if(document.querySelector('.modal-ov.show')) return;
+      const shown=el=>!!el && el.getClientRects().length>0;
+      if(a && a.id!=='input' && (a.tagName==='INPUT' || a.tagName==='TEXTAREA' || a.isContentEditable) && shown(a)) return;
+      if([...document.querySelectorAll('.modal-ov.show,.ask-overlay.show')].some(shown)) return;
+      if(a && a!==document.body && !shown(a)) a.blur();
       openInput();
     });
     setInterval(()=>{ if(inStage()) sync(); }, 500); 
