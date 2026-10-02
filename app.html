@@ -158,6 +158,77 @@ header .sp{flex:1}
 .chatbar .iconbtn{flex:none;width:42px;height:42px;padding:0;font-size:18px;display:inline-flex;align-items:center;justify-content:center}
 .chatbar textarea{flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);font:inherit;font-size:14px;resize:none;max-height:140px}
 .chatbar textarea:focus{outline:none;border-color:var(--accent)}
+
+/* ===== Habillage 2026-10 : même charte que l'app AJEAN, ajean.app et les pages
+   de connexion. Fonds pleins sans bordure, coins très arrondis, boutons pilule,
+   onglets en pastille, police Inter. Surcharge les règles ci-dessus. ===== */
+:root,[data-theme="light"]{--bg:#f6f6f6;--panel:#ffffff;--panel2:#f2f2f2;--field:#f2f2f2;--border:#ececec;--dim:#6b6b6b}
+[data-theme="dark"]{--bg:#0d0d0e;--panel:#18181a;--panel2:#222225;--field:#222225;--border:#2a2a2d;--dim:#8e8e93}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+header{background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:saturate(180%) blur(10px);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);border-bottom:0;padding:14px 22px}
+.iconbtn{border-radius:999px;width:40px;height:40px}
+.iconbtn:hover{background:var(--panel2);color:var(--text)}
+/* onglets : une pastille qui glisse sous le choix actif, comme les sélecteurs de l'app */
+.tabs{border-bottom:0;padding:6px 20px 0;gap:4px;justify-content:center}
+.tabs .tab{border:0;border-radius:999px;padding:8px 18px;font-weight:500;color:var(--dim);transition:background .15s,color .15s}
+.tabs .tab.on{background:var(--panel);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.tabs .tab:hover{color:var(--text)}
+.wrap{padding-top:18px}
+.sec{margin:26px 0 16px}
+.sec h2{font-size:22px;font-weight:650;letter-spacing:-.02em}
+.sec .ct{border:0;background:var(--panel2);font-size:12px;font-weight:600;padding:2px 9px}
+/* boutons */
+.btn{border:0;border-radius:999px;padding:9px 16px;background:var(--panel2);font-weight:500;font-size:13.5px;transition:opacity .15s,transform .15s,background .15s}
+.btn:hover{border:0;color:var(--text);opacity:.85}
+.btn:active{transform:scale(.97)}
+.btn.primary,.btn.primary:hover{background:var(--text);color:var(--panel)}
+.btn.subtle{background:transparent;padding:7px 12px}
+.btn.subtle:hover{background:var(--panel2)}
+.btn.danger{background:rgba(192,57,43,.1);color:var(--err)}
+.btn.danger:hover{background:var(--err);color:#fff;opacity:1}
+/* cartes serveur */
+.grid{gap:16px}
+.tile{border:0;border-radius:20px;padding:20px;background:var(--panel);
+  box-shadow:0 1px 2px rgba(0,0,0,.04);transition:transform .18s,box-shadow .18s}
+.tile.srv:hover{border:0;transform:translateY(-2px);box-shadow:0 18px 40px -22px rgba(0,0,0,.35)}
+[data-theme="dark"] .tile{box-shadow:0 0 0 1px rgba(255,255,255,.04)}
+.tile.srv.off{opacity:.6}
+.name{font-size:16px;font-weight:600}
+.dot{width:10px;height:10px;box-shadow:0 0 0 4px var(--panel2)}
+.dot.on{background:#0a0a0a;animation:pulse 2.4s ease-in-out infinite}
+[data-theme="dark"] .dot.on{background:#f5f5f5}
+@keyframes pulse{50%{opacity:.35}}
+.mbadge{font-size:15px}
+.gbar{height:6px;background:var(--panel2)}
+.vlabel{font-size:11.5px}
+.empty{border:0;border-radius:20px;background:var(--panel);padding:48px 20px}
+/* fenêtres */
+.modal{background:rgba(0,0,0,.42);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.sheet{border:0;border-radius:24px;padding:28px;box-shadow:0 40px 90px -30px rgba(0,0,0,.45)}
+.sheet h3{font-size:19px;font-weight:650;letter-spacing:-.01em;color:var(--text)}
+.field label{font-size:12px;letter-spacing:.06em}
+.field input,.chatbar textarea{border:0;border-radius:14px;background:var(--field);padding:12px 14px;transition:box-shadow .15s,background .15s}
+.field input:focus,.chatbar textarea:focus{border:0;background:var(--panel);box-shadow:0 0 0 2px var(--text)}
+.kv{font-size:13px;padding:9px 0;border-bottom:1px solid var(--border)}
+.reveal code{border:0;border-radius:12px;background:var(--field)}
+.keyrow{border-bottom:1px solid var(--border)}
+.keyrow button{border:0;border-radius:999px;background:var(--panel2);padding:5px 12px}
+.keyrow button:hover{background:rgba(192,57,43,.12);color:var(--err)}
+.ses{border:0;border-radius:14px;background:var(--panel2);padding:11px 14px}
+.ses .badge{border:0;background:var(--text);color:var(--panel);padding:2px 8px}
+#toast{border:0;border-radius:999px;background:var(--text);color:var(--panel);padding:10px 18px;box-shadow:0 10px 30px -10px rgba(0,0,0,.4)}
+/* aide et support */
+.artcard{border:0;border-radius:18px;padding:18px 20px;background:var(--panel)}
+.artcard:hover{border:0;background:var(--panel);transform:translateY(-1px);box-shadow:0 14px 34px -22px rgba(0,0,0,.35)}
+.artcard .qm{border-radius:999px;background:var(--panel2)}
+.chat{border:0;border-radius:20px;background:var(--panel);padding:18px}
+.msg{border-radius:18px;padding:10px 14px}
+.msg.admin{border:0;background:var(--panel2)}
+.msg.user{background:var(--text);color:var(--panel)}
+.chatbar .iconbtn{background:var(--panel)}
+.md pre,.md code,.tw{border:0}
+.md pre{border-radius:14px}
 </style></head><body>
 
 <header>
@@ -284,10 +355,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261002131525"></script>
+<script src="/e2e.js?v=20261002153151"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20261002131525'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20261002153151'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
