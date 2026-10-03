@@ -2748,7 +2748,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261003202745"></script>
+<script src="/e2e.js?v=20261003205636"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -10049,6 +10049,12 @@ function markFileLinks(root){
   for(const a of root.querySelectorAll('a[href]')){
     const p=fileLinkPath(a.getAttribute('href'));
     if(!p) continue;
+    if(isImageName(p)){
+      const img=document.createElement('img');
+      img.setAttribute('src', p); img.alt=a.textContent||p.split('/').pop();
+      a.replaceWith(img);
+      continue;
+    }
     a.classList.add('filelink');
     a.removeAttribute('target');
     a.setAttribute('href','#');
