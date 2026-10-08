@@ -36,22 +36,9 @@ function supMsgBody(m){var h='';
   return h;}
 function renderSupport(msgs){var c=document.getElementById('supChat');
   var sig=JSON.stringify(msgs);if(sig===SUP_SIG)return;SUP_SIG=sig;
-  if(!msgs.length){c.innerHTML='<div class="empty2">Aucun message.<br>Pose ta question, je te réponds dès que possible.</div>';return;}
+  if(!msgs.length){c.innerHTML='<div class="empty2">Aucun échange.</div>';return;}
   c.innerHTML=msgs.map(function(m){return '<div class="msg '+m.from+'">'+supMsgBody(m)+'<span class="mt">'+ago(m.ts)+'</span></div>';}).join('');
   c.scrollTop=c.scrollHeight;}
-async function sendSupport(){var el=document.getElementById('supInput'),txt=el.value.trim();if(!txt)return;
-  el.value='';var r=await jsonPost('/app/support/send',{text:txt});if(!r||!r.ok&&r.status>=400){toast('Envoi impossible');return;}
-  try{var t=await r.json();renderSupport(t.msgs||[]);}catch(e){loadSupport();}}
-async function uploadSupportImg(file){if(!file)return;
-  if(!/^image\//.test(file.type||'')){toast('Fichier image uniquement');return;}
-  if(file.size>6*1024*1024){toast('Image trop lourde (max 6 Mo)');return;}
-  var fd=new FormData();fd.append('img',file);
-  var r=await j('/app/support/upload',{method:'POST',body:fd});
-  if(!r||!r.ok){toast('Envoi impossible');return;}
-  try{var t=await r.json();renderSupport(t.msgs||[]);}catch(e){loadSupport();}}
-function sendSupportImg(inp){var f=inp.files&&inp.files[0];inp.value='';uploadSupportImg(f);}
-function pasteSupportImg(e){var it=(e.clipboardData||{}).items||[];for(var i=0;i<it.length;i++){
-  if(it[i].type&&it[i].type.indexOf('image')===0){e.preventDefault();uploadSupportImg(it[i].getAsFile());return;}}}
 // badge de non-lus : sondé au chargement et au polling global
 async function pollSupportBadge(){try{var r=await fetch('/app/support/thread');if(!r.ok)return;var t=await r.json();
   var b=document.getElementById('supBadge');var onSup=document.querySelector('.tab.on')&&document.querySelector('.tab.on').dataset.v==='support';

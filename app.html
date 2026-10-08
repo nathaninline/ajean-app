@@ -263,14 +263,8 @@ header{background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:s
 
   <div class="tabview" id="view-support">
     <div class="sec"><h2>Support</h2><span class="sp"></span></div>
-    <p class="lead" style="margin-bottom:12px">Une question, un souci ? Écris-moi directement — je te réponds ici. En général dans l'heure ou dans la journée, très rarement au-delà de 48 h.</p>
+    <p class="lead" style="margin-bottom:12px"><b>Le support par chat est terminé.</b> Il y avait beaucoup trop de demandes pour y répondre correctement. Les échanges précédents restent consultables ci-dessous. Pour signaler un bug : <a href="https://github.com/nathaninline/ajean/issues" target="_blank" rel="noopener">github.com/nathaninline/ajean/issues</a>.</p>
     <div class="chat" id="supChat"></div>
-    <div class="chatbar">
-      <textarea id="supInput" rows="1" placeholder="Ton message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSupport();}" onpaste="pasteSupportImg(event)"></textarea>
-      <input type="file" id="supFile" accept="image/*" class="hidden" onchange="sendSupportImg(this)">
-      <button class="btn iconbtn" title="Joindre une capture" onclick="document.getElementById('supFile').click()">📎</button>
-      <button class="btn primary" onclick="sendSupport()">Envoyer</button>
-    </div>
   </div>
 </div>
 
@@ -334,7 +328,7 @@ header{background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:s
 
 <div class="modal" id="subModal"><div class="sheet">
   <h3>S'abonner à ajean.link</h3>
-  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide et le support direct.</p>
+  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide.</p>
   <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
   <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
   <div class="row"><button class="btn subtle" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
@@ -355,10 +349,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261008204408"></script>
+<script src="/e2e.js?v=20261008235208"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20261008204408'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20261008235208'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
@@ -557,22 +551,9 @@ function supMsgBody(m){var h='';
   return h;}
 function renderSupport(msgs){var c=document.getElementById('supChat');
   var sig=JSON.stringify(msgs);if(sig===SUP_SIG)return;SUP_SIG=sig;
-  if(!msgs.length){c.innerHTML='<div class="empty2">Aucun message.<br>Pose ta question, je te réponds dès que possible.</div>';return;}
+  if(!msgs.length){c.innerHTML='<div class="empty2">Aucun échange.</div>';return;}
   c.innerHTML=msgs.map(function(m){return '<div class="msg '+m.from+'">'+supMsgBody(m)+'<span class="mt">'+ago(m.ts)+'</span></div>';}).join('');
   c.scrollTop=c.scrollHeight;}
-async function sendSupport(){var el=document.getElementById('supInput'),txt=el.value.trim();if(!txt)return;
-  el.value='';var r=await jsonPost('/app/support/send',{text:txt});if(!r||!r.ok&&r.status>=400){toast('Envoi impossible');return;}
-  try{var t=await r.json();renderSupport(t.msgs||[]);}catch(e){loadSupport();}}
-async function uploadSupportImg(file){if(!file)return;
-  if(!/^image\//.test(file.type||'')){toast('Fichier image uniquement');return;}
-  if(file.size>6*1024*1024){toast('Image trop lourde (max 6 Mo)');return;}
-  var fd=new FormData();fd.append('img',file);
-  var r=await j('/app/support/upload',{method:'POST',body:fd});
-  if(!r||!r.ok){toast('Envoi impossible');return;}
-  try{var t=await r.json();renderSupport(t.msgs||[]);}catch(e){loadSupport();}}
-function sendSupportImg(inp){var f=inp.files&&inp.files[0];inp.value='';uploadSupportImg(f);}
-function pasteSupportImg(e){var it=(e.clipboardData||{}).items||[];for(var i=0;i<it.length;i++){
-  if(it[i].type&&it[i].type.indexOf('image')===0){e.preventDefault();uploadSupportImg(it[i].getAsFile());return;}}}
 // badge de non-lus : sondé au chargement et au polling global
 async function pollSupportBadge(){try{var r=await fetch('/app/support/thread');if(!r.ok)return;var t=await r.json();
   var b=document.getElementById('supBadge');var onSup=document.querySelector('.tab.on')&&document.querySelector('.tab.on').dataset.v==='support';

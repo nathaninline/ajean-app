@@ -42,14 +42,8 @@
 
   <div class="tabview" id="view-support">
     <div class="sec"><h2>Support</h2><span class="sp"></span></div>
-    <p class="lead" style="margin-bottom:12px">Une question, un souci ? Écris-moi directement — je te réponds ici. En général dans l'heure ou dans la journée, très rarement au-delà de 48 h.</p>
+    <p class="lead" style="margin-bottom:12px"><b>Le support par chat est terminé.</b> Il y avait beaucoup trop de demandes pour y répondre correctement. Les échanges précédents restent consultables ci-dessous. Pour signaler un bug : <a href="https://github.com/nathaninline/ajean/issues" target="_blank" rel="noopener">github.com/nathaninline/ajean/issues</a>.</p>
     <div class="chat" id="supChat"></div>
-    <div class="chatbar">
-      <textarea id="supInput" rows="1" placeholder="Ton message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSupport();}" onpaste="pasteSupportImg(event)"></textarea>
-      <input type="file" id="supFile" accept="image/*" class="hidden" onchange="sendSupportImg(this)">
-      <button class="btn iconbtn" title="Joindre une capture" onclick="document.getElementById('supFile').click()">📎</button>
-      <button class="btn primary" onclick="sendSupport()">Envoyer</button>
-    </div>
   </div>
 </div>
 
@@ -113,7 +107,7 @@
 
 <div class="modal" id="subModal"><div class="sheet">
   <h3>S'abonner à ajean.link</h3>
-  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide et le support direct.</p>
+  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide.</p>
   <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
   <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
   <div class="row"><button class="btn subtle" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
