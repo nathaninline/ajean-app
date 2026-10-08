@@ -1129,6 +1129,9 @@ button:hover{border-color:var(--dim);color:var(--text)}
   border:1px solid var(--border);border-radius:999px;background:var(--panel);
   color:var(--dim);font-size:12px;line-height:1.5}
 .stopnote::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--dim)}
+.katex{font-size:1.08em}
+.katex-display{margin:.6em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.math-pending{font-family:var(--mono);font-size:.92em;color:var(--dim)}
 .modal-card,.ask-box,.modal-box,.pe-list,.pe-adv{border-radius:12px}
 .modal-card,.ask-box{box-shadow:0 8px 30px rgba(0,0,0,.12)}
 .pe-seg>label:has(input:checked),.seg>label:has(input:checked){background:var(--text);border-color:var(--text);color:var(--bg)}
@@ -1948,6 +1951,14 @@ body.jean-mode #ctx-compactions{display:none!important}
       <div class="subhead"><span data-i18n="mcp.title">MCP servers</span><span id="mcp-badge" class="sbadge"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="mcp.help" data-i18n-html>Connecte des <b>serveurs MCP</b> (Model Context Protocol) pour donner de nouveaux outils à l'IA : accès fichiers, bases de données, APIs métier… <b>stdio</b> = programme lancé localement (npx/uvx/binaire) · <b>http</b> = serveur distant. ⚠ un serveur stdio exécute du code sur cette machine, au même titre que le shell.</span></span></div>
       <div class="slist">
         <div class="rowbody">
+          <div class="pe-row">
+            <span class="pe-row-l" data-i18n="mcp.connect_label">Délai de connexion</span>
+            <span class="pe-row-c"><input id="mcp-timeout-connect" class="pe-val" type="number" min="1" max="3600" value="20" style="width:54px" data-i18n="mcp.connect_hint" data-i18n-attr="title"><span class="pe-unit">s</span></span>
+          </div>
+          <div class="pe-row">
+            <span class="pe-row-l" data-i18n="mcp.call_label">Délai d'appel d'outil</span>
+            <span class="pe-row-c"><input id="mcp-timeout-call" class="pe-val" type="number" min="1" max="3600" value="120" style="width:54px" data-i18n="mcp.call_hint" data-i18n-attr="title"><span class="pe-unit">s</span></span>
+          </div>
           <div id="mcp-list" class="mcp-list"><div class="muted" style="font-size:12px" data-i18n="mcp.empty_list">(aucun serveur — ajoute un serveur fichiers, une base de données, une API…)</div></div>
           <button class="addbtn" style="margin-top:6px" onclick="openMcp('')" data-i18n="mcp.add_button">+ ajouter un serveur</button>
         </div>
@@ -2127,6 +2138,10 @@ body.jean-mode #ctx-compactions{display:none!important}
       <div class="fld">
         <label class="fld-l" for="lc-custom-name"><span data-i18n="backends.name_label">Nom</span> <span class="opt" data-i18n="backends.name_optional_hint">(optionnel — déduit de l'URL sinon)</span></label>
         <input id="lc-custom-name" class="ctl" placeholder="llama.cpp-prism">
+      </div>
+      <div class="fld">
+        <label class="fld-l" for="lc-custom-ref"><span data-i18n="backends.ref_label">Branche, tag ou commit</span> <span class="opt" data-i18n="backends.ref_optional_hint">(optionnel, branche par défaut sinon)</span></label>
+        <input id="lc-custom-ref" class="ctl" placeholder="model/K2Horizon">
       </div>
     </div>
     <div class="modal-foot">
@@ -2833,7 +2848,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261006145751"></script>
+<script src="/e2e.js?v=20261008201257"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -2917,7 +2932,51 @@ function fixMd(s){
   s = s.replace(/\n{3,}/g, '\n\n');
   return s;
 }
-function md(src){ return src ? marked.parse(fixMd(src)) : ''; }
+function md(src){
+  if(!src) return '';
+  const m = mathExtract(fixMd(src));
+  const html = marked.parse(m.text);
+  return m.list.length ? html.replace(/(\d+)/g, (_, i)=>mathHtml(m.list[+i])) : html;
+}
+const MATH_RE = /(```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]*`)|\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$(?![\s$])((?:\\.|[^$\\\n])+?)\$(?![\d$])/g;
+function mathExtract(s){
+  const list = [];
+  const text = s.replace(MATH_RE, (all, code, dd, br, pa, d, at)=>{
+    if(code !== undefined) return all;
+    if(d !== undefined && (/[\\$\w]/.test(s[at-1] || '') || /\s$/.test(d))) return all;
+    const display = dd !== undefined || br !== undefined;
+    list.push({tex: (dd ?? br ?? pa ?? d).trim(), display});
+    return '' + (list.length-1) + '';
+  });
+  return {text, list};
+}
+const mathEsc = (s)=>s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function mathHtml(f){
+  if(window.katex){
+    try{ return katex.renderToString(f.tex, {displayMode: f.display, throwOnError: false, output: 'html'}); }
+    catch(_){ return '<code>'+mathEsc(f.tex)+'</code>'; }
+  }
+  mathLoad();
+  return '<span class="math-pending" data-d="'+(f.display?1:0)+'">'+mathEsc(f.tex)+'</span>';
+}
+let mathLoading = null;
+function mathLoad(){
+  if(mathLoading) return mathLoading;
+  const css = document.createElement('link');
+  css.rel = 'stylesheet'; css.href = 'katex/katex.min.css';
+  document.head.appendChild(css);
+  mathLoading = new Promise((ok, ko)=>{
+    const s = document.createElement('script');
+    s.src = 'katex/katex.min.js'; s.onload = ok; s.onerror = ko;
+    document.head.appendChild(s);
+  }).then(()=>{
+    document.querySelectorAll('.math-pending').forEach(el=>{
+      try{ katex.render(el.textContent, el, {displayMode: el.dataset.d === '1', throwOnError: false, output: 'html'}); }catch(_){}
+      el.classList.remove('math-pending');
+    });
+  }).catch(()=>{ mathLoading = null; });
+  return mathLoading;
+}
 const NOTICE_RE=/\[stop\s*:\s*([^\]]+)\]/g;
 function markNotices(root){
   const walk=document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -3098,6 +3157,12 @@ fr: {
   "mcp.help": "Connecte des <b>serveurs MCP</b> (Model Context Protocol) pour donner de nouveaux outils à l'IA : accès fichiers, bases de données, APIs métier… <b>stdio</b> = programme lancé localement (npx/uvx/binaire) · <b>http</b> = serveur distant. ⚠ un serveur stdio exécute du code sur cette machine, au même titre que le shell.",
   "mcp.empty_list": "(aucun serveur — ajoute un serveur fichiers, une base de données, une API…)",
   "mcp.add_button": "+ ajouter un serveur",
+  "mcp.connect_label": "Délai de connexion",
+  "mcp.connect_hint": "Temps maximal pour se connecter à un serveur MCP.",
+  "mcp.call_label": "Délai d'appel d'outil",
+  "mcp.call_hint": "Temps maximal d'un appel d'outil MCP.",
+  "mcp.timeouts_saved": "Délais MCP enregistrés.",
+  "mcp.timeouts_error": "Délais invalides (1 à 3600 s) ou enregistrement impossible.",
   "tasks.title": "Tâches",
   "tasks.pause_toggle": "suspendre toutes les tâches",
   "tasks.pause_help": "Interrupteur maître : coche pour que plus aucune tâche ne se déclenche. Les tâches gardent leur réglage et repartent quand tu décoches.",
@@ -3283,6 +3348,8 @@ fr: {
   "backends.install_url_label": "Installer depuis un dépôt Git",
   "backends.name_label": "Nom",
   "backends.name_optional_hint": "(optionnel — déduit de l'URL sinon)",
+  "backends.ref_label": "Branche, tag ou commit",
+  "backends.ref_optional_hint": "(optionnel, branche par défaut sinon)",
   "backends.close": "fermer",
   "backends.install_compile": "Installer & compiler",
   "sessions.title": "Sessions",
@@ -4423,6 +4490,12 @@ en: {
   "mcp.help": "Connect <b>MCP servers</b> (Model Context Protocol) to give the AI new tools: file access, databases, business APIs… <b>stdio</b> = program launched locally (npx/uvx/binary) · <b>http</b> = remote server. ⚠ a stdio server runs code on this machine, just like the shell.",
   "mcp.empty_list": "(no servers — add a file server, a database, an API…)",
   "mcp.add_button": "+ add a server",
+  "mcp.connect_label": "Connection timeout",
+  "mcp.connect_hint": "Maximum time to connect to an MCP server.",
+  "mcp.call_label": "Tool call timeout",
+  "mcp.call_hint": "Maximum time for one MCP tool call.",
+  "mcp.timeouts_saved": "MCP timeouts saved.",
+  "mcp.timeouts_error": "Invalid timeouts (1 to 3600 s) or save failed.",
   "tasks.title": "Tasks",
   "tasks.pause_toggle": "pause all tasks",
   "tasks.pause_help": "Master switch: check it so no task triggers anymore. Tasks keep their settings and resume when you uncheck it.",
@@ -4608,6 +4681,8 @@ en: {
   "backends.install_url_label": "Install from a Git repo",
   "backends.name_label": "Name",
   "backends.name_optional_hint": "(optional — otherwise inferred from the URL)",
+  "backends.ref_label": "Branch, tag or commit",
+  "backends.ref_optional_hint": "(optional, default branch otherwise)",
   "backends.close": "close",
   "backends.install_compile": "Install & compile",
   "sessions.title": "Sessions",
@@ -6063,7 +6138,9 @@ document.addEventListener('pointerdown', (e)=>{
 }, true);
 document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && MENU){ e.stopPropagation(); closeMenu(); } }, true);
 document.addEventListener('scroll', (e)=>{
-  if(MENU && !MENU.o.keepOnScroll && !MENU.el.contains(e.target)) closeMenu(false, true);
+  if(!MENU || MENU.o.keepOnScroll || MENU.el.contains(e.target)) return;
+  const t = e.target;
+  if(t === document || t === document.documentElement || t === document.body || (t.contains && t.contains(MENU.anchor))) closeMenu(false, true);
 }, true);
 addEventListener('resize', ()=>closeMenu(true, true));
 let TOKEN = localStorage.getItem('ajean.key') || '';
@@ -9710,6 +9787,7 @@ function openCustomBackends(){
   showModal('lc-custom-modal');
   document.getElementById('lc-custom-url').value = '';
   document.getElementById('lc-custom-name').value = '';
+  document.getElementById('lc-custom-ref').value = '';
   loadCustomBackends();
 }
 function closeCustomBackends(){ hideModal('lc-custom-modal'); }
@@ -9735,8 +9813,9 @@ async function lcInstallCustom(){
   const url = (document.getElementById('lc-custom-url').value||'').trim();
   if(!url){ toast(t('llamacpp.paste_git_url')); return; }
   const name = (document.getElementById('lc-custom-name').value||'').trim();
-  if(!await askConfirm(t('llamacpp.confirm_custom_prefix')+'\n'+url+'\n\n'+t('llamacpp.confirm_custom_suffix'), {title:t('llamacpp.custom_backend_title'), okText:t('llamacpp.install_btn')})) return;
-  const r = await jpost('/api/llamacpp/install-custom', {repo:url, name});
+  const ref = (document.getElementById('lc-custom-ref').value||'').trim();
+  if(!await askConfirm(t('llamacpp.confirm_custom_prefix')+'\n'+url+(ref ? ' @ '+ref : '')+'\n\n'+t('llamacpp.confirm_custom_suffix'), {title:t('llamacpp.custom_backend_title'), okText:t('llamacpp.install_btn')})) return;
+  const r = await jpost('/api/llamacpp/install-custom', {repo:url, name, ref});
   if(!r.ok){ toast(t('llamacpp.error_prefix')+(r.error||'')); return; }
   closeCustomBackends();
   document.getElementById('lc-details').open = true;
@@ -9840,15 +9919,17 @@ async function loadMoe(){
   moeState = s;
   const row = document.getElementById('lc-mode-moe');
   if(!row) return;
-  row.hidden = !(s.env && s.env.supported);
+  const env = s.env || {};
+  row.hidden = !(env.supported || env.visible);
   const st = document.getElementById('lc-moe-state');
-  if(st) st.textContent = (s.installed||[]).length
-    ? t('moe.state_installed').replace('{n}', s.installed.length)
+  if(st) st.textContent = !env.supported ? (env.reason || '')
+    : (s.installed||[]).length ? t('moe.state_installed').replace('{n}', s.installed.length)
     : '';
 }
 async function openMoe(presetId){
   await loadMoe();
   if(!moeState) return;
+  if(!(moeState.env||{}).supported){ toast(moeState.env.reason || t('moe.chip')); return; }
   moeTarget = typeof presetId === 'string' ? presetId : '';
   const s = moeState, env = s.env || {};
   const cards = (env.gpus||[]).filter(g=>g.index===env.main || g.index===env.helper)
@@ -9998,7 +10079,35 @@ async function moeInstall(){
 }
 let mcpServers = [];
 let mcpEditing = null; 
-async function loadMCP(){ renderMCP(await jget('/api/mcp')); }
+async function loadMCP(){
+  renderMCP(await jget('/api/mcp'));
+  loadMCPTimeouts();
+}
+async function loadMCPTimeouts(){
+  const r = await jget('/api/mcp/timeouts');
+  if(!r || !r.ok) return;
+  const c = document.getElementById('mcp-timeout-connect');
+  const k = document.getElementById('mcp-timeout-call');
+  if(c){ c.value = r.connect; wireMcpTimeoutField(c); }
+  if(k){ k.value = r.call; wireMcpTimeoutField(k); }
+}
+function wireMcpTimeoutField(el){
+  if(el.dataset.wired) return;
+  el.dataset.wired = '1';
+  const save = async ()=>{
+    const c = parseInt(document.getElementById('mcp-timeout-connect').value, 10);
+    const k = parseInt(document.getElementById('mcp-timeout-call').value, 10);
+    if(!(c >= 1 && c <= 3600) || !(k >= 1 && k <= 3600)){
+      toast(t('mcp.timeouts_error'));
+      loadMCPTimeouts();
+      return;
+    }
+    const r = await jpost('/api/mcp/timeouts/save', {connect: c, call: k});
+    if(r && r.ok) toast(t('mcp.timeouts_saved'));
+    else toast(t('mcp.timeouts_error'));
+  };
+  el.addEventListener('change', save); 
+}
 function renderMCP(r){
   mcpServers = (r && r.servers) || [];
   setBadge('mcp-badge', null);
