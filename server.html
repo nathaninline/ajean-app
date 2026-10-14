@@ -2562,6 +2562,14 @@ body.jean-mode #ctx-compactions{display:none!important}
             <input id="s-cloud-model" class="pe-inp" placeholder="https://huggingface.co/…/resolve/main/model.gguf" oninput="cfgWriteKey('CLOUD_MODEL', this.value)">
           </div>
           <div class="pe-row stack">
+            <span class="pe-row-l"><span data-i18n="preset.cloud_draft_label">Modèle draft</span> <span class="pe-sub" data-i18n="preset.cloud_draft_sub">GGUF pour le décodage spéculatif (facultatif)</span></span>
+            <input id="s-cloud-draft" class="pe-inp" placeholder="https://huggingface.co/…/resolve/main/draft.gguf" oninput="cfgWriteKey('CLOUD_DRAFT', this.value)">
+          </div>
+          <div class="pe-row">
+            <span class="pe-row-l"><span data-i18n="preset.cloud_predict_label">Budget de sortie</span><span class="pe-sub" data-i18n="preset.cloud_predict_sub">tokens par défaut, modifiable par requête</span></span>
+            <span class="pe-row-c"><input id="s-cloud-predict" class="pe-val" type="number" min="1" step="256" placeholder="4800" oninput="cfgWriteKey('CLOUD_N_PREDICT', this.value)"><span class="pe-unit">tok</span></span>
+          </div>
+          <div class="pe-row stack">
             <span class="pe-row-l"><span data-i18n="preset.cloud_vision_label">Vision</span> <span class="pe-sub" data-i18n="preset.cloud_vision_sub">lien direct vers le mmproj .gguf (facultatif)</span></span>
             <input id="s-cloud-mmproj" class="pe-inp" placeholder="https://huggingface.co/…/mmproj-….gguf" oninput="cfgWriteKey('CLOUD_MMPROJ', this.value)">
           </div>
@@ -2622,6 +2630,7 @@ body.jean-mode #ctx-compactions{display:none!important}
               </div>
               <div id="m-hf-bar" class="pe-bar" style="display:none"><i></i></div>
               <div id="m-hf-progress" class="pe-note" style="display:none"></div>
+              <button id="m-hf-pause" class="pe-link" onclick="togglePauseDownload()" style="display:none" data-i18n="preset.download_pause">Mettre en pause</button>
               <button id="m-hf-cancel" class="pe-link" onclick="cancelDownload()" style="display:none" data-i18n="preset.download_cancel">Annuler le téléchargement</button>
             </div>
             <div class="pe-row">
@@ -2847,7 +2856,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261008235208"></script>
+<script src="/e2e.js?v=20261014232708"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3465,6 +3474,10 @@ fr: {
   "preset.cloud_gpu_sub": "facturé à la seconde",
   "preset.cloud_model_label": "Modèle",
   "preset.cloud_model_sub": "lien direct vers le .gguf",
+  "preset.cloud_draft_label": "Modèle draft",
+  "preset.cloud_draft_sub": "GGUF pour le décodage spéculatif (facultatif)",
+  "preset.cloud_predict_label": "Budget de sortie",
+  "preset.cloud_predict_sub": "tokens par défaut, modifiable par requête",
   "preset.cloud_vision_label": "Vision",
   "preset.cloud_vision_sub": "lien direct vers le mmproj .gguf (facultatif)",
   "preset.cloud_idle_label": "Mise en veille",
@@ -3491,6 +3504,8 @@ fr: {
   "preset.download_model_sub": "lien direct vers un .gguf",
   "preset.download_button_title": "Télécharger",
   "preset.download_cancel": "Annuler le téléchargement",
+  "preset.download_pause": "Mettre en pause",
+  "preset.download_resume": "Reprendre",
   "preset.destination_label": "Destination",
   "preset.model_dirs_label": "Dossiers de modèles",
   "preset.model_dirs_sub": "disque externe, autre dossier…",
@@ -3666,6 +3681,7 @@ fr: {
   "status.reason_set_failed": "réglage du niveau impossible",
   "status.ram_label": "Mémoire vive",
   "status.used_pct_suffix": "utilisée",
+  "status.unified_mem": "mémoire unifiée",
   "status.cfg_engine": "MOTEUR",
   "status.ngl_max_title": "Ce modèle a {l} couches : NGL={n} le met entièrement sur le GPU. En dessous, les couches restantes vont en RAM et libèrent de la VRAM pour le contexte.",
   "status.cmdline_copy": "copier",
@@ -4344,6 +4360,7 @@ fr: {
   "models.dl.to_download": "à télécharger",
   "models.dl.free": "libres",
   "models.dl.canceled": "téléchargement annulé",
+  "models.dl.paused": "en pause",
   "models.dl.downloaded": "téléchargé",
   "models.dl.remaining": "reste",
   "models.dl.file_n_prefix": "fichier ",
@@ -4801,6 +4818,10 @@ en: {
   "preset.cloud_gpu_sub": "billed per second",
   "preset.cloud_model_label": "Model",
   "preset.cloud_model_sub": "direct link to the .gguf",
+  "preset.cloud_draft_label": "Draft model",
+  "preset.cloud_draft_sub": "GGUF for speculative decoding (optional)",
+  "preset.cloud_predict_label": "Output budget",
+  "preset.cloud_predict_sub": "default tokens, overridable per request",
   "preset.cloud_vision_label": "Vision",
   "preset.cloud_vision_sub": "direct link to the mmproj .gguf (optional)",
   "preset.cloud_idle_label": "Idle shutdown",
@@ -4827,6 +4848,8 @@ en: {
   "preset.download_model_sub": "direct link to a .gguf",
   "preset.download_button_title": "Download",
   "preset.download_cancel": "Cancel the download",
+  "preset.download_pause": "Pause",
+  "preset.download_resume": "Resume",
   "preset.destination_label": "Destination",
   "preset.model_dirs_label": "Model folders",
   "preset.model_dirs_sub": "external drive, other folder…",
@@ -5002,6 +5025,7 @@ en: {
   "status.reason_set_failed": "couldn't set the level",
   "status.ram_label": "RAM",
   "status.used_pct_suffix": "used",
+  "status.unified_mem": "unified memory",
   "status.cfg_engine": "ENGINE",
   "status.ngl_max_title": "This model has {l} layers: NGL={n} puts it fully on the GPU. Below that, the remaining layers go to RAM and free VRAM for the context.",
   "status.cmdline_copy": "copy",
@@ -5680,6 +5704,7 @@ en: {
   "models.dl.to_download": "to download",
   "models.dl.free": "free",
   "models.dl.canceled": "download canceled",
+  "models.dl.paused": "paused",
   "models.dl.downloaded": "downloaded",
   "models.dl.remaining": "remaining",
   "models.dl.file_n_prefix": "file ",
@@ -6390,11 +6415,17 @@ function fmtCtxTokens(n){
   return (k>=100 ? Math.round(k) : (Math.round(k*10)/10).toFixed(1).replace(/\.0$/,'')) + 'K';
 }
 let REASON_EFFORT = null; 
-function updateReasonBtn(eff){
+let REASON_MOE = false;
+function reasonLevel(){
+  const e=(REASON_EFFORT||'').trim();
+  return REASON_MOE ? ((!e || e==='high') ? 'xhigh' : e) : e;
+}
+function updateReasonBtn(eff, moe){
   REASON_EFFORT = eff==null ? REASON_EFFORT : eff;
+  if(moe!=null) REASON_MOE = !!moe;
   const btn=document.getElementById('reason-btn');
   if(!btn) return;
-  const e=(REASON_EFFORT||'').trim();
+  const e=reasonLevel();
   if(!e){ btn.style.display='none'; return; }
   btn.style.display='flex';
   const n={low:1, medium:2, high:3, xhigh:4}[e] || 0;
@@ -6403,8 +6434,11 @@ function updateReasonBtn(eff){
 }
 function toggleReasonMenu(ev){
   ev.stopPropagation();
-  const menu=document.getElementById('reason-menu'), cur=(REASON_EFFORT||'').trim();
-  menu.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.eff===cur)); 
+  const menu=document.getElementById('reason-menu'), cur=reasonLevel();
+  menu.querySelectorAll('button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.eff===cur); 
+    b.style.display = (REASON_MOE && b.dataset.eff==='high') ? 'none' : '';
+  });
   toggleMenu(menu, document.getElementById('reason-btn'), {side:'above', align:'right'});
 }
 const closeReasonMenu = ()=>closeMenu();
@@ -6461,10 +6495,12 @@ function renderVram(gpus){
       '<span class="stat-v">'+(g.total? (g.total/1024).toFixed(0)+' GiB' : '')+'</span></div>'+
       '<div class="stat-s">'+cloudCardStatus(g)+(g.billing? ' · '+escHtml(cloudCreditText(g.billing)) : '')+'</div></div>';
     const pct=Math.round(g.used*100/g.total);
+    const temp = g.temp > 0 ? ' · '+g.temp+' °C' : '';
+    const unified = g.unified ? ' · '+escHtml(t('status.unified_mem')) : '';
     return '<div class="stat"><div class="stat-h"><span class="stat-n">'+g.name+'</span>'+
       '<span class="stat-v">'+(g.used/1024).toFixed(1)+' / '+(g.total/1024).toFixed(1)+' GiB</span></div>'+
       '<div class="bar"><div style="width:'+pct+'%"></div></div>'+
-      '<div class="stat-s">GPU '+g.util+' % · '+g.temp+' °C'+(g.cloud?' · '+cloudCardStatus(g):'')+(g.billing? ' · '+escHtml(cloudCreditText(g.billing)) : '')+'</div></div>';
+      '<div class="stat-s">GPU '+g.util+' %'+temp+unified+(g.cloud?' · '+cloudCardStatus(g):'')+(g.billing? ' · '+escHtml(cloudCreditText(g.billing)) : '')+'</div></div>';
   }).join('')); 
 }
 function renderRam(m){
@@ -6506,11 +6542,13 @@ async function loadCfg(){
     rows.push(row(t('status.cfg_engine'), 'GPU Cloud (Modal)'));
     rows.push(row('GPU', c.CLOUD_GPU||'A10G'));
     if(c.CLOUD_MODEL) rows.push(row('MODEL', c.CLOUD_MODEL.split('?')[0].split('/').pop(), c.CLOUD_MODEL));
+    if(c.CLOUD_DRAFT) rows.push(row('DRAFT', c.CLOUD_DRAFT.split('?')[0].split('/').pop(), c.CLOUD_DRAFT));
+    if(c.CLOUD_N_PREDICT) rows.push(row('N_PREDICT', c.CLOUD_N_PREDICT));
     ['CTX','KV_TYPE','BATCH','UBATCH','NGL'].filter(k=>c[k]).forEach(k=>rows.push(row(k, c[k])));
     const sp=(c.EXTRA_ARGS||'').match(/--spec-type\s+(\S+)/);
     if(sp) rows.push(row('SPEC', sp[1]));
     swapContent(document.getElementById('cfg'), rows.join(''));
-    updateReasonBtn(c.REASONING_EFFORT || '');
+    updateReasonBtn(c.REASONING_EFFORT || '', false);
     return;
   }
   if(c.EXTERNAL==='1'){
@@ -6528,7 +6566,7 @@ async function loadCfg(){
       rows.push(row(t('external.key_label'), mask, ''));
     }
     swapContent(document.getElementById('cfg'), rows.join(''));
-    updateReasonBtn('');
+    updateReasonBtn('', false);
     return;
   }
   if(c.ENGINE==='moe'){
@@ -6550,7 +6588,7 @@ async function loadCfg(){
       if(d.vision_gpu) rows.push(row('VISION', 'on', d.vision_gpu));
     }else if(c.CTX) rows.push(row('CTX', c.CTX));
     swapContent(document.getElementById('cfg'), rows.join(''));
-    updateReasonBtn(c.REASONING_EFFORT || '');
+    updateReasonBtn(c.REASONING_EFFORT || '', true);
     return;
   }
   if(c.BIN){
@@ -6572,7 +6610,7 @@ async function loadCfg(){
   const m=(c.EXTRA_ARGS||'').match(/--n-cpu-moe\s+(\d+)/);
   if(m) rows.push(row('N-CPU-MOE', m[1]));
   swapContent(document.getElementById('cfg'), rows.join(''));
-  updateReasonBtn(c.REASONING_EFFORT || '');
+  updateReasonBtn(c.REASONING_EFFORT || '', false);
 }
 const HRESERVE=['cfg','vram','ram-details','presets','internet-status','mcp-list'];
 function reserveHeights(){
@@ -7873,6 +7911,8 @@ function syncRunMode(){
     document.getElementById('s-cloud-provider').value = cfgReadKey('CLOUD').toLowerCase() || 'modal';
     document.getElementById('s-cloud-gpu').value = cfgReadKey('CLOUD_GPU') || 'A10G';
     document.getElementById('s-cloud-model').value = cfgReadKey('CLOUD_MODEL');
+    document.getElementById('s-cloud-draft').value = cfgReadKey('CLOUD_DRAFT');
+    document.getElementById('s-cloud-predict').value = cfgReadKey('CLOUD_N_PREDICT');
     document.getElementById('s-cloud-idle').value = cfgReadKey('CLOUD_IDLE');
     document.getElementById('s-cloud-mmproj').value = cfgReadKey('CLOUD_MMPROJ');
     setCloudAddOpen(false);
@@ -8162,6 +8202,7 @@ function dlEls(){
     prog: document.getElementById('m-hf-progress'),
     bar:  document.getElementById('m-hf-bar'),
     cancel: document.getElementById('m-hf-cancel'),
+    pause: document.getElementById('m-hf-pause'),
   };
 }
 function stopDlPoll(){ if(dlPoll){ clearInterval(dlPoll); dlPoll=null; } }
@@ -8169,7 +8210,7 @@ function resetDlUI(){
   const e = dlEls();
   stopDlPoll(); dlName='';
   e.prog.style.display='none'; e.bar.style.display='none';
-  e.cancel.style.display='none'; e.btn.disabled=false;
+  e.cancel.style.display='none'; e.pause.style.display='none'; e.btn.disabled=false;
 }
 let dlDirList = [];
 async function populateDlDirs(){
@@ -8221,6 +8262,21 @@ async function cancelDownload(){
   e.cancel.disabled = true;
   await jpost('/api/models/download/cancel', {filename: dlName});
 }
+let dlPaused = false;
+async function togglePauseDownload(){
+  if(!dlName) return;
+  const e = dlEls();
+  e.pause.disabled = true;
+  try{
+    const r = await jpost('/api/models/download/pause', {filename: dlName, pause: !dlPaused});
+    if(r.ok) setDlPaused(r.paused);
+  }finally{ e.pause.disabled = false; }
+}
+function setDlPaused(p){
+  dlPaused = !!p;
+  const e = dlEls();
+  e.pause.textContent = t(dlPaused ? 'preset.download_resume' : 'preset.download_pause');
+}
 function watchDownload(fname){
   const e = dlEls();
   dlName = fname;
@@ -8230,7 +8286,10 @@ function watchDownload(fname){
   e.bar.style.display = 'block';
   e.cancel.style.display = 'inline';
   e.cancel.disabled = false;
-  const stop = ()=>{ stopDlPoll(); dlName=''; e.btn.disabled=false; e.cancel.style.display='none'; };
+  e.pause.style.display = 'inline';
+  e.pause.disabled = false;
+  setDlPaused(false);
+  const stop = ()=>{ stopDlPoll(); dlName=''; e.btn.disabled=false; e.cancel.style.display='none'; e.pause.style.display='none'; };
   const tick = async ()=>{
     const list = await jget('/api/models/download/status');
     const st = (list||[]).find(d=>d.filename===fname);
@@ -8257,6 +8316,7 @@ function watchDownload(fname){
       else pick('m-model', onPickModel);
       return;
     }
+    if(!!st.paused !== dlPaused) setDlPaused(st.paused);
     const pct = st.total>0 ? st.done*100/st.total : 0;
     if(st.total>0){
       e.bar.className = 'pe-bar';
@@ -8266,7 +8326,8 @@ function watchDownload(fname){
     }
     const tot = st.total>0 ? ' / '+fmtSize(st.total)+' ('+Math.round(pct)+'%)' : '';
     let extra = '';
-    if(st.speed>0){
+    if(st.paused) extra += ' — '+t('models.dl.paused');
+    else if(st.speed>0){
       extra += ' — '+fmtSize(st.speed)+'/s';
       if(st.total>0){
         const eta = Math.max(0, Math.round((st.total-st.done)/st.speed));
