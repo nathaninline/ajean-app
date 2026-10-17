@@ -238,33 +238,11 @@ header{background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:s
   <button class="iconbtn" id="acctBtn" onclick="openAccount()" title="Mon compte" aria-label="Mon compte"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></svg></button>
 </header>
 
-<nav class="tabs">
-  <button class="tab on" data-v="servers" onclick="tab('servers')">Serveurs</button>
-  <button class="tab" data-v="help" onclick="tab('help')">Aide</button>
-  <button class="tab" data-v="support" onclick="tab('support')">Support<span class="tbadge hidden" id="supBadge">0</span></button>
-</nav>
-
 <div class="wrap">
   <div class="tabview on" id="view-servers">
     <div class="sec"><h2>Mes serveurs</h2><span class="ct" id="srvCt">0</span><span class="sp"></span>
       <button class="btn subtle" onclick="openKeys()">Gérer les clés</button></div>
     <div class="grid" id="grid" style="margin-top:14px"></div>
-  </div>
-
-  <div class="tabview" id="view-help">
-    <div class="sec"><h2>Centre d'aide</h2><span class="sp"></span></div>
-    <div id="artList"><p class="muted">Chargement…</p></div>
-    <article id="artFull" class="hidden">
-      <button class="btn subtle" onclick="closeArticle()" style="margin-bottom:12px">← Tous les articles</button>
-      <h2 id="afTitle" style="font-size:20px;margin-bottom:12px"></h2>
-      <div id="afBody" class="md"></div>
-    </article>
-  </div>
-
-  <div class="tabview" id="view-support">
-    <div class="sec"><h2>Support</h2><span class="sp"></span></div>
-    <p class="lead" style="margin-bottom:12px"><b>Le support par chat est terminé.</b> Il y avait beaucoup trop de demandes pour y répondre correctement. Les échanges précédents restent consultables ci-dessous. Pour signaler un bug : <a href="https://github.com/nathaninline/ajean/issues" target="_blank" rel="noopener">github.com/nathaninline/ajean/issues</a>.</p>
-    <div class="chat" id="supChat"></div>
   </div>
 </div>
 
@@ -328,7 +306,7 @@ header{background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:s
 
 <div class="modal" id="subModal"><div class="sheet">
   <h3>S'abonner à ajean.link</h3>
-  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide.</p>
+  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port.</p>
   <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
   <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
   <div class="row"><button class="btn subtle" onclick="logout()" style="margin-right:auto">Se déconnecter</button>
@@ -349,10 +327,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261017163550"></script>
+<script src="/e2e.js?v=20261017163912"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20261017163550'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20261017163912'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
@@ -505,63 +483,6 @@ async function load(){
   if(sigM!==SIG_M){SIG_M=sigM;renderServers();}
   MACHINES.forEach(function(m){if(m.online&&SCARDS[m.id])fillProbe(m,SCARDS[m.id]);});
 }
-
-/* ---- onglets ---- */
-function tab(v){document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.v===v);});
-  document.querySelectorAll('.tabview').forEach(function(x){x.classList.toggle('on',x.id==='view-'+v);});
-  if(v==='help')loadArticles();
-  if(v==='support')loadSupport();}
-
-/* ---- Aide / FAQ (articles publiés) ---- */
-var ARTS=[];
-function mdRender(s){try{var h=marked.parse(s||'');
-  return h.replace(/<table>/g,'<div class="tw"><table>').replace(/<\/table>/g,'</table></div>');
-}catch(e){return esc(s||'');}}
-function stripMd(s){return (s||'').replace(/[#*`>_\-]/g,' ').replace(/\s+/g,' ').trim();}
-async function loadArticles(){var r=await j('/app/help/articles');if(!r)return;ARTS=(await r.json()).articles||[];
-  closeArticle();
-  var el=document.getElementById('artList');
-  el.innerHTML=ARTS.length?ARTS.map(function(a){
-    return '<div class="artcard" onclick="openArticle(\''+a.id+'\')">'+
-      '<span class="qm">?</span><div class="ac"><b>'+esc(a.title)+'</b>'+
-      '<div class="ex">'+esc(stripMd(a.body).slice(0,150))+'</div></div>'+
-      '<span class="chev">→</span></div>';
-  }).join(''):'<div class="empty">Aucun article pour le moment.</div>';}
-function openArticle(id){var a=ARTS.find(function(x){return x.id===id;});if(!a)return;
-  document.getElementById('artList').classList.add('hidden');
-  document.getElementById('afTitle').textContent=a.title;
-  document.getElementById('afBody').innerHTML=mdRender(a.body);
-  document.getElementById('artFull').classList.remove('hidden');window.scrollTo(0,0);}
-function closeArticle(){document.getElementById('artFull').classList.add('hidden');
-  document.getElementById('artList').classList.remove('hidden');}
-
-/* ---- Support (chat membre ↔ opérateur ; EN CLAIR, hors boîte noire) ---- */
-var SUP_SIG='';
-async function loadSupport(){var r=await j('/app/support/thread');if(!r)return;var t=await r.json();renderSupport(t.msgs||[]);
-  document.getElementById('supBadge').classList.add('hidden');
-  try{fetch('/app/support/seen',{method:'POST'});}catch(e){}
-}
-// Les images sont servies par le relais (ajean.link) : une balise <img src="/…">
-// ne passe PAS par le shim fetch du portail et irait sur GitHub Pages. On pointe
-// donc en absolu sur le relais (le cookie de session est même-site → envoyé).
-var SUP_IMG_BASE=(typeof API!=='undefined'?API:'')+'/app/support/img/';
-function supMsgBody(m){var h='';
-  if(m.img)h+='<img src="'+SUP_IMG_BASE+encodeURIComponent(m.img)+'" onclick="window.open(this.src)" alt="image">';
-  if(m.text)h+=esc(m.text);
-  return h;}
-function renderSupport(msgs){var c=document.getElementById('supChat');
-  var sig=JSON.stringify(msgs);if(sig===SUP_SIG)return;SUP_SIG=sig;
-  if(!msgs.length){c.innerHTML='<div class="empty2">Aucun échange.</div>';return;}
-  c.innerHTML=msgs.map(function(m){return '<div class="msg '+m.from+'">'+supMsgBody(m)+'<span class="mt">'+ago(m.ts)+'</span></div>';}).join('');
-  c.scrollTop=c.scrollHeight;}
-// badge de non-lus : sondé au chargement et au polling global
-async function pollSupportBadge(){try{var r=await fetch('/app/support/thread');if(!r.ok)return;var t=await r.json();
-  var b=document.getElementById('supBadge');var onSup=document.querySelector('.tab.on')&&document.querySelector('.tab.on').dataset.v==='support';
-  if(onSup){renderSupport(t.msgs||[]);b.classList.add('hidden');try{fetch('/app/support/seen',{method:'POST'});}catch(e){}}
-  else if(t.unread){b.textContent=t.unread;b.classList.remove('hidden');}
-  else b.classList.add('hidden');
-}catch(e){}}
-
 /* ---- mur d'abonnement (« payer ou rien ») ---- */
 function openSub(){document.getElementById('subModal').classList.add('show');}
 function closeSub(){document.getElementById('subModal').classList.remove('show');}
@@ -573,7 +494,7 @@ async function startCheckout(){var b=document.getElementById('subBtn');b.disable
   var d=await r.json();location.href=d.url;}
 async function pollActivation(){for(var i=0;i<12;i++){await new Promise(function(r){setTimeout(r,2000);});
     var r=await fetch('/billing/status');if(!r.ok)break;var s=await r.json();
-    if(s.active){ACTIVE=true;document.getElementById('subModal').classList.remove('show');showShell(true);welcome();await load();pollSupportBadge();return;}}
+    if(s.active){ACTIVE=true;document.getElementById('subModal').classList.remove('show');showShell(true);welcome();await load();return;}}
   document.getElementById('subMsg').textContent='Paiement bien pris en compte. Si l\'accès ne s\'ouvre pas, recharge la page dans une minute.';}
 // Écran de remerciement après paiement ; nettoie l'URL (?sub=ok) pour ne pas
 // ré-afficher au rechargement.
@@ -595,7 +516,7 @@ applyTheme(document.documentElement.getAttribute('data-theme')==='light'?'light'
 
 async function boot(){
   // « Payer ou rien » : sans abonnement actif, l'accès distant est fermé. Le compte
-  // reste connecté (il peut consulter l'aide, contacter le support et s'abonner),
+  // reste connecté (il peut s'abonner ou se déconnecter),
   // mais un mur d'abonnement s'affiche. /app/me → 401 si non connecté (→ login).
   var st;try{st=await fetch('/app/me');}catch(e){location.href='/login.html';return;}
   if(st.status===401){location.href='/login.html';return;}
@@ -604,7 +525,7 @@ async function boot(){
   var back=(new URLSearchParams(location.search)).get('sub')==='ok';
   if(!ACTIVE){
     // « Payer ou rien » : mur TOTAL. Tant que l'abonnement n'est pas actif, aucun
-    // contenu (serveurs, aide, support) n'est chargé ni affiché. L'écran d'abonnement
+    // contenu (serveurs) n'est chargé ni affiché. L'écran d'abonnement
     // est bloquant (pas de « Plus tard ») — seule issue : payer ou se déconnecter.
     showShell(false);
     if(back)pollActivation(); else openSub();
@@ -613,8 +534,7 @@ async function boot(){
   showShell(true);
   if(back)welcome();
   await load();
-  maybeAutoOpen();          // PWA installée : file droit sur le dernier serveur
-  pollSupportBadge();}
+  maybeAutoOpen();}          // PWA installée : file droit sur le dernier serveur
 // maybeAutoOpen : au LANCEMENT de la PWA (écran d'accueil), ouvre directement le
 // dernier serveur utilisé au lieu de rester sur « Mes serveurs ». Contraintes :
 //  - UNIQUEMENT en PWA installée (standalone) — dans un navigateur on garde la liste ;
@@ -636,13 +556,12 @@ function maybeAutoOpen(){
     location.href='server.html?m='+encodeURIComponent(id)+'&v='+BUILD;
   }catch(e){}
 }
-// showShell : masque tabs + contenu + bouton compte tant que le mur est en place.
+// showShell : masque le contenu + bouton compte tant que le mur est en place.
 function showShell(on){
-  var tb=document.querySelector('nav.tabs'),wr=document.querySelector('.wrap'),ab=document.getElementById('acctBtn');
-  if(tb)tb.style.display=on?'':'none';
+  var wr=document.querySelector('.wrap'),ab=document.getElementById('acctBtn');
   if(wr)wr.style.display=on?'':'none';
   if(ab)ab.style.display=on?'':'none';
 }
 boot();
-setInterval(function(){if(!ACTIVE)return;if(document.querySelector('.modal.show'))return;load();pollSupportBadge();},15000);
+setInterval(function(){if(!ACTIVE)return;if(document.querySelector('.modal.show'))return;load();},15000);
 </script></body></html>

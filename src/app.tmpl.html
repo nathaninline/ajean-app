@@ -17,33 +17,11 @@
   <button class="iconbtn" id="acctBtn" onclick="openAccount()" title="Mon compte" aria-label="Mon compte"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></svg></button>
 </header>
 
-<nav class="tabs">
-  <button class="tab on" data-v="servers" onclick="tab('servers')">Serveurs</button>
-  <button class="tab" data-v="help" onclick="tab('help')">Aide</button>
-  <button class="tab" data-v="support" onclick="tab('support')">Support<span class="tbadge hidden" id="supBadge">0</span></button>
-</nav>
-
 <div class="wrap">
   <div class="tabview on" id="view-servers">
     <div class="sec"><h2>Mes serveurs</h2><span class="ct" id="srvCt">0</span><span class="sp"></span>
       <button class="btn subtle" onclick="openKeys()">Gérer les clés</button></div>
     <div class="grid" id="grid" style="margin-top:14px"></div>
-  </div>
-
-  <div class="tabview" id="view-help">
-    <div class="sec"><h2>Centre d'aide</h2><span class="sp"></span></div>
-    <div id="artList"><p class="muted">Chargement…</p></div>
-    <article id="artFull" class="hidden">
-      <button class="btn subtle" onclick="closeArticle()" style="margin-bottom:12px">← Tous les articles</button>
-      <h2 id="afTitle" style="font-size:20px;margin-bottom:12px"></h2>
-      <div id="afBody" class="md"></div>
-    </article>
-  </div>
-
-  <div class="tabview" id="view-support">
-    <div class="sec"><h2>Support</h2><span class="sp"></span></div>
-    <p class="lead" style="margin-bottom:12px"><b>Le support par chat est terminé.</b> Il y avait beaucoup trop de demandes pour y répondre correctement. Les échanges précédents restent consultables ci-dessous. Pour signaler un bug : <a href="https://github.com/nathaninline/ajean/issues" target="_blank" rel="noopener">github.com/nathaninline/ajean/issues</a>.</p>
-    <div class="chat" id="supChat"></div>
   </div>
 </div>
 
@@ -107,7 +85,7 @@
 
 <div class="modal" id="subModal"><div class="sheet">
   <h3>S'abonner à ajean.link</h3>
-  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port. Inclut le centre d'aide.</p>
+  <p class="muted" id="subMsg">Accès distant illimité à tes serveurs AJEAN, partout, chiffré de bout en bout — sans ouvrir de port.</p>
   <div class="kv"><span>Formule</span><b>4,80 €/mois · sans engagement</b></div>
   <div class="kv"><span>Résiliation</span><b>à tout moment</b></div>
   <div class="row"><button class="btn subtle" onclick="logout()" style="margin-right:auto">Se déconnecter</button>

@@ -63,11 +63,3 @@ async function load(){
   if(sigM!==SIG_M){SIG_M=sigM;renderServers();}
   MACHINES.forEach(function(m){if(m.online&&SCARDS[m.id])fillProbe(m,SCARDS[m.id]);});
 }
-
-/* ---- onglets ---- */
-function tab(v){document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.v===v);});
-  document.querySelectorAll('.tabview').forEach(function(x){x.classList.toggle('on',x.id==='view-'+v);});
-  if(v==='help')loadArticles();
-  if(v==='support')loadSupport();}
-
-/* ---- Aide / FAQ (articles publiés) ---- */
