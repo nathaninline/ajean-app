@@ -219,7 +219,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;flex-shrink:0;font-size:10px;font-weight:600;line-height:1;color:var(--dim);border:1px solid var(--border);border-radius:50%;cursor:help;user-select:none;vertical-align:middle}
 .help:hover{color:var(--accent);border-color:var(--accent)}
 .help>.tip{display:none;position:absolute;z-index:40;left:0;right:0;top:calc(100% + 2px);padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:400;line-height:1.4;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.15);white-space:normal;text-align:left;text-transform:none;letter-spacing:normal;font-family:var(--font);cursor:auto}
-.help:hover>.tip,.help:focus>.tip,.help.open>.tip{display:block}
+@media (hover:hover){.help:hover>.tip{display:block}}
+.help:focus-visible>.tip,.help.open>.tip{display:block}
+.help.shut>.tip{display:none}
 .kv{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px;min-height:38px;align-items:center}
 .kv span:first-child{color:var(--text);flex-shrink:0}
 .cfg-copy{border:0;background:none;padding:0 0 0 6px;margin:0;color:var(--dim);opacity:.5;cursor:pointer;vertical-align:middle;line-height:0}
@@ -1758,6 +1760,18 @@ button.app-card-open:hover{background:var(--text);color:var(--bg);opacity:.85}
   .apps-new{width:36px;padding:0;justify-content:center}
 }
 @media (max-width:359px){.apps-grid{grid-template-columns:repeat(3,1fr)}}
+.compact-max-row select{order:2;margin-left:auto;width:auto;min-width:0;flex:none;font-size:12.5px}
+.compact-max-row select:disabled{opacity:.5}
+.task-history{display:flex;flex-direction:column;gap:4px}
+.th-row{border-radius:12px;background:var(--t1);overflow:hidden}
+button.th-head{display:flex;align-items:center;gap:10px;width:100%;min-height:0;margin:0;padding:9px 12px;border:none;border-radius:0;background:transparent;color:var(--text);font-size:12.5px;text-align:left;cursor:pointer}
+button.th-head:hover{background:var(--t1)}
+.th-when{font-weight:500}
+.th-meta{flex:1;min-width:0;color:var(--dim);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.th-error .th-meta{color:var(--err)}
+.th-chev{flex:none;color:var(--dim);transition:transform .2s var(--ease)}
+.th-row.open .th-chev{transform:rotate(90deg)}
+.th-body{margin:0 8px 8px;max-height:320px;overflow:auto}
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()" aria-label="Menu" title="Menu"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 <button id="lc-chip" onclick="lcChipOpen()" hidden></button>
@@ -1890,10 +1904,6 @@ button.app-card-open:hover{background:var(--text);color:var(--bg);opacity:.85}
           <div><div class="link-perk-t" data-i18n="link.perk_remote_t">Accès distant sécurisé</div><div class="link-perk-d" data-i18n="link.perk_remote_d">Accédez à votre serveur AJEAN depuis n'importe où et depuis n'importe quelle application, chiffré de bout en bout — le relais ne voit rien.</div></div>
         </div>
         <div class="link-perk">
-          <span class="link-perk-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-          <div><div class="link-perk-t" data-i18n="link.perk_support_t">Support dédié par chat</div><div class="link-perk-d" data-i18n="link.perk_support_d">Une messagerie dédiée pour répondre à toutes vos questions, directement depuis l'application.</div></div>
-        </div>
-        <div class="link-perk">
           <span class="link-perk-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
           <div><div class="link-perk-t" data-i18n="link.perk_backup_t">Sauvegarde intégrée</div><div class="link-perk-d" data-i18n="link.perk_backup_d">Vos réglages, presets, historique et mémoire sauvegardés automatiquement, chiffrés avant l'envoi.</div></div>
         </div>
@@ -1935,7 +1945,7 @@ button.app-card-open:hover{background:var(--text);color:var(--bg);opacity:.85}
         </div>
       </div>
     </div>
-    <div id="remote-perks-mini" class="link-perks-mini" style="display:none" data-i18n="link.perks_mini" data-i18n-html>Inclus dans <b>AJEAN LINK</b> : accès distant chiffré de bout en bout · support dédié par chat · sauvegarde de vos réglages, presets, historique et mémoire.</div>
+    <div id="remote-perks-mini" class="link-perks-mini" style="display:none" data-i18n="link.perks_mini" data-i18n-html>Inclus dans <b>AJEAN LINK</b> : accès distant chiffré de bout en bout · sauvegarde de vos réglages, presets, historique et mémoire.</div>
   </details>
   <details id="lc-details"><summary><span class="stitle" data-i18n="engine.title">Engine</span></summary>
     <div class="slist">
@@ -2036,8 +2046,18 @@ button.app-card-open:hover{background:var(--text);color:var(--bg);opacity:.85}
     <div class="subhead" data-i18n="settings.general_subhead">Général</div>
     <div class="slist">
         <label class="switchrow agent-gated"><span class="switch"><input type="checkbox" id="compact-toggle" onchange="toggleCompact()"><span class="slider"></span></span> <span data-i18n="agent.compact_toggle">compactage automatique du contexte</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="agent.compact_help" data-i18n-html>activé par défaut : quand la conversation approche de la limite de contexte, les vieux tours sont résumés automatiquement (façon Hermes) au lieu de t'imposer un « vider ». Discussions quasi illimitées sans perdre le fil.</span></span></label>
+        <div class="switchrow agent-gated compact-max-row"><span data-i18n="agent.compact_max">compacter au plus tard à</span><select id="compact-max" class="ctl" onchange="setCompactMax()"><option value="0" data-i18n="agent.compact_max_auto">75 % du contexte</option><option value="16384">16K</option><option value="24576">24K</option><option value="32768">32K</option><option value="49152">48K</option><option value="65536">64K</option><option value="98304">96K</option><option value="131072">128K</option></select><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="agent.compact_max_help">Par défaut, le contexte est compacté à 75 % de la fenêtre du modèle. Avec une très grande fenêtre, ce seuil n'est presque jamais atteint et les longues conversations deviennent lentes. Un plafond compacte plus tôt, quelle que soit la fenêtre.</span></span></div>
         <label class="switchrow"><span class="switch"><input type="checkbox" id="push-toggle" onchange="togglePush()"><span class="slider"></span></span> <span data-i18n="agent.push_toggle">me prévenir quand la réponse est prête</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="agent.push_help" data-i18n-html>Le serveur t'envoie une <b>notification</b> à la fin de chaque réponse, même l'app fermée ou le téléphone verrouillé. Sur iPhone : <b>ajoute d'abord AJEAN à l'écran d'accueil</b> puis active depuis l'app installée. À régler sur chaque appareil.</span></span></label>
         <label class="switchrow"><span class="switch"><input type="checkbox" id="mem-enc-toggle" onchange="toggleMemEncrypt()"><span class="slider"></span></span> <span data-i18n="agent.encrypt_toggle">activer le chiffrement</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="agent.encrypt_help" data-i18n-html>Chiffre ta <b>mémoire</b> ET tes <b>conversations</b> au repos (AES-256), protégées par ta <b>clé d'accès</b> : si tu as accès à l'interface, c'est déjà déverrouillé ; sinon on te demande ta clé d'accès. Une <b>clé de récupération</b> t'est donnée à l'activation (garde-la). Rien n'est perdu : snapshots automatiques avant chaque bascule.</span></span></label>
+        <label class="switchrow"><span data-i18n="settings.link_browser_label">liens externes dans</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="settings.link_browser_help" data-i18n-html>Les liens cliqués dans AJEAN s'ouvrent dans ce navigateur. La fenêtre AJEAN elle-même ne change pas : seuls les liens cliqués changent de navigateur. « Navigateur par défaut » suit le réglage de ta machine et couvre aussi les navigateurs absents de cette liste.</span></span>
+          <select id="link-browser" class="sctl" onchange="setLinkBrowser(this.value)">
+            <option value="auto" data-i18n="settings.link_browser_auto">navigateur par défaut</option>
+            <option value="chrome">Google Chrome</option>
+            <option value="edge">Microsoft Edge</option>
+            <option value="brave">Brave</option>
+            <option value="chromium">Chromium</option>
+          </select>
+        </label>
     </div>
   </details>
   </div>
@@ -2427,6 +2447,10 @@ button.app-card-open:hover{background:var(--text);color:var(--bg);opacity:.85}
       <div id="task-result-block" class="pe-group" style="display:none">
         <div class="pe-gh"><span data-i18n="task.last_result">Dernier résultat</span> <span id="task-result-when" class="pe-sub" style="display:inline;margin:0"></span></div>
         <div id="task-result" class="task-report"></div>
+      </div>
+      <div id="task-history-block" class="pe-group" style="display:none">
+        <div class="pe-gh"><span data-i18n="task.history">Réponses précédentes</span></div>
+        <div id="task-history" class="task-history"></div>
       </div>
       <div class="pe-group">
         <div class="pe-gh" data-i18n="task.name_heading">Nom</div>
@@ -2926,7 +2950,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261017144759"></script>
+<script src="/e2e.js?v=20261017163550"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3013,8 +3037,39 @@ function fixMd(s){
 function md(src){
   if(!src) return '';
   const m = mathExtract(fixMd(src));
-  const html = marked.parse(m.text);
+  const html = mdSanitize(marked.parse(m.text));
   return m.list.length ? html.replace(/(\d+)/g, (_, i)=>mathHtml(m.list[+i])) : html;
+}
+const MD_TAGS = new Set(['P','BR','HR','H1','H2','H3','H4','H5','H6','UL','OL','LI','BLOCKQUOTE','PRE','CODE','EM','STRONG','B','I','U','S','DEL','INS','MARK','SMALL','SUB','SUP','KBD','A','IMG','TABLE','THEAD','TBODY','TFOOT','TR','TH','TD','SPAN','DIV','DETAILS','SUMMARY','INPUT','DL','DT','DD','ABBR','Q','CITE']);
+const MD_ATTRS = new Set(['href','src','alt','title','class','colspan','rowspan','align','start','type','checked','disabled','open','width','height','lang']);
+function mdSafeURL(u, img){
+  const s = String(u || '').replace(/[\u0000- ]+/g, '');
+  const sch = /^([a-z][a-z0-9+.-]*):/i.exec(s);
+  if(!sch) return true;                                   
+  const p = sch[1].toLowerCase();
+  if(p === 'http' || p === 'https' || p === 'mailto') return true;
+  return img && p === 'data' && /^data:image\/(png|jpe?g|gif|webp)[;,]/i.test(s);
+}
+function mdSanitize(html){
+  if(!/</.test(html)) return html;
+  const t = document.createElement('template');
+  t.innerHTML = html;
+  const walk = (node)=>{
+    for(const el of Array.from(node.children)){
+      if(!MD_TAGS.has(el.tagName) || (el.tagName === 'INPUT' && el.getAttribute('type') !== 'checkbox')){
+        el.replaceWith(document.createTextNode(el.outerHTML));
+        continue;
+      }
+      for(const a of Array.from(el.attributes)){
+        const n = a.name.toLowerCase();
+        if(!MD_ATTRS.has(n) || ((n === 'href' || n === 'src') && !mdSafeURL(a.value, el.tagName === 'IMG'))) el.removeAttribute(a.name);
+      }
+      if(el.tagName === 'INPUT') el.setAttribute('disabled', '');
+      walk(el);
+    }
+  };
+  walk(t.content);
+  return t.innerHTML;
 }
 const MATH_RE = /(```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]*`)|\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$(?![\s$])((?:\\.|[^$\\\n])+?)\$(?![\d$])/g;
 function mathExtract(s){
@@ -3191,6 +3246,9 @@ fr: {
   "agent.settings_subhead": "Paramètres",
   "agent.compact_toggle": "compactage automatique du contexte",
   "agent.compact_help": "activé par défaut : quand la conversation approche de la limite de contexte, les vieux tours sont résumés automatiquement (façon Hermes) au lieu de t'imposer un « vider ». Discussions quasi illimitées sans perdre le fil.",
+  "agent.compact_max": "compacter au plus tard à",
+  "agent.compact_max_auto": "75 % du contexte",
+  "agent.compact_max_help": "Par défaut, le contexte est compacté à 75 % de la fenêtre du modèle. Avec une très grande fenêtre, ce seuil n'est presque jamais atteint et les longues conversations deviennent lentes. Un plafond compacte plus tôt, quelle que soit la fenêtre.",
   "agent.push_toggle": "me prévenir quand la réponse est prête",
   "agent.push_help": "Le serveur t'envoie une <b>notification</b> à la fin de chaque réponse, même l'app fermée ou le téléphone verrouillé. Sur iPhone : <b>ajoute d'abord AJEAN à l'écran d'accueil</b> puis active depuis l'app installée. À régler sur chaque appareil.",
   "agent.encrypt_toggle": "activer le chiffrement",
@@ -3272,12 +3330,10 @@ fr: {
   "link.perks_heading": "Passez à AJEAN LINK",
   "link.perk_remote_t": "Accès distant sécurisé",
   "link.perk_remote_d": "Accédez à votre serveur AJEAN depuis n'importe où et depuis n'importe quelle application, chiffré de bout en bout — le relais ne voit rien.",
-  "link.perk_support_t": "Support dédié par chat",
-  "link.perk_support_d": "Une messagerie dédiée pour répondre à toutes vos questions, directement depuis l'application.",
   "link.perk_backup_t": "Sauvegarde intégrée",
   "link.perk_backup_d": "Vos réglages, presets, historique et mémoire sauvegardés automatiquement, chiffrés avant l'envoi.",
   "link.price_note": "4,80 €/mois · sans engagement, résiliable à tout moment",
-  "link.perks_mini": "Inclus dans <b>AJEAN LINK</b> : accès distant chiffré de bout en bout · support dédié par chat · sauvegarde de vos réglages, presets, historique et mémoire.",
+  "link.perks_mini": "Inclus dans <b>AJEAN LINK</b> : accès distant chiffré de bout en bout · sauvegarde de vos réglages, presets, historique et mémoire.",
   "link.remote_address_label": "Votre adresse d'accès distant",
   "link.copy_title": "copier",
   "link.open_title": "ouvrir",
@@ -3405,6 +3461,10 @@ fr: {
   "chat.mode_base_hint": "sans agent ni outils",
   "settings.section_title": "Paramètres",
   "settings.general_subhead": "Général",
+  "settings.link_browser_label": "liens externes dans",
+  "settings.link_browser_auto": "navigateur par défaut",
+  "settings.link_browser_saved": "réglage enregistré",
+  "settings.link_browser_help": "Les liens cliqués dans AJEAN s'ouvrent dans ce navigateur. La fenêtre AJEAN elle-même ne change pas : seuls les liens cliqués changent de navigateur. « Navigateur par défaut » suit le réglage de ta machine et couvre aussi les navigateurs absents de cette liste.",
   "chat.projects_button_title": "Projets (mémoire + conversations cloisonnées)",
   "chat.input_placeholder": "Discuter avec Jean",
   "chat.plus_button_title": "Ajouter",
@@ -3473,6 +3533,9 @@ fr: {
   "task.title": "Tâche planifiée",
   "task.close_aria": "Fermer",
   "task.last_result": "Dernier résultat",
+  "task.history": "Réponses précédentes",
+  "tasks.history_error": "échec",
+  "tasks.history_stopped": "interrompue",
   "task.name_heading": "Nom",
   "task.name_placeholder": "Nom de la tâche",
   "task.type_heading": "Type",
@@ -3959,6 +4022,8 @@ fr: {
   "moe.kv_int8": "8 bits (plus léger)",
   "moe.s_vision": "Lire les images",
   "moe.s_helper": "Seconde carte",
+  "moe.s_reserve": "VRAM laissée à l'écran",
+  "moe.reserve_none": "Aucune",
   "moe.second_off": "Non utilisée",
   "moe.second_helper": "Aide aux experts",
   "moe.second_layers": "Partage des couches",
@@ -4535,6 +4600,9 @@ en: {
   "agent.settings_subhead": "Settings",
   "agent.compact_toggle": "automatic context compaction",
   "agent.compact_help": "on by default: when the conversation nears the context limit, old turns are automatically summarized (Hermes-style) instead of forcing you to \"clear\". Near-unlimited conversations without losing the thread.",
+  "agent.compact_max": "compact at the latest at",
+  "agent.compact_max_auto": "75% of the context",
+  "agent.compact_max_help": "By default, the context is compacted at 75% of the model's window. With a very large window this threshold is almost never reached and long conversations get slow. A cap compacts earlier, whatever the window.",
   "agent.push_toggle": "notify me when the response is ready",
   "agent.push_help": "The server sends you a <b>notification</b> at the end of each response, even with the app closed or the phone locked. On iPhone: <b>first add AJEAN to the home screen</b>, then enable it from the installed app. Must be set up on each device.",
   "agent.encrypt_toggle": "enable encryption",
@@ -4616,12 +4684,10 @@ en: {
   "link.perks_heading": "Upgrade to AJEAN LINK",
   "link.perk_remote_t": "Secure remote access",
   "link.perk_remote_d": "Reach your AJEAN server from anywhere and from any app, end-to-end encrypted — the relay sees nothing.",
-  "link.perk_support_t": "Dedicated chat support",
-  "link.perk_support_d": "A dedicated inbox to answer all your questions, right from the app.",
   "link.perk_backup_t": "Built-in backup",
   "link.perk_backup_d": "Your settings, presets, history and memory backed up automatically, encrypted before upload.",
   "link.price_note": "€4.80/month · no commitment, cancel anytime",
-  "link.perks_mini": "Included with <b>AJEAN LINK</b>: end-to-end encrypted remote access · dedicated chat support · backup of your settings, presets, history and memory.",
+  "link.perks_mini": "Included with <b>AJEAN LINK</b>: end-to-end encrypted remote access · backup of your settings, presets, history and memory.",
   "link.remote_address_label": "Your remote access address",
   "link.copy_title": "copy",
   "link.open_title": "open",
@@ -4749,6 +4815,10 @@ en: {
   "chat.mode_base_hint": "no agent, no tools",
   "settings.section_title": "Settings",
   "settings.general_subhead": "General",
+  "settings.link_browser_label": "external links in",
+  "settings.link_browser_auto": "system default",
+  "settings.link_browser_saved": "setting saved",
+  "settings.link_browser_help": "Links clicked in AJEAN open in this browser. The AJEAN window itself does not change: only clicked links switch browser. “System default” follows your machine's setting and also covers browsers missing from this list.",
   "chat.projects_button_title": "Projects (isolated memory + conversations)",
   "chat.input_placeholder": "Chat with Jean",
   "chat.plus_button_title": "Add",
@@ -4817,6 +4887,9 @@ en: {
   "task.title": "Scheduled task",
   "task.close_aria": "Close",
   "task.last_result": "Last result",
+  "task.history": "Previous answers",
+  "tasks.history_error": "failed",
+  "tasks.history_stopped": "stopped",
   "task.name_heading": "Name",
   "task.name_placeholder": "Task name",
   "task.type_heading": "Type",
@@ -5303,6 +5376,8 @@ en: {
   "moe.kv_int8": "8-bit (lighter)",
   "moe.s_vision": "Read images",
   "moe.s_helper": "Second card",
+  "moe.s_reserve": "VRAM left for the display",
+  "moe.reserve_none": "None",
   "moe.second_off": "Not used",
   "moe.second_helper": "Expert helper",
   "moe.second_layers": "Layer split",
@@ -5902,6 +5977,7 @@ async function loadPrefs(){
         const v=p.prefs[o.id.replace('-','_')];
         if(v!==undefined) applyView(o.id, v==='1');
       });
+      if(p.prefs.link_browser) applyLinkBrowser(p.prefs.link_browser);
     }
   }catch(e){}
 }
@@ -6237,6 +6313,28 @@ document.addEventListener('pointerdown', (e)=>{
   while(MENU && !MENU.el.contains(e.target) && !MENU.anchor.contains(e.target)) closeMenu();
 }, true);
 document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && MENU){ e.stopPropagation(); closeMenu(); } }, true);
+function closeHelps(except){
+  document.querySelectorAll('.help.open').forEach(h=>{ if(h !== except) h.classList.remove('open'); });
+}
+document.addEventListener('click', (e)=>{
+  const h = e.target.closest && e.target.closest('.help');
+  if(!h){ closeHelps(null); return; }
+  if(e.target.closest('.tip') && h.classList.contains('open')){
+    setTimeout(()=>h.classList.add('open'), 0);
+    return;
+  }
+  closeHelps(h);
+  setTimeout(()=>{   
+    const open = h.classList.contains('open');
+    h.classList.toggle('shut', !open);
+    if(!open) h.blur();
+  }, 0);
+}, true);
+document.addEventListener('mouseout', (e)=>{
+  const h = e.target.closest && e.target.closest('.help.shut');
+  if(h && !h.contains(e.relatedTarget)) h.classList.remove('shut');
+}, true);
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && document.querySelector('.help.open')) closeHelps(null); }, true);
 document.addEventListener('scroll', (e)=>{
   if(!MENU || MENU.o.keepOnScroll || MENU.el.contains(e.target)) return;
   const t = e.target;
@@ -6653,9 +6751,8 @@ async function loadCfg(){
       rows.push(row('CTX', d.ctx));
       rows.push(row('KV', d.kv+(d.kv_resident ? ' · '+k(d.kv_resident)+' VRAM' : '')));
       rows.push(row('MTP', d.spec));
-      rows.push(row('PREFILL', k(d.prefill)));
+      rows.push(row('PREFILL', d.prefill ? k(d.prefill) : 'auto'));
       rows.push(row('EXPERTS', d.drop ? 'mlock' : d.mmap ? 'mmap' : 'RAM', d.drop ? t('moe.d_drop') : d.mmap ? t('moe.d_mmap') : t('moe.d_inram')));
-      if(d.vision_gpu) rows.push(row('VISION', 'on', d.vision_gpu));
     }else if(c.CTX) rows.push(row('CTX', c.CTX));
     swapContent(document.getElementById('cfg'), rows.join(''));
     updateReasonBtn(c.REASONING_EFFORT || '', true);
@@ -6817,6 +6914,12 @@ async function loadAgent(){
   const on = s.enabled;
   AGENT_ON = !!on;
   document.getElementById('compact-toggle').checked = (s.compact !== false);
+  const cm = document.getElementById('compact-max');
+  if(cm){
+    const v = String(s.compact_max || 0);
+    if(![...cm.options].some(o=>o.value===v)) cm.add(new Option(Math.round(+v/1024)+'K', v));
+    cm.value = v; cm.disabled = s.compact === false;
+  }
   syncModeWithAgent();
   document.getElementById('brand').classList.toggle('agent', on);
   setAgentGate(on);
@@ -7000,6 +7103,13 @@ async function enableAgent(){
 async function toggleCompact(){
   const on=document.getElementById('compact-toggle').checked;
   await jpost('/api/agent/compact',{on});
+  const cm=document.getElementById('compact-max'); if(cm) cm.disabled=!on;
+}
+async function setCompactMax(){
+  const on=document.getElementById('compact-toggle').checked;
+  const max=+document.getElementById('compact-max').value;
+  const r=await jpost('/api/agent/compact',{on, max});
+  if(r && r.ok===false) toast(r.error||'erreur');
 }
 function setMemModeUI(m){
   const r=document.querySelector('input[name="mem-mode-seg"][value="'+m+'"]');
@@ -7192,8 +7302,31 @@ async function clearCrawlKey(){
   renderInternet(await jpost('/api/internet',{key:''}));
   toast(t('settings.internet.key_removed'));
 }
+const LINK_BROWSERS=['auto','chrome','edge','brave','chromium'];
+async function loadOpen(){
+  try{
+    const r=await jget('/api/open');
+    const sel=document.getElementById('link-browser');
+    if(!r || !r.ok || !r.available || !sel) return;
+    for(const o of sel.options){
+      o.disabled = o.value==='auto' ? false : r.available[o.value]===false;
+    }
+  }catch(e){}
+}
+function applyLinkBrowser(v){
+  const val=LINK_BROWSERS.indexOf(v)>=0 ? v : 'auto';
+  try{ localStorage.setItem('ajean-link-browser', val); }catch(e){}
+  const sel=document.getElementById('link-browser');
+  if(sel && document.activeElement!==sel) sel.value=val;
+  return val;
+}
+async function setLinkBrowser(v){
+  const val=applyLinkBrowser(v);
+  await jpost('/api/prefs',{link_browser:val});
+  toast(t('settings.link_browser_saved'));
+}
 async function loadAll(){
-  await Promise.allSettled([loadStatus(),loadTelemetry(),loadCfg(),loadPresets(),loadAgent(),loadInternet(),loadComputer(),loadMCP(),loadApiKey(),loadNetwork(),loadPrefs(),loadLlamacpp(),loadMoe(),loadRemote(),loadTasks()]);
+  await Promise.allSettled([loadStatus(),loadTelemetry(),loadCfg(),loadPresets(),loadAgent(),loadInternet(),loadComputer(),loadMCP(),loadApiKey(),loadNetwork(),loadPrefs(),loadOpen(),loadLlamacpp(),loadMoe(),loadRemote(),loadTasks()]);
   releaseHeights(); 
 }
 async function act(a){
@@ -10153,6 +10286,9 @@ function moeRenderSettings(fit){
   if(d.has_helper) rows.push([t('moe.s_helper'), sel('moe-s-helper',
     [['off', t('moe.second_off')], ['helper', t('moe.second_helper')], ['layers', t('moe.second_layers')]],
     !d.helper_on ? 'off' : d.split_layers ? 'layers' : 'helper')]);
+  const res = [0, 512, 1024, 1536, 2048, 3072, 4096];
+  if(d.reserve_mib && !res.includes(d.reserve_mib)) res.push(d.reserve_mib);
+  rows.push([t('moe.s_reserve'), sel('moe-s-reserve', res.sort((a,b)=>a-b).map(n=>[n, n ? (n/1024).toLocaleString('fr-FR')+' Go' : t('moe.reserve_none')]), d.reserve_mib||0)]);
   document.getElementById('moe-settings').innerHTML = rows.map(([a,b])=>
     '<div class="moe-kv"><span>'+escHtml(a)+'</span><span>'+b+'</span></div>').join('');
   moeCtxLbl();
@@ -10169,7 +10305,7 @@ async function moeSaveSettings(){
   if(!fit || !fit.preset) return;
   const v = id => document.getElementById(id);
   const body = {preset: fit.preset, ctx: +v('moe-s-ctx').value, kv: v('moe-s-kv').value, spec: +v('moe-s-spec').value,
-    vision: v('moe-s-vision').checked};
+    vision: v('moe-s-vision').checked, reserve_mib: +v('moe-s-reserve').value};
   const second = v('moe-s-helper') ? v('moe-s-helper').value : 'off';
   body.helper = second !== 'off';
   if(body.helper) body.split = second;
@@ -10191,11 +10327,12 @@ function moeRenderDetails(fit){
     [t('moe.d_main'), d.main_gpu],
     [t('moe.d_helper'), d.helper_gpu ? d.helper_gpu + (d.split_layers ? ' · '+t('moe.second_layers') : '') : t('moe.d_none')],
     [t('moe.d_vision'), d.vision_gpu || t('moe.d_none')],
+    [t('moe.s_reserve'), d.reserve_mib ? (d.reserve_mib/1024).toLocaleString('fr-FR')+' Go' : t('moe.reserve_none')],
     [t('moe.d_ctx'), (+d.ctx).toLocaleString('fr-FR')+' '+t('moe.d_tokens')],
     [t('moe.d_kv'), d.kv + (d.kv_resident ? ' · '+t('moe.d_kv_resident').replace('{n}', k(d.kv_resident)) : '')],
     [t('moe.d_mtp'), t('moe.d_mtp_val').replace('{n}', d.spec)],
     [t('moe.d_ram'), d.drop ? t('moe.d_drop') : d.mmap ? t('moe.d_mmap') : t('moe.d_inram')],
-    [t('moe.d_read'), t('moe.d_read_val').replace('{chunk}', k(d.prefill)).replace('{short}', d.short_read)],
+    [t('moe.d_read'), t('moe.d_read_val').replace('{chunk}', d.prefill ? k(d.prefill) : 'auto').replace('{short}', d.short_read)],
     [t('moe.d_root'), t('moe.d_root_val').replace('{n}', d.cache_root)],
     [t('moe.d_version'), d.version],
   ];
@@ -10916,13 +11053,30 @@ async function attachPaths(){
   return ATTACH.filter(a=>a.state==='ok'&&a.path).map(a=>a.path);
 }
 renderAttach();
+function ajeanLocalUI(){
+  const h=location.hostname;
+  return h==='localhost' || h==='127.0.0.1' || h==='::1' || h==='[::1]';
+}
+async function openExternalLink(href){
+  if(ajeanLocalUI()){
+    try{
+      const ac=new AbortController(), timer=setTimeout(()=>ac.abort(),2000);
+      const r=await jfetch('/api/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:href}),signal:ac.signal});
+      clearTimeout(timer);
+      const j=await r.json();
+      if(j && j.ok) return;
+      if(j && j.error) toast(j.error);
+    }catch(_){}
+  }
+  window.open(href, '_blank', 'noopener');
+}
 document.addEventListener('click', (e)=>{
   if(e.defaultPrevented || e.button!==0) return;
   const a=e.target.closest && e.target.closest('a[href]'); if(!a) return;
   let u; try{ u=new URL(a.getAttribute('href'), location.href); }catch(_){ return; }
   if(!/^https?:$/.test(u.protocol) || u.origin===location.origin) return;
   e.preventDefault();
-  window.open(u.href, '_blank', 'noopener');
+  openExternalLink(u.href);
 }, true);
 let LB = null;
 const LB_EASE = 'cubic-bezier(.2,.8,.2,1)';
@@ -11308,6 +11462,7 @@ function openTask(id){
   showModal('task-modal');
 }
 function renderTaskResult(tk){
+  renderTaskHistory(tk);
   const block = document.getElementById('task-result-block');
   const box = document.getElementById('task-result');
   const when = document.getElementById('task-result-when');
@@ -11332,6 +11487,36 @@ function renderTaskResult(tk){
   const rep = (tk.last_report||'').trim();
   if(rep){ box.classList.add('md-report'); box.innerHTML = md(rep); }
   else { box.classList.add('report-empty'); box.textContent = t('tasks.result_empty'); }
+}
+function renderTaskHistory(tk){
+  const block = document.getElementById('task-history-block');
+  const box = document.getElementById('task-history');
+  const runs = (tk && tk.history || []).slice(1);
+  block.style.display = runs.length ? '' : 'none';
+  box.textContent = '';
+  runs.forEach(r=>{
+    const row = document.createElement('div');
+    row.className = 'th-row th-'+(r.status||'ok');
+    const head = document.createElement('button');
+    head.type = 'button'; head.className = 'th-head';
+    const st = r.status === 'error' ? t('tasks.history_error') : r.status === 'stopped' ? t('tasks.history_stopped') : '';
+    head.innerHTML = '<span class="th-when"></span><span class="th-meta"></span><svg class="th-chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+    head.querySelector('.th-when').textContent = new Date(r.at).toLocaleString();
+    head.querySelector('.th-meta').textContent = [r.dur_ms ? fmtDur(r.dur_ms) : '', st].filter(Boolean).join('  ·  ');
+    const body = document.createElement('div');
+    body.className = 'task-report th-body'; body.hidden = true;
+    head.onclick = ()=>{
+      if(!body.dataset.done){
+        body.dataset.done = '1';
+        if(r.status === 'error'){ body.classList.add('report-err'); body.textContent = t('tasks.result_failed_prefix')+(r.error||t('tasks.result_unknown_error')); }
+        else if((r.report||'').trim()){ body.classList.add('md-report'); body.innerHTML = md(r.report); }
+        else { body.classList.add('report-empty'); body.textContent = r.status === 'stopped' ? t('tasks.history_stopped') : t('tasks.result_empty'); }
+      }
+      body.hidden = !body.hidden; row.classList.toggle('open', !body.hidden);
+    };
+    row.append(head, body);
+    box.appendChild(row);
+  });
 }
 function closeTask(){ hideModal('task-modal'); taskEditing = null; }
 function fillPresetSelect(selected){
@@ -12533,8 +12718,12 @@ function renderApps(){
   document.getElementById('apps-empty-txt').textContent = at('empty');
   document.getElementById('apps-foot').textContent = APPS.length ? at('count', {n: APPS.length, s: APPS.length > 1 ? 's' : ''}) : '';
 }
-function newAppPrompt(){
+async function newAppPrompt(){
   closeAppsView();
+  if(MODE === 'fast' || MODE === 'base'){
+    await pickMode('project');
+    if(MODE !== 'project') return; 
+  }
   const ta = document.getElementById('input');
   ta.value = at('new_prompt'); autoGrow(ta); if(typeof syncSendBtn==='function') syncSendBtn();
   ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
