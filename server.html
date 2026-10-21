@@ -1693,47 +1693,30 @@ body.jean-mode:not(.jean-history) #chat,body.jean-mode:not(.jean-history) #compo
 .hist-proj-ic{display:inline-flex}
 body.hist-jean #side-hist .hist-search,body.hist-jean #sess-count,body.hist-jean #history-clear-all{display:none}
 body.jean-mode #ctx-compactions{display:none!important}
-.apps-view,.app-run{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;animation:apps-in .18s ease}
-.apps-view[hidden],.app-run[hidden]{display:none}
-.app-run{z-index:61}
-@keyframes apps-in{from{opacity:0}to{opacity:1}}
-.apps-wrap{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;max-width:880px;margin:0 auto;
-  padding:max(18px,env(safe-area-inset-top)) 24px 0;box-sizing:border-box}
-.apps-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.apps-titles{display:flex;align-items:baseline;gap:10px;flex:1;min-width:0}
-.apps-head h2{margin:0;font-size:17px;font-weight:600;line-height:1.2}
-.apps-count{font-size:12px;color:var(--dim)}
-.apps-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-.apps-bar .apps-search{flex:1;margin:0;height:36px}
-.apps-search input{flex:1;min-width:0;height:100%;padding:0;border:none;background:transparent;box-shadow:none;color:var(--text);font-size:13px;outline:none}
-.apps-search input::-webkit-search-cancel-button{opacity:.5}
-.apps-new{display:inline-flex;align-items:center;gap:6px;flex:none;height:36px;min-height:36px;margin:0;padding:0 14px 0 12px;border:none;border-radius:999px;
-  background:var(--text);color:var(--bg);font-size:12.5px;font-weight:500;cursor:pointer;transition:opacity .15s ease,transform .15s var(--ease)}
-.apps-new:hover{background:var(--text);color:var(--bg);opacity:.85}
-.apps-new:active{transform:scale(.96)}
-.apps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;overflow-y:auto;align-content:start;
-  padding-bottom:max(20px,env(safe-area-inset-bottom));scrollbar-width:thin}
-.app-tile{position:relative;display:flex;align-items:center;gap:12px;padding:12px 40px 12px 12px;border-radius:14px;background:var(--t1);
-  cursor:pointer;outline:none;user-select:none;transition:background .15s ease}
-.app-tile:hover,.app-tile:focus-visible{background:var(--t2)}
-.app-ico{width:44px;height:44px;border-radius:12px;background:var(--t2);display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;flex:none}
-.app-tile:hover .app-ico{background:var(--card)}
-.app-ico.sm{width:32px;height:32px;border-radius:10px;font-size:17px}
-.app-txt{flex:1;min-width:0}
-.app-name{font-size:13px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.app-desc{margin-top:2px;font-size:11.5px;line-height:1.35;color:var(--dim);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
-button.app-more{position:absolute;top:50%;right:8px;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:28px;height:28px;min-height:28px;
-  margin:0;padding:0;border:none;border-radius:8px;background:transparent;color:var(--dim);cursor:pointer;opacity:0;transition:opacity .15s ease,background .15s ease}
-.app-tile:hover button.app-more,.app-tile:focus-within button.app-more{opacity:1}
-button.app-more:hover{background:var(--t2);color:var(--text)}
-@media (hover:none){button.app-more{opacity:.8}}
-.apps-empty{padding:48px 10px}
+#side-apps .sess-list{margin:6px 0 0;gap:4px}
+#side-apps .sess-row{padding:10px 6px 10px 10px;gap:10px;border-radius:12px;background:var(--t1);transition:background .15s ease}
+#side-apps .sess-row:hover{background:var(--t2)}
+#side-apps .sess-row.active{background:var(--t3)}
+#side-apps .sess-name{font-size:13px;font-weight:500;line-height:1.3}
+#side-apps .sess-meta{font-size:11px;margin-top:3px;line-height:1.35}
+#side-apps .sess-menu-btn{padding:0;width:26px;height:26px}
+#side-apps .hist-link{height:24px;min-height:24px;margin:0;padding:0 7px;display:flex;align-items:center;gap:5px;border:none;border-radius:7px;
+  background:transparent;color:var(--dim);font-size:11.5px;font-weight:500;cursor:pointer;transition:color .15s ease}
+#side-apps .hist-link:hover{background:transparent;color:var(--text)}
+.apps-empty{padding:14px 4px;font-size:12px;line-height:1.5}
 .apps-empty[hidden]{display:none}
-.apps-empty span{max-width:300px;line-height:1.5}
-.app-run-head{display:flex;align-items:center;gap:10px;padding:10px 14px 10px 16px;padding-top:max(10px,env(safe-area-inset-top))}
-.app-run-titles{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.25}
-#app-run-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#app-run-ver{font-size:11.5px;color:var(--dim)}
+.app-emoji{flex:none;width:22px;display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1}
+.app-ico{width:44px;height:44px;border-radius:12px;background:var(--t2);display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;flex:none}
+.app-run{position:absolute;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column}
+.app-run[hidden]{display:none}
+.app-run-head{display:flex;align-items:center;gap:8px;height:52px;padding:0 10px 0 18px;padding-top:env(safe-area-inset-top);flex:none}
+.app-run-titles{display:flex;align-items:baseline;gap:8px;min-width:0;flex:1}
+#app-run-name{font-size:13.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app-run-ver{font-size:11.5px;color:var(--dim);white-space:nowrap}
+button.app-run-x{width:34px;height:34px;min-height:34px;margin:0;padding:0;display:flex;align-items:center;justify-content:center;flex:none;
+  border:none;outline:none;box-shadow:none;border-radius:10px;background:transparent;color:var(--dim);transition:color .16s ease,transform .16s var(--ease)}
+button.app-run-x:hover,button.app-run-x:focus-visible{background:transparent;color:var(--text)}
+button.app-run-x:active{transform:scale(.9)}
 .app-run-body{flex:1;min-height:0;display:flex}
 .app-frame{flex:1;width:100%;height:100%;border:0;background:var(--bg)}
 .app-err{margin:0 16px 10px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--err) 9%,transparent);color:var(--text);font-size:12.5px}
@@ -1753,13 +1736,6 @@ button.app-more:hover{background:var(--t2);color:var(--text)}
 button.app-card-open{flex:none;height:32px;min-height:32px;margin:0;padding:0 14px;border:none;border-radius:999px;font-size:12px;font-weight:500;
   background:var(--text);color:var(--bg);cursor:pointer;transition:opacity .15s ease}
 button.app-card-open:hover{background:var(--text);color:var(--bg);opacity:.85}
-@media (max-width:600px){
-  .apps-wrap{padding-left:14px;padding-right:14px}
-  .apps-grid{grid-template-columns:1fr;gap:6px}
-  .apps-new span{display:none}
-  .apps-new{width:36px;padding:0;justify-content:center}
-}
-@media (max-width:359px){.apps-grid{grid-template-columns:repeat(3,1fr)}}
 .compact-max-row select{order:2;margin-left:auto;width:auto;min-width:0;flex:none;font-size:12.5px}
 .compact-max-row select:disabled{opacity:.5}
 .task-history{display:flex;flex-direction:column;gap:4px}
@@ -2065,12 +2041,42 @@ button.th-head:hover{background:var(--t1)}
     <div id="history-list" class="sess-list"></div>
     <button id="history-clear-all" class="hist-clear" onclick="clearAllHistory()" data-i18n="sessions.delete_all">tout supprimer (sauf favoris)</button>
   </div>
+  <div id="side-apps" class="side-view" hidden>
+    <div class="hist-head">
+      <span class="stitle" id="apps-title">Applications</span><span id="apps-foot" class="sess-count"></span>
+      <span class="hist-links">
+        <button id="apps-new" class="hist-link" type="button" onclick="newAppPrompt()">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span id="apps-new-txt"></span>
+        </button>
+      </span>
+    </div>
+    <div class="hist-search">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="apps-search" type="search" oninput="onAppsSearch(this.value)" autocomplete="off">
+    </div>
+    <div id="apps-list" class="sess-list"></div>
+    <div id="apps-empty" class="apps-empty muted" hidden><span id="apps-empty-txt"></span></div>
+  </div>
   </div>
   <div id="app-update" class="app-update" hidden onclick="onAppUpdateClick()"></div>
 </div>
 <div id="side-thumb" aria-hidden="true"></div>
 <div class="main" style="position:relative">
   <div id="chat"></div>
+  <div id="app-run" class="app-run" hidden>
+    <div class="app-run-head">
+      <span id="app-run-ico" class="app-emoji"></span>
+      <span class="app-run-titles"><span id="app-run-name"></span><span id="app-run-ver"></span></span>
+      <button id="app-run-close" class="app-run-x" onclick="closeAppRun()" aria-label="Fermer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div id="app-err" class="app-err" hidden>
+      <b id="app-err-title"></b>
+      <pre id="app-err-list"></pre>
+      <span class="app-err-acts"><button id="app-err-fix" class="primary" onclick="appAskFix()"></button><button id="app-err-hide" onclick="document.getElementById('app-err').hidden=true"></button></span>
+    </div>
+    <div id="app-run-body" class="app-run-body"></div>
+  </div>
   <div id="chat-loading" class="show" aria-label="chargement de la conversation" data-i18n="chat.loading_aria" data-i18n-attr="aria-label"><svg id="cl-logo" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor"><rect x="6" y="3" width="2" height="2"/><rect x="6" y="5" width="2" height="2"/><rect x="4" y="7" width="2" height="2"/></svg></div>
   <div id="chat-empty" aria-hidden="true">
     <div id="ce-logo"></div>
@@ -2938,7 +2944,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261021132830"></script>
+<script src="/e2e.js?v=20261021135456"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -8844,6 +8850,7 @@ async function clearJeanContext(){
   if(!r || !r.ok) toast((r && r.error) || t('jean.clear_ctx_fail'));
 }
 function resetChat(){
+  if(typeof closeAppRun==='function') closeAppRun();
   if(MODE==='jean'){ openJean(); return; } 
   const chat=document.getElementById('chat');
   const go=()=>{ jfetch('/api/chat/reset',{method:'POST'}).catch(()=>{}); toast(t('chat.new_conversation')); };
@@ -8877,24 +8884,33 @@ function newChatFromTop(){
 let HIST_VIEW=false;
 const SIDE_ICON_HIST='<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>';
 const SIDE_ICON_MENU='<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/></svg>';
-function showSideView(hist){
-  const main=document.getElementById('side-main'), h=document.getElementById('side-hist');
-  const side=document.getElementById('side'), btn=document.getElementById('hist-toggle');
-  if(!main||!h) return;
-  HIST_VIEW=hist;
-  if(btn){
+let SIDE_VIEW='main';
+const SIDE_ICON_APPS='<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>';
+function showSideView(view){
+  if(view===true) view='hist'; else if(view===false || !view) view='main';
+  const views={main:document.getElementById('side-main'), hist:document.getElementById('side-hist'), apps:document.getElementById('side-apps')};
+  const side=document.getElementById('side');
+  if(!views.main||!views.hist||!views[view]) return;
+  const from=SIDE_VIEW;
+  if(from===view) return;
+  SIDE_VIEW=view; HIST_VIEW=view==='hist';
+  const setBtn=(id, on, icon, tk)=>{
+    const btn=document.getElementById(id); if(!btn) return;
     btn.classList.remove('on');
-    btn.innerHTML = hist ? SIDE_ICON_MENU : SIDE_ICON_HIST;
-    btn.title = t(hist ? 'chat.back_to_menu' : 'chat.history_btn');
+    btn.innerHTML = on ? SIDE_ICON_MENU : icon;
+    btn.title = on ? t('chat.back_to_menu') : (tk.indexOf('.')>0 ? t(tk) : tk);
     btn.setAttribute('aria-label', btn.title);
-  }
-  const show=hist?h:main, hide=hist?main:h;
+  };
+  setBtn('hist-toggle', view==='hist', SIDE_ICON_HIST, 'chat.history_btn');
+  setBtn('apps-toggle', view==='apps', SIDE_ICON_APPS, typeof at==='function' ? at('title') : 'Applications');
+  const show=views[view], hide=views[from];
+  const hist=view!=='main';
   SIDE_THUMB_QUIET_UNTIL=Date.now()+450;
   const th=document.getElementById('side-thumb'); if(th) th.classList.remove('on');
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   clearTimeout(showSideView._t);
   if(reduce){ hide.hidden=true; show.hidden=false; if(side) side.scrollTop=0; return; }
-  [main,h].forEach(v=>v.classList.remove('leave-l','leave-r','enter-l','enter-r','ghost'));
+  Object.values(views).forEach(v=>{ if(!v) return; v.classList.remove('leave-l','leave-r','enter-l','enter-r','ghost'); if(v!==show && v!==hide) v.hidden=true; });
   hide.classList.add('ghost');
   show.classList.add(hist?'enter-r':'enter-l'); show.hidden=false;
   if(side) side.scrollTop=0;
@@ -8906,7 +8922,7 @@ function showSideView(hist){
   },270);
 }
 function toggleHistoryView(){
-  showSideView(!HIST_VIEW);
+  showSideView(HIST_VIEW ? 'main' : 'hist');
   if(HIST_VIEW) loadHistory(); 
 }
 function openHistoryModal(){ if(!HIST_VIEW) toggleHistoryView(); }
@@ -9050,6 +9066,7 @@ async function clearAllHistory(){
   loadHistory();
 }
 async function restoreHistory(id, mode){
+  if(typeof closeAppRun==='function') closeAppRun();
   let r; try{ r = await jpost('/api/chat/history/restore', {id}); }catch(_){ toast(t('chat.session.network_error')); return; }
   if(!r.ok){ toast(r.error || t('chat.session.open_error')); return; }
   closeHistoryModal();
@@ -12406,6 +12423,7 @@ var JeanAvatar = (()=>{
 (()=>{
   let stage, scene, bubble, bubbleBody, caption, capText, capStop, inputBox, ta, sendBtn, histBtn;
   let screen, screenView, screenUrl, screenSrc='';
+  let jeanWasOn=false;
   let inputOpen=false, syncTimer=0, lastHTML='', userScrolled=false;
   const $=(tag, cls, parent)=>{ const n=document.createElement(tag); if(cls) n.className=cls; if(parent) parent.appendChild(n); return n; };
   const inStage=()=>document.body.classList.contains('jean-mode') && !document.body.classList.contains('jean-history');
@@ -12558,8 +12576,10 @@ var JeanAvatar = (()=>{
     const on=!document.body.classList.contains('jean-history');
     if(on){ closeInput(); const c=document.getElementById('chat'); if(c){ stickyBottom=true; c.scrollTop=c.scrollHeight; } }
     document.body.classList.toggle('jean-history', on);
+    try{ localStorage.setItem('ajean-jean-view', on ? 'chat' : 'stage'); }catch(_){}
     applyTexts();
   }
+  const prefersChat=()=>{ try{ return localStorage.getItem('ajean-jean-view')==='chat'; }catch(_){ return false; } };
   function fitViewport(){
     const vv=window.visualViewport; if(!vv || !stage) return;
     const kb=window.innerHeight - vv.height > 120 && inStage() && inputOpen;
@@ -12583,10 +12603,13 @@ var JeanAvatar = (()=>{
     new MutationObserver(()=>{
       const b=document.body.classList;
       if(!b.contains('jean-mode')){ if(b.contains('jean-history')) b.remove('jean-history'); if(inputOpen) closeInput(); }
+      else if(!b.contains('jean-history') && prefersChat() && !jeanWasOn){ jeanWasOn=true; b.add('jean-history'); return; }
+      jeanWasOn=b.contains('jean-mode');
       if(inStage() && document.activeElement && document.activeElement.id==='input') document.activeElement.blur();
       applyTexts(); schedule();
     })
       .observe(document.body, {attributes:true, attributeFilter:['class']});
+    if(document.body.classList.contains('jean-mode')){ jeanWasOn=true; if(prefersChat()) document.body.classList.add('jean-history'); }
     document.addEventListener('keydown', e=>{
       if(!inStage() || inputOpen || e.ctrlKey || e.metaKey || e.altKey || e.key.length!==1) return;
       const a=document.activeElement;
@@ -12635,14 +12658,14 @@ function at(k, vars){
 function appEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 let APPS = [], APPS_Q = '';
 async function openAppsView(){
-  const v = document.getElementById('apps-view');
-  v.hidden = false;
+  if(typeof SIDE_VIEW !== 'undefined' && SIDE_VIEW === 'apps'){ showSideView('main'); return; }
   document.getElementById('apps-title').textContent = at('title');
   document.getElementById('apps-new-txt').textContent = at('new_app');
   const q = document.getElementById('apps-search'); q.placeholder = at('search'); q.value = APPS_Q;
-  await loadApps();
+  showSideView('apps');
+  await loadApps(); 
 }
-function closeAppsView(){ document.getElementById('apps-view').hidden = true; }
+function closeAppsView(){}
 async function loadApps(){
   try{ const j = await jget('/api/apps'); APPS = (j && j.apps) || []; }catch(e){ APPS = []; }
   renderApps();
@@ -12650,30 +12673,35 @@ async function loadApps(){
 function onAppsSearch(v){ APPS_Q = v; renderApps(); }
 function appNorm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
 function renderApps(){
-  const grid = document.getElementById('apps-grid');
+  const box = document.getElementById('apps-list'); if(!box) return;
   const q = appNorm(APPS_Q.trim());
   const list = APPS.filter(a => !q || appNorm(a.name+' '+(a.description||'')).includes(q));
-  grid.innerHTML = '';
+  box.innerHTML = '';
   for(const a of list){
-    const tile = document.createElement('div'); tile.className = 'app-tile'; tile.tabIndex = 0;
-    tile.innerHTML = '<div class="app-ico"></div><div class="app-txt"><div class="app-name"></div><div class="app-desc"></div></div>'
-      + '<button class="app-more" type="button" aria-label="menu"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5.5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="18.5" r="1.6"/></svg></button>';
-    tile.querySelector('.app-ico').textContent = a.icon || '🧩';
-    tile.querySelector('.app-name').textContent = a.name;
-    tile.querySelector('.app-desc').textContent = a.description || (at('version')+' '+a.version);
-    tile.onclick = (e)=>{ if(e.target.closest('.app-more')) return; openApp(a.id); };
-    tile.onkeydown = (e)=>{ if(e.key==='Enter') openApp(a.id); };
-    tile.oncontextmenu = (e)=>{ e.preventDefault(); appTileMenu(tile.querySelector('.app-more'), a); };
-    tile.querySelector('.app-more').onclick = (e)=>{ e.stopPropagation(); appTileMenu(e.currentTarget, a); };
-    grid.appendChild(tile);
+    const active = !!(APP_RUN && APP_RUN.id === a.id);
+    const row = document.createElement('div'); row.className = 'sess-row app-row' + (active?' active':''); row.tabIndex = 0;
+    const ico = document.createElement('span'); ico.className = 'app-emoji'; ico.textContent = a.icon || '🧩';
+    const info = document.createElement('div'); info.className = 'sess-info';
+    const name = document.createElement('div'); name.className = 'sess-name'; name.textContent = a.name;
+    const meta = document.createElement('div'); meta.className = 'sess-meta'; meta.textContent = a.description || (at('version')+' '+a.version);
+    info.appendChild(name); info.appendChild(meta);
+    const more = document.createElement('button'); more.className = 'sess-menu-btn'; more.type = 'button'; more.innerHTML = projDotsSvg();
+    more.setAttribute('aria-label', 'menu');
+    more.onclick = (e)=>{ e.stopPropagation(); appTileMenu(more, a); };
+    row.onclick = ()=>openApp(a.id);
+    row.onkeydown = (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openApp(a.id); } };
+    row.oncontextmenu = (e)=>{ e.preventDefault(); appTileMenu(more, a); };
+    row.appendChild(ico); row.appendChild(info); row.appendChild(more);
+    box.appendChild(row);
   }
   const emp = document.getElementById('apps-empty');
   emp.hidden = APPS.length > 0;
   document.getElementById('apps-empty-txt').textContent = at('empty');
-  document.getElementById('apps-foot').textContent = APPS.length ? at('count', {n: APPS.length, s: APPS.length > 1 ? 's' : ''}) : '';
+  document.getElementById('apps-foot').textContent = APPS.length ? String(APPS.length) : '';
 }
 async function newAppPrompt(){
-  closeAppsView();
+  closeAppRun();
+  if(document.body.classList.contains('drawer-open')) toggleSide();
   if(MODE === 'fast' || MODE === 'base'){
     await pickMode('project');
     if(MODE !== 'project') return; 
@@ -12797,12 +12825,16 @@ async function openApp(id, version){
   });
   fr.srcdoc = doc;
   const host = document.getElementById('app-run-body'); host.innerHTML = ''; host.appendChild(fr);
+  renderApps();
+  if(document.body.classList.contains('drawer-open')) toggleSide();
 }
 function closeAppRun(){
+  const was = !!APP_RUN;
   if(APP_RUN && APP_RUN.port) try{ APP_RUN.port.close(); }catch(_){}
   APP_RUN = null;
   const ov = document.getElementById('app-run'); if(!ov) return;
   ov.hidden = true; document.getElementById('app-run-body').innerHTML = '';
+  if(was) renderApps();
 }
 addEventListener('keydown', (e)=>{ if(e.key==='Escape' && APP_RUN && !document.querySelector('.modal.show')) closeAppRun(); });
 async function appBridgeMsg(run, d){
@@ -12960,41 +12992,4 @@ function appCardFor(el, tu){
   el.after(card);
   jget('/api/apps/'+id).then(j=>{ if(j && j.app && j.app.icon) card.querySelector('.app-ico').textContent = j.app.icon; }).catch(()=>{});
 }
-</script>
-<div id="apps-view" class="apps-view" hidden>
-  <div class="apps-wrap">
-    <div class="apps-head">
-      <div class="apps-titles"><h2 id="apps-title">Applications</h2><span id="apps-foot" class="apps-count"></span></div>
-      <button class="modal-x" onclick="closeAppsView()" aria-label="Fermer">×</button>
-    </div>
-    <div class="apps-bar">
-      <div class="hist-search apps-search">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input id="apps-search" type="search" oninput="onAppsSearch(this.value)" autocomplete="off">
-      </div>
-      <button id="apps-new" class="apps-new" type="button" onclick="newAppPrompt()">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-        <span id="apps-new-txt"></span>
-      </button>
-    </div>
-    <div id="apps-grid" class="apps-grid"></div>
-    <div id="apps-empty" class="mm-empty apps-empty" hidden>
-      <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
-      <span id="apps-empty-txt"></span>
-    </div>
-  </div>
-</div>
-<div id="app-run" class="app-run" hidden>
-  <div class="app-run-head">
-    <span id="app-run-ico" class="app-ico sm"></span>
-    <span class="app-run-titles"><span id="app-run-name"></span><span id="app-run-ver"></span></span>
-    <button id="app-run-close" class="modal-x" onclick="closeAppRun()" aria-label="Fermer">×</button>
-  </div>
-  <div id="app-err" class="app-err" hidden>
-    <b id="app-err-title"></b>
-    <pre id="app-err-list"></pre>
-    <span class="app-err-acts"><button id="app-err-fix" class="primary" onclick="appAskFix()"></button><button id="app-err-hide" onclick="document.getElementById('app-err').hidden=true"></button></span>
-  </div>
-  <div id="app-run-body" class="app-run-body"></div>
-</div>
-</body></html>
+</script></body></html>
