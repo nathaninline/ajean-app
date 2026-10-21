@@ -1996,27 +1996,10 @@ button.th-head:hover{background:var(--t1)}
   </details>
   <details><summary><span class="stitle" data-i18n="settings.section_title">Paramètres</span></summary>
     <div id="net-block" class="gated-group">
-      <div class="subhead"><span data-i18n="internet.title">Accès internet</span><span id="internet-badge" class="sbadge"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="internet.help" data-i18n-html>Ajoute les outils <b>web_search / web_open / web_read / web_grep</b>. Le moteur <b>intégré</b> ne demande aucune installation. Le moteur <b>Crawl4AI</b> exige un serveur que tu héberges toi-même (ex. <code>docker run -d -p 11235:11235 --shm-size=1g unclecode/crawl4ai:latest</code>) mais exécute le JavaScript des pages. Actifs seulement si le <b>mode agent</b> est actif.</span></span></div>
+      <div class="subhead"><span data-i18n="internet.title">Accès internet</span><span id="internet-badge" class="sbadge"></span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="internet.help" data-i18n-html>Ajoute les outils <b>web_search / web_open / web_read / web_grep</b>, avec le moteur web intégré : aucune installation. Il lit les pages servies en HTML, sans exécuter leur JavaScript. Actifs seulement si le <b>mode agent</b> est actif.</span></span></div>
       <div class="slist">
         <label class="switchrow"><span class="switch"><input type="checkbox" id="internet-toggle" onchange="toggleInternet()"><span class="slider"></span></span> <span data-i18n="internet.toggle_label">donner internet à l'IA</span></label>
         <div class="rowbody">
-          <div class="row" style="margin:0">
-            <select id="web-engine" class="sctl" onchange="saveWebEngine()">
-              <option value="go" data-i18n="internet.engine_builtin">Moteur Intégré</option>
-              <option value="crawl4ai" data-i18n="internet.engine_crawl4ai">Crawl4AI</option>
-            </select>
-          </div>
-          <div id="crawl-fields" style="display:none">
-            <div class="row">
-              <input id="crawl-url" type="text" placeholder="http://localhost:11235" class="sctl" onchange="saveCrawlUrl()">
-            </div>
-            <div class="row">
-              <input id="crawl-key" type="password" autocomplete="off" placeholder="clé API (si le serveur en exige une)" class="sctl" onchange="saveCrawlKey()" data-i18n="internet.crawl_key_placeholder" data-i18n-attr="placeholder">
-              <button id="crawl-key-clear" onclick="clearCrawlKey()" style="display:none" data-i18n="internet.crawl_key_clear">retirer</button>
-            </div>
-            <div class="muted" style="font-size:11px;margin-top:4px" data-i18n="internet.autosave_hint">enregistré automatiquement en quittant le champ</div>
-            <div id="crawl-key-state" class="muted" style="font-size:11px;margin-top:3px"></div>
-          </div>
           <div id="internet-status" class="muted" style="font-size:11px;margin-top:4px"></div>
         </div>
       </div>
@@ -2955,7 +2938,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261017205858"></script>
+<script src="/e2e.js?v=20261021111303"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3279,7 +3262,7 @@ fr: {
   "memory.add_page_button": "+ ajouter",
   "memory.search_placeholder": "filtrer la mémoire…",
   "internet.title": "Accès internet",
-  "internet.help": "Ajoute les outils <b>web_search / web_images / web_open / web_read / web_grep</b>. Le moteur <b>intégré</b> ne demande aucune installation. Le moteur <b>Crawl4AI</b> exige un serveur que tu héberges toi-même (ex. <code>docker run -d -p 11235:11235 --shm-size=1g unclecode/crawl4ai:latest</code>) mais exécute le JavaScript des pages. Actifs seulement si le <b>mode agent</b> est actif.",
+  "internet.help": "Ajoute les outils <b>web_search / web_open / web_read / web_grep</b>, avec le moteur web intégré : aucune installation. Il lit les pages servies en HTML, sans exécuter leur JavaScript. Actifs seulement si le <b>mode agent</b> est actif.",
   "internet.toggle_label": "donner internet à l'IA",
   "computer.title": "Contrôle du navigateur",
   "computer.help": "Donne à l'IA le contrôle d'un <b>navigateur</b> sur cette machine (outils <b>browser_open / browser_find / browser_click / browser_type / browser_key / browser_scroll</b>). L'IA lit les éléments <b>numérotés</b> de la page et agit par numéro — aucune vision requise, ça marche avec de petits modèles. <code>browser_screenshot</code> s'ajoute si la vision est active. Nécessite Chrome/Chromium/Edge installé. Actif seulement si le <b>mode agent</b> est actif.",
@@ -3289,11 +3272,6 @@ fr: {
   "settings.computer.no_browser": "aucun Chrome/Chromium/Edge détecté ; installe-le ou définis AJEAN_CHROME.",
   "settings.computer.browser_ready": "navigateur prêt, outils de contrôle actifs.",
   "settings.computer.no_vision": "vision inactive : browser_screenshot indisponible",
-  "internet.engine_builtin": "Moteur Intégré",
-  "internet.engine_crawl4ai": "Crawl4AI",
-  "internet.crawl_key_placeholder": "clé API (si le serveur en exige une)",
-  "internet.crawl_key_clear": "retirer",
-  "internet.autosave_hint": "enregistré automatiquement en quittant le champ",
   "mcp.title": "Serveurs MCP",
   "mcp.help": "Connecte des <b>serveurs MCP</b> (Model Context Protocol) pour donner de nouveaux outils à l'IA : accès fichiers, bases de données, APIs métier… <b>stdio</b> = programme lancé localement (npx/uvx/binaire) · <b>http</b> = serveur distant. ⚠ un serveur stdio exécute du code sur cette machine, au même titre que le shell.",
   "mcp.empty_list": "(aucun serveur — ajoute un serveur fichiers, une base de données, une API…)",
@@ -3938,24 +3916,7 @@ fr: {
   "settings.memory.network_error": "erreur réseau",
   "settings.memory.move_failed": "déplacement impossible",
   "settings.memory.note_moved": "note déplacée",
-  "settings.internet.unreachable_badge": "injoignable",
-  "settings.internet.key_registered_prefix": "clé enregistrée ",
-  "settings.internet.no_key_open_server": "aucune clé — serveur ouvert",
-  "settings.internet.key_placeholder_replace": "clé enregistrée — saisir pour remplacer",
-  "settings.internet.key_placeholder_new": "clé API (si le serveur en exige une)",
   "settings.internet.builtin_engine_status": "moteur intégré — aucune installation requise (pas de rendu JavaScript)",
-  "settings.internet.server_not_configured": "serveur non configuré",
-  "settings.internet.server_reachable": "serveur joignable — outils web actifs",
-  "settings.internet.server_unreachable": "serveur injoignable — les outils web ne seront pas proposés",
-  "settings.internet.need_url": "renseigne d'abord l'URL du serveur Crawl4AI",
-  "settings.internet.engine_crawl4ai_selected": "moteur Crawl4AI sélectionné",
-  "settings.internet.engine_builtin_selected": "moteur intégré sélectionné",
-  "settings.internet.server_saved": "serveur Crawl4AI enregistré",
-  "settings.internet.server_removed": "serveur Crawl4AI retiré",
-  "settings.internet.key_missing": "saisis une clé (ou « retirer » pour l'enlever)",
-  "settings.internet.key_saved": "clé enregistrée",
-  "settings.internet.remove_key_confirm": "Retirer la clé du serveur Crawl4AI ?",
-  "settings.internet.key_removed": "clé retirée",
   "settings.copy.nothing": "rien à copier",
   "settings.copy.copied": "copié",
   "settings.apikey.copied": "clé copiée",
@@ -4013,6 +3974,7 @@ fr: {
   "moe.d_vision": "Lecture des images",
   "moe.d_none": "aucune",
   "moe.d_ctx": "Contexte",
+  "moe.ctx_drop_cap": "Maximum 131 072 jetons avec la carte d'aide : au-delà, le cache gardé en mémoire vive ne tient plus.",
   "moe.d_tokens": "jetons",
   "moe.d_kv": "Cache KV",
   "moe.d_kv_resident": "{n} en VRAM, le reste en RAM",
@@ -4638,7 +4600,7 @@ en: {
   "memory.add_page_button": "+ add",
   "memory.search_placeholder": "filter memory…",
   "internet.title": "Internet access",
-  "internet.help": "Adds the <b>web_search / web_images / web_open / web_read / web_grep</b> tools. The <b>built-in</b> engine requires no installation. The <b>Crawl4AI</b> engine needs a server you host yourself (e.g. <code>docker run -d -p 11235:11235 --shm-size=1g unclecode/crawl4ai:latest</code>) but it runs pages' JavaScript. Only active if <b>agent mode</b> is on.",
+  "internet.help": "Adds the <b>web_search / web_open / web_read / web_grep</b> tools, with the built-in web engine: nothing to install. It reads pages served as HTML, without running their JavaScript. Only active when <b>agent mode</b> is on.",
   "internet.toggle_label": "give the AI internet access",
   "computer.title": "Browser control",
   "computer.help": "Lets the AI drive a <b>browser</b> on this machine (<b>browser_open / browser_find / browser_click / browser_type / browser_key / browser_scroll</b> tools). The AI reads the page's <b>numbered</b> elements and acts by number — no vision required, works with small models. <code>browser_screenshot</code> is added when vision is active. Requires Chrome/Chromium/Edge installed. Only active if <b>agent mode</b> is on.",
@@ -4648,11 +4610,6 @@ en: {
   "settings.computer.no_browser": "no Chrome/Chromium/Edge found; install one or set AJEAN_CHROME.",
   "settings.computer.browser_ready": "browser ready, control tools active.",
   "settings.computer.no_vision": "vision off: browser_screenshot unavailable",
-  "internet.engine_builtin": "Built-in Engine",
-  "internet.engine_crawl4ai": "Crawl4AI",
-  "internet.crawl_key_placeholder": "API key (if the server requires one)",
-  "internet.crawl_key_clear": "remove",
-  "internet.autosave_hint": "saved automatically when you leave the field",
   "mcp.title": "MCP servers",
   "mcp.help": "Connect <b>MCP servers</b> (Model Context Protocol) to give the AI new tools: file access, databases, business APIs… <b>stdio</b> = program launched locally (npx/uvx/binary) · <b>http</b> = remote server. ⚠ a stdio server runs code on this machine, just like the shell.",
   "mcp.empty_list": "(no servers — add a file server, a database, an API…)",
@@ -5297,24 +5254,7 @@ en: {
   "settings.memory.network_error": "network error",
   "settings.memory.move_failed": "move failed",
   "settings.memory.note_moved": "note moved",
-  "settings.internet.unreachable_badge": "unreachable",
-  "settings.internet.key_registered_prefix": "key registered ",
-  "settings.internet.no_key_open_server": "no key — open server",
-  "settings.internet.key_placeholder_replace": "key registered — type to replace",
-  "settings.internet.key_placeholder_new": "API key (if the server requires one)",
   "settings.internet.builtin_engine_status": "built-in engine — no installation required (no JavaScript rendering)",
-  "settings.internet.server_not_configured": "server not configured",
-  "settings.internet.server_reachable": "server reachable — web tools active",
-  "settings.internet.server_unreachable": "server unreachable — web tools won't be offered",
-  "settings.internet.need_url": "first enter the Crawl4AI server URL",
-  "settings.internet.engine_crawl4ai_selected": "Crawl4AI engine selected",
-  "settings.internet.engine_builtin_selected": "built-in engine selected",
-  "settings.internet.server_saved": "Crawl4AI server saved",
-  "settings.internet.server_removed": "Crawl4AI server removed",
-  "settings.internet.key_missing": "enter a key (or \"remove\" to clear it)",
-  "settings.internet.key_saved": "key saved",
-  "settings.internet.remove_key_confirm": "Remove the Crawl4AI server key?",
-  "settings.internet.key_removed": "key removed",
   "settings.copy.nothing": "nothing to copy",
   "settings.copy.copied": "copied",
   "settings.apikey.copied": "key copied",
@@ -5372,6 +5312,7 @@ en: {
   "moe.d_vision": "Image reading",
   "moe.d_none": "none",
   "moe.d_ctx": "Context",
+  "moe.ctx_drop_cap": "131,072 tokens at most with the helper card: beyond that, the cache kept in system memory no longer fits.",
   "moe.d_tokens": "tokens",
   "moe.d_kv": "KV cache",
   "moe.d_kv_resident": "{n} in VRAM, the rest in RAM",
@@ -7135,32 +7076,12 @@ async function setMemMode(mode){
   const r=await jpost('/api/memory',{mode, project: MEM_VIEW_PROJECT||''});
   setMemModeUI(r.mode||mode);
 }
-let internetOn=false, webEngine='go';
+let internetOn=false;
 function renderInternet(s){
   internetOn = !!s.enabled;
-  webEngine = s.engine || 'go';
   document.getElementById('internet-toggle').checked = internetOn;
-  const sel=document.getElementById('web-engine');
-  if(sel && document.activeElement!==sel) sel.value = webEngine;
-  const cf=document.getElementById('crawl-fields');
-  if(cf) cf.style.display = (webEngine==='crawl4ai') ? '' : 'none';
-  if(document.activeElement !== document.getElementById('crawl-url'))
-    document.getElementById('crawl-url').value = s.url || '';
-  if(internetOn && !s.reachable) setBadge('internet-badge','warn',t('settings.internet.unreachable_badge'));
-  else setBadge('internet-badge', null);
-  const ks=document.getElementById('crawl-key-state'), kc=document.getElementById('crawl-key-clear');
-  if(ks){
-    ks.textContent = s.key_set ? (t('settings.internet.key_registered_prefix')+(s.key_hint||'')) : t('settings.internet.no_key_open_server');
-    if(kc) kc.style.display = s.key_set ? '' : 'none';
-    const ki=document.getElementById('crawl-key');
-    if(ki && document.activeElement!==ki) ki.value='';
-    if(ki) ki.placeholder = s.key_set ? t('settings.internet.key_placeholder_replace') : t('settings.internet.key_placeholder_new');
-  }
   const st=document.getElementById('internet-status');
-  if(webEngine!=='crawl4ai'){ st.innerHTML='<span style="color:var(--accent)">✓</span> '+t('settings.internet.builtin_engine_status'); }
-  else if(!s.url){ st.textContent=t('settings.internet.server_not_configured'); st.style.color=''; }
-  else if(s.reachable){ st.innerHTML='<span style="color:var(--accent)">✓</span> '+t('settings.internet.server_reachable'); }
-  else { st.innerHTML='⚠ '+t('settings.internet.server_unreachable'); }
+  st.innerHTML='<span style="color:var(--accent)">✓</span> '+t('settings.internet.builtin_engine_status');
 }
 async function loadInternet(){ renderInternet(await jget('/api/internet')); }
 function renderComputer(s){
@@ -7291,31 +7212,7 @@ async function apiKeySet(){
 }
 async function toggleInternet(){
   const on=document.getElementById('internet-toggle').checked;
-  const url=document.getElementById('crawl-url').value.trim();
-  if(on && webEngine==='crawl4ai' && !url){ toast(t('settings.internet.need_url')); document.getElementById('internet-toggle').checked=false; return; }
-  renderInternet(await jpost('/api/internet',{enabled:on, url}));
-}
-async function saveWebEngine(){
-  const engine=document.getElementById('web-engine').value;
-  renderInternet(await jpost('/api/internet',{engine}));
-  toast(engine==='crawl4ai' ? t('settings.internet.engine_crawl4ai_selected') : t('settings.internet.engine_builtin_selected'));
-}
-async function saveCrawlUrl(){
-  const url=document.getElementById('crawl-url').value.trim();
-  renderInternet(await jpost('/api/internet',{url}));
-  toast(url ? t('settings.internet.server_saved') : t('settings.internet.server_removed'));
-}
-async function saveCrawlKey(){
-  const el=document.getElementById('crawl-key'), key=el.value.trim();
-  if(!key){ toast(t('settings.internet.key_missing')); return; }
-  renderInternet(await jpost('/api/internet',{key}));
-  toast(t('settings.internet.key_saved'));
-}
-async function clearCrawlKey(){
-  if(!await askConfirm(t('settings.internet.remove_key_confirm'))) return;
-  document.getElementById('crawl-key').value='';
-  renderInternet(await jpost('/api/internet',{key:''}));
-  toast(t('settings.internet.key_removed'));
+  renderInternet(await jpost('/api/internet',{enabled:on}));
 }
 const LINK_BROWSERS=['auto','chrome','edge','brave','chromium'];
 async function loadOpen(){
@@ -10292,8 +10189,9 @@ function moeRenderSettings(fit){
   const sel = (id, opts, cur) => '<select class="ctl" id="'+id+'" style="width:auto">'
     + opts.map(([v,l])=>'<option value="'+v+'"'+(String(v)===String(cur)?' selected':'')+'>'+escHtml(l)+'</option>').join('')+'</select>';
   const sw = (id, on) => '<label class="switch"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span class="slider"></span></label>';
+  moeSetD = d;
   const rows = [
-    [t('moe.d_ctx'), '<span class="moe-ctx"><input type="range" id="moe-s-ctx" min="32768" max="262144" step="4096" value="'+(+d.ctx||131072)+'" oninput="moeCtxLbl()"><span id="moe-s-ctx-v"></span></span>'],
+    [t('moe.d_ctx'), '<span class="moe-ctx"><input type="range" id="moe-s-ctx" min="32768" max="'+(d.ctx_max||262144)+'" step="4096" value="'+(+d.ctx||131072)+'" oninput="moeCtxLbl()"><span id="moe-s-ctx-v"></span></span>'],
     [t('moe.d_kv'), sel('moe-s-kv', [['fp16', t('moe.kv_fp16')],['int8', t('moe.kv_int8')]], d.kv)],
     [t('moe.d_mtp'), sel('moe-s-spec', [[2,'2'],[3,'3'],[4,'4']], d.spec)],
     [t('moe.s_vision'), sw('moe-s-vision', d.vision)],
@@ -10305,12 +10203,26 @@ function moeRenderSettings(fit){
   if(d.reserve_mib && !res.includes(d.reserve_mib)) res.push(d.reserve_mib);
   rows.push([t('moe.s_reserve'), sel('moe-s-reserve', res.sort((a,b)=>a-b).map(n=>[n, n ? (n/1024).toLocaleString('fr-FR')+' Go' : t('moe.reserve_none')]), d.reserve_mib||0)]);
   document.getElementById('moe-settings').innerHTML = rows.map(([a,b])=>
-    '<div class="moe-kv"><span>'+escHtml(a)+'</span><span>'+b+'</span></div>').join('');
+    '<div class="moe-kv"><span>'+escHtml(a)+'</span><span>'+b+'</span></div>').join('')
+    + '<div class="moe-kv" id="moe-s-ctx-h" hidden><span></span><span class="lc-mode-d">'+escHtml(t('moe.ctx_drop_cap'))+'</span></div>';
+  const hs = document.getElementById('moe-s-helper');
+  if(hs) hs.addEventListener('change', moeCtxLbl);
   moeCtxLbl();
+}
+let moeSetD = null;
+function moeCtxCap(){
+  const d = moeSetD || {}, hs = document.getElementById('moe-s-helper');
+  const helper = hs ? hs.value === 'helper' : !!d.helper_on && !d.split_layers;
+  return d.drop_cap && helper ? d.drop_cap : (d.ctx_max || 262144);
 }
 function moeCtxLbl(){
   const r = document.getElementById('moe-s-ctx'), o = document.getElementById('moe-s-ctx-v');
   if(!r || !o) return;
+  const cap = moeCtxCap();
+  r.max = cap;
+  if(+r.value > cap) r.value = cap;
+  const h = document.getElementById('moe-s-ctx-h');
+  if(h) h.hidden = !(moeSetD && moeSetD.drop_cap && cap === moeSetD.drop_cap);
   o.textContent = (+r.value).toLocaleString('fr-FR');
   r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min) * 100) + '%');
 }
