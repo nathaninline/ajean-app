@@ -1518,12 +1518,16 @@ details[open]:not(.closing)>summary>.preset-add{opacity:1;transform:none;pointer
 @keyframes chat-in{from{opacity:0;transform:translateY(6px)}}
 @media (prefers-reduced-motion: reduce){#chat.chat-in{animation:none}}
 body.jean-mode #chat .msg.reasoning,body.jean-mode #chat .msg.tool{display:none}
-body.jean-mode #chat .msg.tool.has-desc{display:block;pointer-events:none;margin:2px 0}
+body.jean-mode #chat .msg.tool.has-desc{display:block;position:relative;padding-left:18px;pointer-events:none}
+body.jean-mode #chat .msg.tool.has-desc.working{display:none}
+body.jean-mode #chat .msg.tool.has-desc + .msg.tool.has-desc{margin-top:-14px}
+body.jean-mode #chat .msg.tool.has-desc::before{content:"";position:absolute;left:3px;top:.6em;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.45}
 body.jean-mode #chat .msg.tool.has-desc .body,
 body.jean-mode #chat .msg.tool.has-desc .label .ic-slot,
 body.jean-mode #chat .msg.tool.has-desc .label .diff-count{display:none}
-body.jean-mode #chat .msg.tool.has-desc .label{padding-right:0;font-weight:400}
+body.jean-mode #chat .msg.tool.has-desc .label{display:block;padding:0;width:auto;font-size:13.5px;font-weight:400;line-height:1.45;color:var(--dim)}
 body.jean-mode #chat .msg.tool.has-desc .label::after{content:none}
+body.jean-mode #chat .msg.tool.has-desc .label .txt{white-space:normal}
 .genstatus .jact{display:none}
 body.jean-mode .genstatus .jact:not(:empty){display:inline-block;position:relative;overflow:hidden;
   font-family:var(--font, inherit);font-size:13px;letter-spacing:0;color:var(--dim);padding-right:2px}
@@ -1662,14 +1666,20 @@ body.jean-mode .jst-hist{display:flex}
 .jst-orbit span{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:var(--text);opacity:.45;
   animation:jorbit 2.6s cubic-bezier(.45,.05,.55,.95) infinite;animation-delay:calc(var(--i) * -0.87s)}
 @keyframes jorbit{0%{transform:rotate(0deg) translateX(var(--orbit)) scale(1)}50%{transform:rotate(180deg) translateX(var(--orbit)) scale(.55)}100%{transform:rotate(360deg) translateX(var(--orbit)) scale(1)}}
-.jst-caption{min-height:22px;margin-top:14px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--dim)}
+.jst-caption{min-height:22px;margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:min(340px,86vw);text-align:center;font-size:14px;line-height:1.45;color:var(--dim)}
+.jst-cap-past{font-size:12px;opacity:.5;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jst-cap-past:empty{display:none}
+.jst-cap-past.in{animation:jcapin .35s cubic-bezier(.2,.7,.3,1) both}
+.jst-cap-text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:color-mix(in srgb,var(--text) 78%,transparent)}
+.jst-cap-stop{margin-top:10px}
 .jst-cap-text.in{animation:jcapin .35s cubic-bezier(.2,.7,.3,1) both}
 #jean-stage.idle-hint .jst-cap-text{cursor:pointer;transition:color .2s}
 #jean-stage.idle-hint .jst-cap-text:hover{color:var(--text)}
 #jean-stage.typing .jst-caption{opacity:0}
 .jst-caption{transition:opacity .25s ease}
 @keyframes jcapin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.jst-cap-stop{border:none;background:none;color:var(--dim);font:inherit;font-size:12px;cursor:pointer;padding:2px 6px;border-radius:6px;opacity:.7}
+.jst-cap-stop{border:none;background:var(--row-bg);color:var(--dim);font:inherit;font-size:12px;cursor:pointer;padding:5px 14px;border-radius:999px;opacity:.85}
 .jst-cap-stop:hover{opacity:1;color:var(--text);background:var(--row-bg)}
 .jst-cap-stop[hidden]{display:none}
 .jst-input{width:min(560px,94%);display:flex;align-items:flex-end;gap:8px;max-height:0;opacity:0;margin-top:0;pointer-events:none;
@@ -3038,7 +3048,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022215913"></script>
+<script src="/e2e.js?v=20261022220540"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -12556,7 +12566,7 @@ var JeanAvatar = (()=>{
   };
 })();
 (()=>{
-  let stage, scene, bubble, bubbleBody, caption, capText, capStop, inputBox, ta, sendBtn, histBtn;
+  let stage, scene, bubble, bubbleBody, caption, capPast, capText, capStop, inputBox, ta, sendBtn, histBtn;
   let screen, screenView, screenUrl, screenSrc='';
   let jeanWasOn=false;
   let inputOpen=false, syncTimer=0, lastHTML='', userScrolled=false;
@@ -12579,7 +12589,8 @@ var JeanAvatar = (()=>{
     for(let i=0;i<3;i++) $('span','', orbit).style.setProperty('--i', i);
     const charHost=$('div','jst-char-host', charWrap);
     caption=$('div','jst-caption', scene);
-    capText=$('span','jst-cap-text', caption);
+    capPast=$('div','jst-cap-past', caption);
+    capText=$('div','jst-cap-text', caption);
     capStop=$('button','jst-cap-stop', caption); capStop.type='button'; capStop.hidden=true; capStop.onclick=()=>stopGen();
     inputBox=$('div','jst-input', scene);
     ta=$('textarea','', inputBox); ta.rows=1;
@@ -12667,6 +12678,17 @@ var JeanAvatar = (()=>{
     stage.classList.toggle('loading', loading);
     stage.classList.toggle('idle-hint', hint);
     JeanAvatar&&JeanAvatar.loading(loading);
+    let past='';
+    if(working && chat){
+      const steps=[...chat.querySelectorAll(':scope > .msg.user, :scope > .msg.tool.has-desc:not(.working)')];
+      const last=steps[steps.length-1];
+      if(last && !last.classList.contains('user')){ const l=last.querySelector('.label .txt')||last.querySelector('.label'); past=l ? l.textContent : ''; }
+      if(past===txt) past='';
+    }
+    if(capPast.textContent!==past){
+      capPast.textContent=past;
+      capPast.classList.remove('in'); void capPast.offsetWidth; if(past) capPast.classList.add('in');
+    }
     if(capText.textContent!==txt){
       capText.textContent=txt;
       capText.classList.remove('in'); void capText.offsetWidth; if(txt) capText.classList.add('in');
