@@ -3069,7 +3069,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022221744"></script>
+<script src="/e2e.js?v=20261022221957"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -12588,7 +12588,7 @@ var JeanAvatar = (()=>{
   };
 })();
 (()=>{
-  let term, termView, termKey='', termTyped=0, termTimer=0, termSig='', avatarLooking=false;
+  let term, termView, termKey='', termTyped=0, termTimer=0, termSig='', avatarLooking=false, termRuns=[], termCmd='';
   const termSeen=new WeakSet(); 
   let stage, scene, bubble, bubbleBody, caption, capPast, capText, capStop, inputBox, ta, sendBtn, histBtn;
   let screen, screenView, screenUrl, screenSrc='';
@@ -12759,14 +12759,20 @@ var JeanAvatar = (()=>{
     const cur=runs[runs.length-1]._tu;
     const cmd=String(cur.label||'');
     const key=runs.length+'|'+cmd;
-    if(key!==termKey){ termKey=key; termTyped=cur.done ? cmd.length : 0; }
+    if(key!==termKey){
+      const prev=termKey.slice(termKey.indexOf('|')+1);
+      const grows=termKey.split('|')[0]===String(runs.length) && cmd.startsWith(prev);
+      termKey=key;
+      if(!grows) termTyped=cur.done ? cmd.length : 0;
+    }
+    termRuns=runs; termCmd=cmd;
     paintTerm(runs, cmd);
     if(termTyped<cmd.length && !termTimer){
-      const step=Math.max(1, Math.ceil(cmd.length/45)); 
       termTimer=setInterval(()=>{
-        termTyped=Math.min(cmd.length, termTyped+step);
-        paintTerm(runs, cmd);
-        if(termTyped>=cmd.length){ clearInterval(termTimer); termTimer=0; }
+        const step=Math.max(1, Math.ceil(termCmd.length/45)); 
+        termTyped=Math.min(termCmd.length, termTyped+step);
+        paintTerm(termRuns, termCmd);
+        if(termTyped>=termCmd.length){ clearInterval(termTimer); termTimer=0; }
       }, 33);
     }
   }
