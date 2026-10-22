@@ -1679,6 +1679,35 @@ body.jean-mode .jst-hist{display:flex}
 .jt-caret{display:inline-block;width:.55em;height:1.05em;margin-left:1px;vertical-align:-.18em;background:rgba(255,255,255,.85);animation:jtcaret 1.4s ease-in-out infinite}
 @keyframes jtcaret{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){.jt-caret,.jt-out.in{animation:none}}
+.jst-srch{position:relative;width:min(560px,92%);max-height:0;opacity:0;margin-bottom:0;transform:translateY(16px) scale(.9);
+  transform-origin:50% 100%;overflow:hidden;pointer-events:none;border-radius:16px;background:var(--row-bg);
+  box-shadow:0 14px 40px rgba(0,0,0,.18);
+  transition:max-height .6s cubic-bezier(.2,.9,.25,1),opacity .35s ease,transform .55s cubic-bezier(.2,.9,.25,1.15),margin .6s cubic-bezier(.2,.9,.25,1)}
+#jean-stage.searching .jst-srch{max-height:52vh;opacity:1;transform:none;margin-bottom:24px;pointer-events:auto}
+#jean-stage.searching .jst-bubble{max-height:0;opacity:0;margin-bottom:0;transform:translateY(16px) scale(.92);pointer-events:none}
+.jst-srch-bar{display:flex;align-items:center;gap:9px;margin:12px 12px 4px;padding:9px 14px;border-radius:999px;
+  background:var(--bg);color:var(--dim);font-size:13.5px}
+.jst-srch-bar svg{flex:none}
+.jst-srch-q{flex:1;min-width:0;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jst-srch-list{max-height:min(320px,40vh);overflow-y:auto;padding:4px 16px 14px;scrollbar-width:none}
+.jst-srch-list::-webkit-scrollbar{display:none}
+.jst-srch-item{padding:10px 0}
+.jst-srch-item + .jst-srch-item{border-top:1px solid color-mix(in srgb,var(--text) 6%,transparent)}
+.jst-srch-item.in{animation:jsrin .45s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--i) * 70ms)}
+@keyframes jsrin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.jst-srch-src{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--dim);margin-bottom:3px}
+.jst-srch-ic{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;
+  background:color-mix(in srgb,var(--text) 10%,transparent);color:var(--text);font-size:10px;font-weight:600}
+.jst-srch-t{font-size:14px;font-weight:500;line-height:1.35;color:var(--text);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.jst-srch-s{margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--dim);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.jst-srch-none{padding:18px 0;text-align:center;font-size:13px;color:var(--dim)}
+.jst-srch-sk{padding:12px 0}
+.jst-srch-sk i{display:block;height:9px;border-radius:5px;margin:7px 0;background:color-mix(in srgb,var(--text) 9%,transparent);animation:jsrsk 1.6s ease-in-out infinite}
+.jst-srch-sk i:nth-child(1){width:34%;height:8px}
+.jst-srch-sk i:nth-child(2){width:78%;height:11px}
+.jst-srch-sk i:nth-child(3){width:92%}
+@keyframes jsrsk{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.jst-srch-item.in,.jst-srch-sk i{animation:none}}
 .jst-char{position:relative;flex:none;width:150px;height:150px;--orbit:94px;transition:transform .6s cubic-bezier(.2,.9,.25,1.15)}
 .jst-char-host{width:100%;height:100%}
 #jean-avatar.jav-stage{display:block;width:100%;height:100%}
@@ -3069,7 +3098,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022221957"></script>
+<script src="/e2e.js?v=20261022222521"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3515,6 +3544,7 @@ fr: {
   "jean.stage_loading": "Chargement du modèle…",
   "jean.stage_placeholder": "Écris à Jean…",
   "jean.stage_stop": "Arrêter",
+  "jean.stage_no_results": "Aucun résultat",
   "jean.stage_back": "Revenir à Jean",
   "jean.stage_history": "Voir toute la conversation",
   "jean.stage_hint": "Clique sur moi pour me parler",
@@ -4865,6 +4895,7 @@ en: {
   "jean.stage_loading": "Loading the model…",
   "jean.stage_placeholder": "Write to Jean…",
   "jean.stage_stop": "Stop",
+  "jean.stage_no_results": "No results",
   "jean.stage_back": "Back to Jean",
   "jean.stage_history": "See the whole conversation",
   "jean.stage_hint": "Click me to talk",
@@ -12588,6 +12619,8 @@ var JeanAvatar = (()=>{
   };
 })();
 (()=>{
+  let srch, srchQ, srchList, srchSig='';
+  const srchSeen=new WeakSet();
   let term, termView, termKey='', termTyped=0, termTimer=0, termSig='', avatarLooking=false, termRuns=[], termCmd='';
   const termSeen=new WeakSet(); 
   let stage, scene, bubble, bubbleBody, caption, capPast, capText, capStop, inputBox, ta, sendBtn, histBtn;
@@ -12613,6 +12646,11 @@ var JeanAvatar = (()=>{
     for(let i=0;i<3;i++) $('span','', tbar);
     $('div','jst-term-title', tbar).textContent='terminal';
     termView=$('pre','jst-term-view', term);
+    srch=$('div','jst-srch', scene);
+    const sbar=$('div','jst-srch-bar', srch);
+    sbar.innerHTML='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+    srchQ=$('span','jst-srch-q', sbar);
+    srchList=$('div','jst-srch-list', srch);
     const charWrap=$('div','jst-char', scene);
     const orbit=$('div','jst-orbit', charWrap);
     for(let i=0;i<3;i++) $('span','', orbit).style.setProperty('--i', i);
@@ -12699,7 +12737,7 @@ var JeanAvatar = (()=>{
     stage.classList.toggle('has-answer', !!html.trim());
     if(settled) syncScreen(chat, answer);
     if(settled) syncTerm(chat, answer);
-    const looking=stage.classList.contains('browsing') || stage.classList.contains('terminal');
+    const looking=stage.classList.contains('browsing') || stage.classList.contains('terminal') || stage.classList.contains('searching');
     if(looking!==avatarLooking){ avatarLooking=looking; JeanAvatar&&JeanAvatar.browsing(looking); }
     const act=chat && [...chat.querySelectorAll(':scope > .genstatus .jact')].pop();
     const modelLoading=STATUS_SEEN && !MODEL_READY;
@@ -12752,6 +12790,10 @@ var JeanAvatar = (()=>{
     const tools=all.slice(from);
     const runs=tools.filter(el=>el.dataset.tool==='bash' && el._tu).slice(-4);
     const last=runs[runs.length-1];
+    const panels=tools.filter(el=>(el.dataset.tool==='bash' || el.dataset.tool==='web_search') && el._tu);
+    const lastPanel=panels[panels.length-1];
+    syncSearch(lastPanel && lastPanel.dataset.tool==='web_search' ? lastPanel : null, answer);
+    if(lastPanel && lastPanel!==last){ stage.classList.remove('terminal'); return; }
     const answerAfter=!!(last && answer && (last.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING));
     const on=!!last && !answerAfter && !stage.classList.contains('browsing') && busy && !!(ELAPSED || RUNNING_TASK);
     stage.classList.toggle('terminal', on);
@@ -12775,6 +12817,45 @@ var JeanAvatar = (()=>{
         if(termTyped>=termCmd.length){ clearInterval(termTimer); termTimer=0; }
       }, 33);
     }
+  }
+  function syncSearch(el, answer){
+    const answerAfter=!!(el && answer && (el.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING));
+    const on=!!el && !answerAfter && !stage.classList.contains('browsing') && busy && !!(ELAPSED || RUNNING_TASK);
+    stage.classList.toggle('searching', on);
+    if(!on) return;
+    const tu=el._tu, q=String(tu.label||'');
+    const sig=q+'|'+(tu.done?1:0)+'|'+(tu.result||'').length;
+    if(sig===srchSig) return;
+    srchSig=sig;
+    if(srchQ.textContent!==q) srchQ.textContent=q;
+    const fresh=tu.done && !srchSeen.has(el); if(tu.done) srchSeen.add(el);
+    const frag=document.createDocumentFragment();
+    if(!tu.done){
+      for(let i=0;i<3;i++){ const sk=$('div','jst-srch-sk', frag); $('i','',sk); $('i','',sk); $('i','',sk); }
+    } else {
+      const items=parseSearch(tu.result);
+      if(!items.length){ const n=$('div','jst-srch-none', frag); n.textContent=t('jean.stage_no_results'); }
+      items.slice(0,6).forEach((it,i)=>{
+        const row=$('div','jst-srch-item'+(fresh?' in':''), frag); row.style.setProperty('--i', i);
+        const src=$('div','jst-srch-src', row);
+        const ic=$('span','jst-srch-ic', src); ic.textContent=(it.host[0]||'?').toUpperCase();
+        $('span','', src).textContent=it.host;
+        $('div','jst-srch-t', row).textContent=it.title;
+        if(it.snip) $('div','jst-srch-s', row).textContent=it.snip;
+      });
+    }
+    srchList.replaceChildren(frag);
+    srchList.scrollTop=0;
+  }
+  function parseSearch(txt){
+    const out=[]; const lines=String(txt||'').split('\n');
+    for(let i=0;i<lines.length;i++){
+      const m=lines[i].match(/^\d+\.\s+(.+)$/); if(!m) continue;
+      const url=(lines[i+1]||'').trim(), snip=(lines[i+2]||'').trim();
+      let host=''; try{ host=new URL(url).hostname.replace(/^www\./,''); }catch(_){ continue; }
+      out.push({title:m[1].trim(), host, snip: /^\d+\.\s/.test(snip) ? '' : snip});
+    }
+    return out;
   }
   function tail(s, n){ const l=String(s||'').replace(/\s+$/,'').split('\n'); return l.slice(-n).join('\n'); }
   function paintTerm(runs, cmd){
