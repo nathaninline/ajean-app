@@ -1518,6 +1518,7 @@ details[open]:not(.closing)>summary>.preset-add{opacity:1;transform:none;pointer
 @keyframes chat-in{from{opacity:0;transform:translateY(6px)}}
 @media (prefers-reduced-motion: reduce){#chat.chat-in{animation:none}}
 body.jean-mode #chat .msg.reasoning,body.jean-mode #chat .msg.tool{display:none}
+body.jean-mode #chat .msg.tool.has-desc{display:block}
 .genstatus .jact{display:none}
 body.jean-mode .genstatus .jact:not(:empty){display:inline-block;position:relative;overflow:hidden;
   font-family:var(--font, inherit);font-size:13px;letter-spacing:0;color:var(--dim);padding-right:2px}
@@ -3032,7 +3033,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022214841"></script>
+<script src="/e2e.js?v=20261022215116"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
