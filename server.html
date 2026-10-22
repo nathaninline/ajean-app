@@ -1658,6 +1658,27 @@ body.jean-mode .jst-hist{display:flex}
   border:7px solid var(--text);box-shadow:0 12px 34px rgba(0,0,0,.14)}
 .jst-screen-view img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .45s ease}
 .jst-screen-view img.in{opacity:1}
+.jst-term{position:relative;width:min(560px,92%);max-height:0;opacity:0;margin-bottom:0;transform:translateY(16px) scale(.9);
+  transform-origin:50% 100%;overflow:hidden;pointer-events:none;border-radius:14px;background:#111114;
+  box-shadow:0 14px 40px rgba(0,0,0,.28),0 0 0 1px rgba(255,255,255,.06) inset;
+  transition:max-height .6s cubic-bezier(.2,.9,.25,1),opacity .35s ease,transform .55s cubic-bezier(.2,.9,.25,1.15),margin .6s cubic-bezier(.2,.9,.25,1)}
+#jean-stage.terminal .jst-term{max-height:46vh;opacity:1;transform:none;margin-bottom:24px;pointer-events:auto}
+#jean-stage.terminal .jst-bubble{max-height:0;opacity:0;margin-bottom:0;transform:translateY(16px) scale(.92);pointer-events:none}
+.jst-term-bar{display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;background:rgba(255,255,255,.04)}
+.jst-term-bar span{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.18)}
+.jst-term-title{flex:1;text-align:center;margin-right:42px;font:500 11px var(--font,system-ui);color:rgba(255,255,255,.38);letter-spacing:.04em}
+.jst-term-view{margin:0;padding:12px 14px 14px;height:min(260px,34vh);overflow:hidden;
+  font:12.5px/1.55 var(--mono,ui-monospace,Menlo,monospace);color:rgba(255,255,255,.86);white-space:pre-wrap;word-break:break-word;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 22px);mask-image:linear-gradient(to bottom,transparent 0,#000 22px)}
+.jt-cmd{color:#fff}
+.jt-cmd + .jt-cmd,.jt-out + .jt-cmd{margin-top:8px}
+.jt-ps{color:rgba(255,255,255,.4)}
+.jt-out{color:rgba(255,255,255,.55);margin-top:2px}
+.jt-out.in{animation:jtout .4s ease both}
+@keyframes jtout{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.jt-caret{display:inline-block;width:.55em;height:1.05em;margin-left:1px;vertical-align:-.18em;background:rgba(255,255,255,.85);animation:jtcaret 1s steps(1) infinite}
+@keyframes jtcaret{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.jt-caret,.jt-out.in{animation:none}}
 .jst-char{position:relative;flex:none;width:150px;height:150px;--orbit:94px;transition:transform .6s cubic-bezier(.2,.9,.25,1.15)}
 .jst-char-host{width:100%;height:100%}
 #jean-avatar.jav-stage{display:block;width:100%;height:100%}
@@ -3048,7 +3069,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022220540"></script>
+<script src="/e2e.js?v=20261022221433"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -8813,6 +8834,7 @@ function fadeTail(root, n){
 }
 function bodyLineCount(s){ s=String(s).replace(/\r\n/g,'\n').replace(/\n$/,''); return s ? s.split('\n').length : 0; }
 function renderToolMsg(el, tu){
+  el._tu=tu; el.dataset.tool=tu.name||''; 
   const META = {
     bash:       {ico:'terminal', lbl:t('chat.tool.bash_lbl'),            head:t('chat.tool.bash_head')},
     write:      {ico:'file',     lbl:t('chat.tool.write_lbl'),           head:t('chat.tool.write_head')},
@@ -12566,6 +12588,7 @@ var JeanAvatar = (()=>{
   };
 })();
 (()=>{
+  let term, termView, termKey='', termTyped=0, termTimer=0;
   let stage, scene, bubble, bubbleBody, caption, capPast, capText, capStop, inputBox, ta, sendBtn, histBtn;
   let screen, screenView, screenUrl, screenSrc='';
   let jeanWasOn=false;
@@ -12584,6 +12607,11 @@ var JeanAvatar = (()=>{
     screen=$('div','jst-screen', scene);
     screenUrl=$('div','jst-screen-url', screen);
     screenView=$('div','jst-screen-view', screen);
+    term=$('div','jst-term', scene);
+    const tbar=$('div','jst-term-bar', term);
+    for(let i=0;i<3;i++) $('span','', tbar);
+    $('div','jst-term-title', tbar).textContent='terminal';
+    termView=$('pre','jst-term-view', term);
     const charWrap=$('div','jst-char', scene);
     const orbit=$('div','jst-orbit', charWrap);
     for(let i=0;i<3;i++) $('span','', orbit).style.setProperty('--i', i);
@@ -12669,6 +12697,7 @@ var JeanAvatar = (()=>{
     }
     stage.classList.toggle('has-answer', !!html.trim());
     if(settled) syncScreen(chat, answer);
+    if(settled) syncTerm(chat, answer);
     const act=chat && [...chat.querySelectorAll(':scope > .genstatus .jact')].pop();
     const modelLoading=STATUS_SEEN && !MODEL_READY;
     const loading=modelLoading || !settled;
@@ -12714,6 +12743,53 @@ var JeanAvatar = (()=>{
     screenView.appendChild(img);
     setTimeout(()=>img.classList.add('in'), 20);
     setTimeout(()=>{ let x=img.previousElementSibling; while(x){ const p=x.previousElementSibling; x.remove(); x=p; } }, 480);
+  }
+  function syncTerm(chat, answer){
+    const all=chat ? [...chat.querySelectorAll(':scope > .msg.user, :scope > .msg.tool')] : [];
+    let from=0; for(let i=all.length-1;i>=0;i--){ if(all[i].classList.contains('user')){ from=i+1; break; } }
+    const tools=all.slice(from);
+    const last=tools[tools.length-1];
+    const answerAfter=!!(last && answer && (last.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING));
+    const on=!!(last && last.dataset.tool==='bash' && last._tu) && !answerAfter && !stage.classList.contains('browsing') && busy && !!(ELAPSED || RUNNING_TASK);
+    stage.classList.toggle('terminal', on);
+    if(!on){ return; }
+    JeanAvatar&&JeanAvatar.browsing(true);
+    const runs=tools.filter(el=>el.dataset.tool==='bash' && el._tu).slice(-4);
+    const cur=runs[runs.length-1]._tu;
+    const cmd=String(cur.label||'');
+    const key=runs.length+'|'+cmd;
+    if(key!==termKey){ termKey=key; termTyped=cur.done ? cmd.length : 0; }
+    paintTerm(runs, cmd);
+    if(termTyped<cmd.length && !termTimer){
+      const step=Math.max(1, Math.ceil(cmd.length/45)); 
+      termTimer=setInterval(()=>{
+        termTyped=Math.min(cmd.length, termTyped+step);
+        paintTerm(runs, cmd);
+        if(termTyped>=cmd.length){ clearInterval(termTimer); termTimer=0; }
+      }, 33);
+    }
+  }
+  function tail(s, n){ const l=String(s||'').replace(/\s+$/,'').split('\n'); return l.slice(-n).join('\n'); }
+  function paintTerm(runs, cmd){
+    const frag=document.createDocumentFragment();
+    runs.forEach((el,i)=>{
+      const tu=el._tu, isLast=i===runs.length-1;
+      const line=document.createElement('div'); line.className='jt-cmd';
+      const ps=document.createElement('span'); ps.className='jt-ps'; ps.textContent='$ ';
+      line.appendChild(ps);
+      line.appendChild(document.createTextNode(isLast ? cmd.slice(0, termTyped) : String(tu.label||'')));
+      const typing=isLast && termTyped<cmd.length;
+      const waiting=isLast && !typing && !tu.done;
+      if(typing || waiting){ const c=document.createElement('span'); c.className='jt-caret'; line.appendChild(c); }
+      frag.appendChild(line);
+      if(tu.done && !(isLast && typing) && tu.result){
+        const out=document.createElement('div'); out.className='jt-out'+(isLast?' in':'');
+        out.textContent=tail(tu.result, isLast ? 40 : 6);
+        frag.appendChild(out);
+      }
+    });
+    termView.replaceChildren(frag);
+    termView.scrollTop=termView.scrollHeight;
   }
   function adoptImages(keep){
     for(const img of [...bubbleBody.querySelectorAll('img')]){
