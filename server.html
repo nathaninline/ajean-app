@@ -1712,6 +1712,16 @@ body.jean-mode .jst-hist{display:flex}
 .jst-srch-sk i:nth-child(3){width:92%}
 @keyframes jsrsk{50%{opacity:.45}}
 @media (prefers-reduced-motion:reduce){.jst-srch-item.in,.jst-srch-sk i{animation:none}}
+.jst-zzz{position:absolute;left:68%;top:2%;width:0;height:0;pointer-events:none;opacity:0;transition:opacity .6s ease}
+#jean-stage.sleeping .jst-zzz{opacity:1}
+.jst-zzz span{position:absolute;left:0;top:0;font-weight:700;font-size:calc(15px + var(--i) * 6px);line-height:1;color:var(--dim);opacity:0;
+  animation:jzzz 3.6s ease-in-out infinite;animation-delay:calc(var(--i) * 1.2s)}
+@keyframes jzzz{0%{opacity:0;transform:translate(0,6px) rotate(-8deg) scale(.6)}18%{opacity:.85}
+  70%{opacity:.5}100%{opacity:0;transform:translate(34px,-58px) rotate(12deg) scale(1.15)}}
+#jean-stage.sleeping .jst-char{animation:jsleep 4.2s ease-in-out infinite}
+@keyframes jsleep{0%,100%{transform:scale(1) rotate(3deg)}50%{transform:scale(1.035,.975) rotate(4.5deg)}}
+#jean-stage.sleeping .jst-bubble{max-height:0;opacity:0;margin-bottom:0;transform:translateY(16px) scale(.92);pointer-events:none}
+@media (prefers-reduced-motion:reduce){.jst-zzz span{animation:none;opacity:.6}#jean-stage.sleeping .jst-char{animation:none}}
 .jst-char{position:relative;flex:none;width:150px;height:150px;--orbit:94px;transition:transform .6s cubic-bezier(.2,.9,.25,1.15)}
 .jst-char-host{width:100%;height:100%}
 #jean-avatar.jav-stage{display:block;width:100%;height:100%}
@@ -3107,7 +3117,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022231819"></script>
+<script src="/e2e.js?v=20261022232909"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3551,6 +3561,7 @@ fr: {
   "jean.sleep_active": "Preset actif au moment du sommeil",
   "jean.sleep_missing": "(introuvable)",
   "jean.sleep_now": "Dormir maintenant",
+  "jean.sleep_caption": "Je dors, je range ma mémoire…",
   "jean.sleep_hour": "Heure",
   "jean.sleep_model": "Modèle",
   "jean.sleep_running": "En sommeil",
@@ -4907,6 +4918,7 @@ en: {
   "jean.sleep_active": "Preset active at sleep time",
   "jean.sleep_missing": "(not found)",
   "jean.sleep_now": "Sleep now",
+  "jean.sleep_caption": "Sleeping, tidying my memory…",
   "jean.sleep_hour": "Time",
   "jean.sleep_model": "Model",
   "jean.sleep_running": "Sleeping",
@@ -9487,6 +9499,7 @@ function paintGenStatus(){
   scrollMaybe();
 }
 let JACT='';
+let JEAN_SLEEPING=false, JEAN_SLEEP_HOLD=0;
 function jeanActFor(name){
   if(/^(jean_search|jean_read|recall|recall_search|mem_search|mem_read)$/.test(name)) return 'jean.act_search';
   if(/^(jean_remember|jean_note|jean_save|jean_lesson|jean_patch|jean_rule|mem_add|mem_edit)$/.test(name)) return 'jean.act_remember';
@@ -9942,6 +9955,7 @@ async function reconcileBusy(settle){
     const rt = s.running_task || '';
     if(rt !== RUNNING_TASK){ RUNNING_TASK = rt; if(!REPLAYING) syncSendBtn(); }
     if(typeof s.generating==='boolean' && s.generating!==busy) setBusy(s.generating);
+    JEAN_SLEEPING=!!s.sleeping;
     if(typeof s.compact_count==='number') setCompactCount(s.compact_count); 
     if(s.generating && !REPLAYING && !RUNNING_TASK && !ELAPSED && !TURN_ENDED){
       elapsedStart();
@@ -12155,7 +12169,7 @@ async function jmSleepNow(){
   try{
     const r=await jpost('/api/jean/sleep', {now:true});
     if(!r || !r.ok){ toast((r&&r.error)||'erreur'); return; }
-    toast(t('jean.sleep_started')); jmSleepState(true);
+    JEAN_SLEEP_HOLD=Date.now()+6000; toast(t('jean.sleep_started')); jmSleepState(true);
   }catch(e){ toast(String(e)); }
 }
 async function jmSaveSleep(){
@@ -12469,7 +12483,7 @@ var JeanAvatar = (()=>{
   let root=null, wrap=null, P=null, raf=0, last=0, t=0;
   let host=null;                                      
   let state='idle', stateUntil=0, lastActivity=performance.now();
-  let blinkAt=0, blinkT=1, hopT=1, pulse=0, pointer=null, browsing=false, loadingNow=false;
+  let blinkAt=0, blinkT=1, hopT=1, pulse=0, pointer=null, browsing=false, loadingNow=false, sleepingNow=false;
   const spring=(k,d)=>({x:0,v:0,target:0,k,d});
   const S={ lookX:spring(90,13), lookY:spring(90,13), squash:spring(220,12),
     open:spring(170,16), happy:spring(120,14), tilt:spring(70,11) };
@@ -12503,7 +12517,7 @@ var JeanAvatar = (()=>{
   function speak(n){ pulse=Math.min(1, pulse+0.12*(n||1)); if(state!=='talk') setState('talk'); }
   function targets(now){
     let lx=0, ly=0, open=1, happy=0, tilt=0;
-    const st = loadingNow ? 'loading' : browsing && state!=='happy' && state!=='sleep' ? 'browse' : state;
+    const st = sleepingNow ? 'sleep' : loadingNow ? 'loading' : browsing && state!=='happy' && state!=='sleep' ? 'browse' : state;
     switch(st){
       case 'loading': lx=Math.cos(now/520)*0.85; ly=Math.sin(now/520)*0.85; open=0.9; break;
       case 'browse': lx=0.55*Math.sin(now/650); ly=-0.85+0.12*Math.sin(now/1300); open=0.95; tilt=-0.05; break;
@@ -12654,6 +12668,7 @@ var JeanAvatar = (()=>{
     speak,
     done(){ setState('happy', 1600); },
     loading(on){ loadingNow=!!on; },
+    sleeping(on){ if(sleepingNow && !on){ hopT=0.3; setState('happy', 1600); } sleepingNow=!!on; },
     browsing(on){ if(on && !browsing) wake(); browsing=!!on; },
     mount(el){ stage=el; place(); },
     listen(){ wake(); if(state==='idle'||state==='listen'||state==='happy') setState('listen', 3000); },
@@ -12699,6 +12714,8 @@ var JeanAvatar = (()=>{
     const orbit=$('div','jst-orbit', charWrap);
     for(let i=0;i<3;i++) $('span','', orbit).style.setProperty('--i', i);
     const charHost=$('div','jst-char-host', charWrap);
+    const zzz=$('div','jst-zzz', charWrap); zzz.setAttribute('aria-hidden','true');
+    for(let i=0;i<3;i++){ const z=$('span','', zzz); z.textContent='z'; z.style.setProperty('--i', i); }
     caption=$('div','jst-caption', scene);
     capPast=$('div','jst-cap-past', caption);
     capText=$('div','jst-cap-text', caption);
@@ -12788,7 +12805,11 @@ var JeanAvatar = (()=>{
     const loading=modelLoading || !settled;
     const working=settled && !loading && busy && !!(ELAPSED || RUNNING_TASK);
     const hint=settled && !loading && !working && !html;
-    const txt=loading ? t(modelLoading ? 'jean.stage_loading' : 'chat.loading_conversation') : working ? ((act && act.textContent) || '') : (hint ? t('jean.stage_hint') : '');
+    const asleep=(JEAN_SLEEPING || Date.now()<JEAN_SLEEP_HOLD) && !working && !loading && !inputOpen;
+    stage.classList.toggle('sleeping', asleep);
+    JeanAvatar&&JeanAvatar.sleeping&&JeanAvatar.sleeping(asleep);
+    if(Date.now()<JEAN_SLEEP_HOLD) setTimeout(schedule, 1000);
+    const txt=loading ? t(modelLoading ? 'jean.stage_loading' : 'chat.loading_conversation') : working ? ((act && act.textContent) || '') : asleep ? t('jean.sleep_caption') : (hint ? t('jean.stage_hint') : '');
     stage.classList.toggle('loading', loading);
     stage.classList.toggle('idle-hint', hint);
     JeanAvatar&&JeanAvatar.loading(loading);
