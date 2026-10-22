@@ -1676,8 +1676,8 @@ body.jean-mode .jst-hist{display:flex}
 .jt-out{color:rgba(255,255,255,.55);margin-top:2px}
 .jt-out.in{animation:jtout .4s ease both}
 @keyframes jtout{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-.jt-caret{display:inline-block;width:.55em;height:1.05em;margin-left:1px;vertical-align:-.18em;background:rgba(255,255,255,.85);animation:jtcaret 1s steps(1) infinite}
-@keyframes jtcaret{50%{opacity:0}}
+.jt-caret{display:inline-block;width:.55em;height:1.05em;margin-left:1px;vertical-align:-.18em;background:rgba(255,255,255,.85);animation:jtcaret 1.4s ease-in-out infinite}
+@keyframes jtcaret{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){.jt-caret,.jt-out.in{animation:none}}
 .jst-char{position:relative;flex:none;width:150px;height:150px;--orbit:94px;transition:transform .6s cubic-bezier(.2,.9,.25,1.15)}
 .jst-char-host{width:100%;height:100%}
@@ -3069,7 +3069,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022221433"></script>
+<script src="/e2e.js?v=20261022221744"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -12588,7 +12588,8 @@ var JeanAvatar = (()=>{
   };
 })();
 (()=>{
-  let term, termView, termKey='', termTyped=0, termTimer=0;
+  let term, termView, termKey='', termTyped=0, termTimer=0, termSig='', avatarLooking=false;
+  const termSeen=new WeakSet(); 
   let stage, scene, bubble, bubbleBody, caption, capPast, capText, capStop, inputBox, ta, sendBtn, histBtn;
   let screen, screenView, screenUrl, screenSrc='';
   let jeanWasOn=false;
@@ -12698,6 +12699,8 @@ var JeanAvatar = (()=>{
     stage.classList.toggle('has-answer', !!html.trim());
     if(settled) syncScreen(chat, answer);
     if(settled) syncTerm(chat, answer);
+    const looking=stage.classList.contains('browsing') || stage.classList.contains('terminal');
+    if(looking!==avatarLooking){ avatarLooking=looking; JeanAvatar&&JeanAvatar.browsing(looking); }
     const act=chat && [...chat.querySelectorAll(':scope > .genstatus .jact')].pop();
     const modelLoading=STATUS_SEEN && !MODEL_READY;
     const loading=modelLoading || !settled;
@@ -12733,7 +12736,6 @@ var JeanAvatar = (()=>{
     const answerAfter=!!(card && answer && (card.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING));
     const on=!!(card && frame) && !answerAfter;
     stage.classList.toggle('browsing', on);
-    JeanAvatar&&JeanAvatar.browsing(on);
     if(!on){ screenSrc=''; return; }
     const url=(card.querySelector('.cu-shot-t')||{}).textContent||'';
     if(screenUrl.textContent!==url) screenUrl.textContent=url;
@@ -12748,13 +12750,12 @@ var JeanAvatar = (()=>{
     const all=chat ? [...chat.querySelectorAll(':scope > .msg.user, :scope > .msg.tool')] : [];
     let from=0; for(let i=all.length-1;i>=0;i--){ if(all[i].classList.contains('user')){ from=i+1; break; } }
     const tools=all.slice(from);
-    const last=tools[tools.length-1];
+    const runs=tools.filter(el=>el.dataset.tool==='bash' && el._tu).slice(-4);
+    const last=runs[runs.length-1];
     const answerAfter=!!(last && answer && (last.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING));
-    const on=!!(last && last.dataset.tool==='bash' && last._tu) && !answerAfter && !stage.classList.contains('browsing') && busy && !!(ELAPSED || RUNNING_TASK);
+    const on=!!last && !answerAfter && !stage.classList.contains('browsing') && busy && !!(ELAPSED || RUNNING_TASK);
     stage.classList.toggle('terminal', on);
     if(!on){ return; }
-    JeanAvatar&&JeanAvatar.browsing(true);
-    const runs=tools.filter(el=>el.dataset.tool==='bash' && el._tu).slice(-4);
     const cur=runs[runs.length-1]._tu;
     const cmd=String(cur.label||'');
     const key=runs.length+'|'+cmd;
@@ -12771,6 +12772,9 @@ var JeanAvatar = (()=>{
   }
   function tail(s, n){ const l=String(s||'').replace(/\s+$/,'').split('\n'); return l.slice(-n).join('\n'); }
   function paintTerm(runs, cmd){
+    const sig=termTyped+'|'+runs.map(el=>{ const tu=el._tu; return (tu.label||'').length+':'+(tu.done?1:0)+':'+(tu.result||'').length; }).join(',');
+    if(sig===termSig) return;
+    termSig=sig;
     const frag=document.createDocumentFragment();
     runs.forEach((el,i)=>{
       const tu=el._tu, isLast=i===runs.length-1;
@@ -12783,7 +12787,8 @@ var JeanAvatar = (()=>{
       if(typing || waiting){ const c=document.createElement('span'); c.className='jt-caret'; line.appendChild(c); }
       frag.appendChild(line);
       if(tu.done && !(isLast && typing) && tu.result){
-        const out=document.createElement('div'); out.className='jt-out'+(isLast?' in':'');
+        const fresh=!termSeen.has(el); termSeen.add(el);
+        const out=document.createElement('div'); out.className='jt-out'+(fresh?' in':'');
         out.textContent=tail(tu.result, isLast ? 40 : 6);
         frag.appendChild(out);
       }
