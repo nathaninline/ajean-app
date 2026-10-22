@@ -1518,7 +1518,12 @@ details[open]:not(.closing)>summary>.preset-add{opacity:1;transform:none;pointer
 @keyframes chat-in{from{opacity:0;transform:translateY(6px)}}
 @media (prefers-reduced-motion: reduce){#chat.chat-in{animation:none}}
 body.jean-mode #chat .msg.reasoning,body.jean-mode #chat .msg.tool{display:none}
-body.jean-mode #chat .msg.tool.has-desc{display:block}
+body.jean-mode #chat .msg.tool.has-desc{display:block;pointer-events:none;margin:2px 0}
+body.jean-mode #chat .msg.tool.has-desc .body,
+body.jean-mode #chat .msg.tool.has-desc .label .ic-slot,
+body.jean-mode #chat .msg.tool.has-desc .label .diff-count{display:none}
+body.jean-mode #chat .msg.tool.has-desc .label{padding-right:0;font-weight:400}
+body.jean-mode #chat .msg.tool.has-desc .label::after{content:none}
 .genstatus .jact{display:none}
 body.jean-mode .genstatus .jact:not(:empty){display:inline-block;position:relative;overflow:hidden;
   font-family:var(--font, inherit);font-size:13px;letter-spacing:0;color:var(--dim);padding-right:2px}
@@ -3033,7 +3038,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022215116"></script>
+<script src="/e2e.js?v=20261022215913"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -8844,6 +8849,7 @@ function renderToolMsg(el, tu){
   setIcon(el, meta.ico);
   let lbl = meta.lbl;
   if(tu.desc){ lbl = tu.desc; el.classList.add('has-desc'); }
+  if(tu.desc && MODE==='jean'){ setLabel(el, lbl); return; }
   const realChars = tu.result_chars || (tu.result ? tu.result.length : 0);
   if(realChars){ lbl += '  ·  ' + Math.max(1, Math.round(realChars/4)) + ' ' + t('chat.tok_unit'); }
   setLabel(el, lbl);
@@ -9410,11 +9416,12 @@ function jeanActFor(name){
   if(/^(bash|write|edit)$/.test(name)) return 'jean.act_machine';
   return 'jean.act_work';
 }
-function setJeanAct(k){
-  if(MODE!=='jean' || REPLAYING || k===JACT) return;
-  JACT=k; JeanAvatar&&JeanAvatar.act(k);
+function setJeanAct(k, txt){
+  const id=k+' '+(txt||'');
+  if(MODE!=='jean' || REPLAYING || id===JACT) return;
+  JACT=id; JeanAvatar&&JeanAvatar.act(k);
   const a=GENEL && GENEL.querySelector('.jact'); if(!a) return;
-  a.textContent=k ? t(k) : '';
+  a.textContent=txt || (k ? t(k) : '');
   a.classList.remove('jact-in'); void a.offsetWidth; if(k) a.classList.add('jact-in'); 
 }
 function showJeanTask(j){
@@ -9657,7 +9664,7 @@ function handleDelta(d){
   if(d.tool_used){
     smoothSnap(); flushRender(); 
     killTyping('tool'); T.contentEl=null; T.reasonEl=null; const tu=d.tool_used;
-    setJeanAct(jeanActFor(tu.name||''));
+    setJeanAct(jeanActFor(tu.name||''), tu.desc);
     if(!T.pendingToolEl){ collapseAll(T.turnCollapsibles); T.pendingToolEl=addMsg('tool',''); if(REPLAYING||viewOn('fold-tools')) collapseInstant(T.pendingToolEl); T.turnCollapsibles.push(T.pendingToolEl); setActive(T.pendingToolEl); }
     renderToolMsg(T.pendingToolEl, tu);
     if(tu.done && tu.shot) showCuShot(tu);
