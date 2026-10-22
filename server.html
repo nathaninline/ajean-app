@@ -1543,7 +1543,11 @@ body.jean-mode .genstatus .jact.jact-in{animation:jactin .3s cubic-bezier(.2,.7,
 .jm-head-j{margin-top:22px}
 .jm-title{font-size:13px;font-weight:600;color:var(--text)}
 .jm-budget{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums;flex:1}
-.jm-sleep{width:100%;margin:0 0 18px}
+.jm-sleep-row{display:flex;gap:10px;margin:0 0 18px}
+.jm-sleep-f{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--dim);flex:none;width:96px}
+.jm-sleep-fp{flex:1;width:auto;min-width:0}
+.jm-sleep-f select{width:100%}
+#jm-sleep-st{text-align:right}
 .jm-hint{font-size:11.5px;color:var(--dim);margin:0 0 10px;line-height:1.45}
 .jm-list{display:flex;flex-direction:column;gap:2px}
 .jm-row{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border-radius:10px;transition:background .15s}
@@ -2523,9 +2527,14 @@ button.th-head:hover{background:var(--t1)}
       <div id="jm-fiches" class="jm-list"></div>
       <div class="jm-head jm-head-j">
         <span class="jm-title" data-i18n="jean.sleep_title">Sommeil</span>
+        <span id="jm-sleep-st" class="jm-budget"></span>
+        <button id="jm-sleep-now" class="mem-add-btn" onclick="jmSleepNow()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span data-i18n="jean.sleep_now">Dormir maintenant</span></button>
       </div>
       <div class="jm-hint" data-i18n="jean.sleep_hint">Modèle utilisé la nuit pour réorganiser la mémoire.</div>
-      <select id="jm-sleep" class="sctl jm-sleep" onchange="jmSaveSleep()"></select>
+      <div class="jm-sleep-row">
+        <label class="jm-sleep-f"><span data-i18n="jean.sleep_hour">Heure</span><select id="jm-sleep-hour" class="sctl" onchange="jmSaveSleepHour()"></select></label>
+        <label class="jm-sleep-f jm-sleep-fp"><span data-i18n="jean.sleep_model">Modèle</span><select id="jm-sleep" class="sctl" onchange="jmSaveSleep()"></select></label>
+      </div>
       <div class="jm-head jm-head-j">
         <span class="jm-title" data-i18n="jean.mem_journal">Journal</span>
         <span id="jm-count" class="jm-budget"></span>
@@ -3098,7 +3107,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022222521"></script>
+<script src="/e2e.js?v=20261022231819"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3541,6 +3550,11 @@ fr: {
   "jean.sleep_hint": "Preset utilisé la nuit pour réorganiser la mémoire. Jean y bascule le temps du sommeil, puis revient au preset d'avant.",
   "jean.sleep_active": "Preset actif au moment du sommeil",
   "jean.sleep_missing": "(introuvable)",
+  "jean.sleep_now": "Dormir maintenant",
+  "jean.sleep_hour": "Heure",
+  "jean.sleep_model": "Modèle",
+  "jean.sleep_running": "En sommeil",
+  "jean.sleep_started": "Jean s'endort. La mémoire sera réorganisée dans quelques minutes.",
   "jean.stage_loading": "Chargement du modèle…",
   "jean.stage_placeholder": "Écris à Jean…",
   "jean.stage_stop": "Arrêter",
@@ -4892,6 +4906,11 @@ en: {
   "jean.sleep_hint": "Preset used at night to reorganize memory. Jean switches to it for the sleep, then returns to the previous preset.",
   "jean.sleep_active": "Preset active at sleep time",
   "jean.sleep_missing": "(not found)",
+  "jean.sleep_now": "Sleep now",
+  "jean.sleep_hour": "Time",
+  "jean.sleep_model": "Model",
+  "jean.sleep_running": "Sleeping",
+  "jean.sleep_started": "Jean is falling asleep. Memory will be reorganized in a few minutes.",
   "jean.stage_loading": "Loading the model…",
   "jean.stage_placeholder": "Write to Jean…",
   "jean.stage_stop": "Stop",
@@ -12113,6 +12132,31 @@ async function jmLoadSleep(){
   (r.presets||[]).forEach(p=>add(p.id, p.name||p.id));
   if(r.preset && !(r.presets||[]).some(p=>p.id===r.preset)) add(r.preset, r.preset+' '+t('jean.sleep_missing'));
   sel.value=r.preset||'';
+  const hs=document.getElementById('jm-sleep-hour');
+  if(hs){
+    if(!hs.options.length) for(let h=0;h<24;h++){ const o=document.createElement('option'); o.value=h; o.textContent=String(h).padStart(2,'0')+':00'; hs.appendChild(o); }
+    hs.value=String(r.hour==null?3:r.hour);
+  }
+  jmSleepState(!!r.sleeping);
+}
+function jmSleepState(sleeping){
+  const b=document.getElementById('jm-sleep-now'), st=document.getElementById('jm-sleep-st');
+  if(b) b.disabled=sleeping;
+  if(st) st.textContent=sleeping ? t('jean.sleep_running') : '';
+  clearTimeout(jmSleepState.t);
+  const modal=document.getElementById('jean-mem-modal');
+  if(sleeping && modal && modal.style.display!=='none') jmSleepState.t=setTimeout(jmLoadSleep, 5000);
+}
+async function jmSaveSleepHour(){
+  const hs=document.getElementById('jm-sleep-hour'); if(!hs) return;
+  try{ const r=await jpost('/api/jean/sleep', {hour:parseInt(hs.value,10)}); if(!r || !r.ok) toast((r&&r.error)||'erreur'); }catch(e){ toast(String(e)); }
+}
+async function jmSleepNow(){
+  try{
+    const r=await jpost('/api/jean/sleep', {now:true});
+    if(!r || !r.ok){ toast((r&&r.error)||'erreur'); return; }
+    toast(t('jean.sleep_started')); jmSleepState(true);
+  }catch(e){ toast(String(e)); }
 }
 async function jmSaveSleep(){
   const sel=document.getElementById('jm-sleep'); if(!sel) return;
