@@ -1838,6 +1838,7 @@ button.th-head:hover{background:var(--t1)}
 .pair-val .sw-ic{flex:none;width:32px;height:32px;min-height:32px;margin:0;padding:0;display:flex;align-items:center;justify-content:center;border:none;
   border-radius:8px;background:transparent;color:var(--dim);box-shadow:none;cursor:pointer;transition:background .15s ease,color .15s ease}
 .pair-val .sw-ic:hover{background:var(--t2);color:var(--text)}
+.msg.tool.has-desc .label .txt{white-space:normal;text-transform:none;letter-spacing:normal}
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()" aria-label="Menu" title="Menu"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 <button id="lc-chip" onclick="lcChipOpen()" hidden></button>
@@ -3031,7 +3032,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261021150942"></script>
+<script src="/e2e.js?v=20261022214841"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -8841,6 +8842,7 @@ function renderToolMsg(el, tu){
   meta = meta || {ico:'wrench', lbl:t('chat.tool.fallback_lbl'), head:t('chat.tool.fallback_head')};
   setIcon(el, meta.ico);
   let lbl = meta.lbl;
+  if(tu.desc){ lbl = tu.desc; el.classList.add('has-desc'); }
   const realChars = tu.result_chars || (tu.result ? tu.result.length : 0);
   if(realChars){ lbl += '  ·  ' + Math.max(1, Math.round(realChars/4)) + ' ' + t('chat.tok_unit'); }
   setLabel(el, lbl);
