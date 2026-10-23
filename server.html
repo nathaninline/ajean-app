@@ -3170,7 +3170,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261023085109"></script>
+<script src="/e2e.js?v=20261023115050"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -12961,13 +12961,14 @@ var JeanAvatar = (()=>{
     const act=chat && [...chat.querySelectorAll(':scope > .genstatus .jact')].pop();
     const modelLoading=STATUS_SEEN && !MODEL_READY;
     const loading=modelLoading || !settled;
-    const working=settled && !loading && busy && !!(ELAPSED || RUNNING_TASK);
+    const sent=PENDS.length>0;
+    const working=settled && !loading && (busy && !!(ELAPSED || RUNNING_TASK) || sent);
     const hint=settled && !loading && !working && !html;
     const asleep=(JEAN_SLEEPING || Date.now()<JEAN_SLEEP_HOLD) && !working && !loading && !inputOpen;
     stage.classList.toggle('sleeping', asleep);
     JeanAvatar&&JeanAvatar.sleeping&&JeanAvatar.sleeping(asleep);
     if(Date.now()<JEAN_SLEEP_HOLD) setTimeout(schedule, 1000);
-    const txt=loading ? t(modelLoading ? 'jean.stage_loading' : 'chat.loading_conversation') : working ? ((act && act.textContent) || '') : asleep ? t('jean.sleep_caption') : (hint ? t('jean.stage_hint') : '');
+    const txt=loading ? t(modelLoading ? 'jean.stage_loading' : 'chat.loading_conversation') : working ? ((act && act.textContent) || (sent ? t('jean.act_read') : '')) : asleep ? t('jean.sleep_caption') : (hint ? t('jean.stage_hint') : '');
     stage.classList.toggle('loading', loading);
     stage.classList.toggle('idle-hint', hint);
     JeanAvatar&&JeanAvatar.loading(loading);
