@@ -1919,6 +1919,36 @@ button.th-head:hover{background:var(--t1)}
   border-radius:8px;background:transparent;color:var(--dim);box-shadow:none;cursor:pointer;transition:background .15s ease,color .15s ease}
 .pair-val .sw-ic:hover{background:var(--t2);color:var(--text)}
 .msg.tool.has-desc .label .txt{white-space:normal;text-transform:none;letter-spacing:normal}
+.jm-tabs{margin:0 0 16px}
+.jm-tabs>label{padding:7px 2px;font-size:12px}
+.jm-pane{display:none}
+.jm-pane.on{display:block;animation:jmpane .25s ease both}
+@keyframes jmpane{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.jm-pane>.jm-head:first-child{margin-top:0}
+.jm-sub{font-size:13px;font-weight:600;color:var(--text);margin:22px 0 4px}
+.jm-unarch{flex:none;border:none;background:var(--t2);color:var(--text);font:inherit;font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer}
+.jm-unarch:hover{background:color-mix(in srgb,var(--text) 12%,transparent)}
+.jm-sleeps{display:flex;flex-direction:column;gap:4px}
+.jm-sl{border-radius:12px;transition:background .15s}
+.jm-sl.open,.jm-sl:hover{background:var(--row-bg)}
+.jm-sl-head{display:flex;align-items:baseline;gap:10px;width:100%;padding:10px 12px;border:none;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.jm-sl-when{font-size:13px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.jm-sl-kind{font-size:12.5px;color:var(--text)}
+.jm-sl-n{margin-left:auto;font-size:11.5px;color:var(--dim)}
+.jm-sl-det{display:none;padding:0 12px 12px}
+.jm-sl.open .jm-sl-det{display:block}
+.jm-sl-sum{font-size:12.5px;line-height:1.5;color:var(--dim);margin:0 0 10px;white-space:pre-wrap}
+.jm-sl-file{margin:0 0 10px}
+.jm-sl-fh{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;font-weight:500;color:var(--text);margin-bottom:3px}
+.jm-sl-fst{color:var(--dim);font-weight:400;font-variant-numeric:tabular-nums;white-space:pre}
+.jm-sl-l{font-size:12px;line-height:1.45;padding:2px 0 2px 16px;position:relative;word-break:break-word}
+.jm-sl-l::before{position:absolute;left:3px;top:2px;color:var(--dim)}
+.jm-sl-l.add{color:var(--text)}
+.jm-sl-l.add::before{content:"+"}
+.jm-sl-l.del{color:var(--dim);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--dim) 60%,transparent)}
+.jm-sl-l.del::before{content:"−";text-decoration:none}
+.jm-sl-back{margin-top:4px;border:none;background:var(--text);color:var(--bg);font:inherit;font-size:12.5px;font-weight:500;padding:7px 14px;border-radius:999px;cursor:pointer}
+.jm-sl-back:hover{opacity:.85}
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()" aria-label="Menu" title="Menu"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 <button id="lc-chip" onclick="lcChipOpen()" hidden></button>
@@ -2515,45 +2545,68 @@ button.th-head:hover{background:var(--t1)}
       <button class="modal-x" onclick="closeJeanMem()" aria-label="Fermer" data-i18n="memory.close_aria" data-i18n-attr="aria-label">×</button>
     </div>
     <div class="modal-body">
-      <div class="jm-head">
-        <span class="jm-title" data-i18n="jean.mem_profile">Profil</span>
-        <span id="jm-budget" class="jm-budget"></span>
-        <button class="mem-add-btn" onclick="jmEdit(null)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="memory.add_page_button_short">ajouter</span></button>
+      <div class="seg jm-tabs" role="tablist">
+        <label><input type="radio" name="jm-tab" value="profile" onchange="jmTab(this.value)"><span data-i18n="jean.mem_profile">Profil</span></label>
+        <label><input type="radio" name="jm-tab" value="lessons" onchange="jmTab(this.value)"><span data-i18n="jean.mem_lessons">Leçons</span></label>
+        <label><input type="radio" name="jm-tab" value="fiches" onchange="jmTab(this.value)"><span data-i18n="jean.mem_fiches">Fiches</span></label>
+        <label><input type="radio" name="jm-tab" value="sleep" onchange="jmTab(this.value)"><span data-i18n="jean.sleep_title">Sommeil</span></label>
+        <label><input type="radio" name="jm-tab" value="journal" onchange="jmTab(this.value)"><span data-i18n="jean.mem_journal">Journal</span></label>
       </div>
-      <div class="jm-hint" data-i18n="jean.mem_profile_hint">Ce que Jean sait de toi à coup sûr.</div>
-      <div id="jm-profile" class="jm-list"></div>
-      <div class="jm-head jm-head-j">
-        <span class="jm-title" data-i18n="jean.mem_lessons">Leçons</span>
-        <span id="jm-lbudget" class="jm-budget"></span>
+      <div class="jm-pane" data-pane="profile">
+        <div class="jm-head">
+          <span class="jm-title" data-i18n="jean.mem_profile">Profil</span>
+          <span id="jm-budget" class="jm-budget"></span>
+          <button class="mem-add-btn" onclick="jmEdit(null)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="memory.add_page_button_short">ajouter</span></button>
+        </div>
+        <div class="jm-hint" data-i18n="jean.mem_profile_hint">Ce que Jean sait de toi à coup sûr.</div>
+        <div id="jm-profile" class="jm-list"></div>
       </div>
-      <div class="jm-hint" data-i18n="jean.mem_lessons_hint">Ce que Jean a appris de ses erreurs.</div>
-      <div id="jm-lessons" class="jm-list"></div>
-      <div class="jm-head jm-head-j">
-        <span class="jm-title" data-i18n="jean.mem_fiches">Fiches</span>
-        <span id="jm-fcount" class="jm-budget"></span>
-        <button class="mem-add-btn" onclick="jmEditFiche(null)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="memory.add_page_button_short">ajouter</span></button>
+      <div class="jm-pane" data-pane="lessons">
+        <div class="jm-head">
+          <span class="jm-title" data-i18n="jean.mem_lessons">Leçons</span>
+          <span id="jm-lbudget" class="jm-budget"></span>
+        </div>
+        <div class="jm-hint" data-i18n="jean.mem_lessons_hint">Ce que Jean a appris de ses erreurs.</div>
+        <div id="jm-lessons" class="jm-list"></div>
       </div>
-      <div class="jm-hint" data-i18n="jean.mem_fiches_hint">Procédures et guides gardés en entier.</div>
-      <div id="jm-fiches" class="jm-list"></div>
-      <div class="jm-head jm-head-j">
-        <span class="jm-title" data-i18n="jean.sleep_title">Sommeil</span>
-        <span id="jm-sleep-st" class="jm-budget"></span>
-        <button id="jm-sleep-now" class="mem-add-btn" onclick="jmSleepNow()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span data-i18n="jean.sleep_now">Dormir maintenant</span></button>
+      <div class="jm-pane" data-pane="fiches">
+        <div class="jm-head">
+          <span class="jm-title" data-i18n="jean.mem_fiches">Fiches</span>
+          <span id="jm-fcount" class="jm-budget"></span>
+          <button class="mem-add-btn" onclick="jmEditFiche(null)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="memory.add_page_button_short">ajouter</span></button>
+        </div>
+        <div class="jm-hint" data-i18n="jean.mem_fiches_hint">Procédures et guides gardés en entier.</div>
+        <div id="jm-fiches" class="jm-list"></div>
       </div>
-      <div class="jm-hint" data-i18n="jean.sleep_hint">Modèle utilisé la nuit pour réorganiser la mémoire.</div>
-      <div class="jm-sleep-row">
-        <label class="jm-sleep-f"><span data-i18n="jean.sleep_hour">Heure</span><select id="jm-sleep-hour" class="sctl" onchange="jmSaveSleepHour()"></select></label>
-        <label class="jm-sleep-f jm-sleep-fp"><span data-i18n="jean.sleep_model">Modèle</span><select id="jm-sleep" class="sctl" onchange="jmSaveSleep()"></select></label>
+      <div class="jm-pane" data-pane="sleep">
+        <div class="jm-head">
+          <span class="jm-title" data-i18n="jean.sleep_title">Sommeil</span>
+          <span id="jm-sleep-st" class="jm-budget"></span>
+          <button id="jm-sleep-now" class="mem-add-btn" onclick="jmSleepNow()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span data-i18n="jean.sleep_now">Dormir maintenant</span></button>
+        </div>
+        <div class="jm-hint" data-i18n="jean.sleep_hint">Modèle utilisé la nuit pour réorganiser la mémoire.</div>
+        <div class="jm-sleep-row">
+          <label class="jm-sleep-f"><span data-i18n="jean.sleep_hour">Heure</span><select id="jm-sleep-hour" class="sctl" onchange="jmSaveSleepHour()"></select></label>
+          <label class="jm-sleep-f jm-sleep-fp"><span data-i18n="jean.sleep_model">Modèle</span><select id="jm-sleep" class="sctl" onchange="jmSaveSleep()"></select></label>
+        </div>
+        <div class="jm-sub" data-i18n="jean.sleep_history">Derniers sommeils</div>
+        <div class="jm-hint" data-i18n="jean.sleep_history_hint">Ce que chaque sommeil a changé. Une copie de la mémoire est gardée avant chacun des 14 derniers.</div>
+        <div id="jm-sleeps" class="jm-sleeps"></div>
+        <div class="jm-sub" data-i18n="jean.archives_title">Fiches archivées</div>
+        <div class="jm-hint" data-i18n="jean.archives_hint">Fiches retirées ou fusionnées. Rien n'est effacé : une fiche peut être ressortie.</div>
+        <div id="jm-archives" class="jm-list"></div>
       </div>
-      <div class="jm-head jm-head-j">
-        <span class="jm-title" data-i18n="jean.mem_journal">Journal</span>
-        <span id="jm-count" class="jm-budget"></span>
+      <div class="jm-pane" data-pane="journal">
+        <div class="jm-head">
+          <span class="jm-title" data-i18n="jean.mem_journal">Journal</span>
+          <span id="jm-count" class="jm-budget"></span>
+        </div>
+        <div class="jm-hint" data-i18n="jean.mem_journal_hint">Tout ce qui s'est passé.</div>
+        <label class="jm-embed"><span class="switch"><input type="checkbox" id="jm-embed" onchange="jmToggleEmbed()"><span class="slider"></span></span><span class="jm-embed-t"><span data-i18n="jean.embed_title">Recherche par le sens</span><span id="jm-embed-st" class="jm-embed-st"></span></span></label>
+        <input id="jm-search" class="mem-search sctl" type="search" oninput="jmSearchDebounced()" placeholder="chercher dans le journal…" data-i18n="jean.mem_search" data-i18n-attr="placeholder">
+        <div id="jm-journal" class="jm-list"></div>
+        <button id="jm-more" class="jm-more" style="display:none" onclick="jmLoad(true)" data-i18n="chat.show_more">voir plus</button>
       </div>
-      <div class="jm-hint" data-i18n="jean.mem_journal_hint">Tout ce qui s'est passé.</div>
-      <label class="jm-embed"><span class="switch"><input type="checkbox" id="jm-embed" onchange="jmToggleEmbed()"><span class="slider"></span></span><span class="jm-embed-t"><span data-i18n="jean.embed_title">Recherche par le sens</span><span id="jm-embed-st" class="jm-embed-st"></span></span></label>
-      <input id="jm-search" class="mem-search sctl" type="search" oninput="jmSearchDebounced()" placeholder="chercher dans le journal…" data-i18n="jean.mem_search" data-i18n-attr="placeholder">
-      <div id="jm-journal" class="jm-list"></div>
-      <button id="jm-more" class="jm-more" style="display:none" onclick="jmLoad(true)" data-i18n="chat.show_more">voir plus</button>
     </div>
   </div>
 </div>
@@ -3117,7 +3170,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261022232909"></script>
+<script src="/e2e.js?v=20261023085109"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3560,6 +3613,24 @@ fr: {
   "jean.sleep_hint": "Preset utilisé la nuit pour réorganiser la mémoire. Jean y bascule le temps du sommeil, puis revient au preset d'avant.",
   "jean.sleep_active": "Preset actif au moment du sommeil",
   "jean.sleep_missing": "(introuvable)",
+  "jean.sleep_history": "Derniers sommeils",
+  "jean.sleep_history_hint": "Ce que chaque sommeil a changé. Une copie de la mémoire est gardée avant chacun des 14 derniers.",
+  "jean.sleep_history_empty": "Aucun sommeil pour l'instant.",
+  "jean.sleep_kind_sleep": "Sommeil",
+  "jean.sleep_kind_cut": "Sommeil interrompu, annulé",
+  "jean.sleep_kind_restore": "Retour en arrière",
+  "jean.sleep_counts": "{e} retouchée(s), {a} archivée(s)",
+  "jean.sleep_nothing": "rien changé",
+  "jean.sleep_f_archived": "archivée",
+  "jean.sleep_f_created": "créée",
+  "jean.sleep_restore": "Revenir à avant ce sommeil",
+  "jean.sleep_restore_confirm": "Remettre la mémoire de Jean telle qu'avant le sommeil du {when} ? Ce qui a été appris depuis sera aussi retiré. L'état actuel est gardé : ce retour pourra lui-même être annulé.",
+  "jean.sleep_restored": "Mémoire remise telle qu'avant ce sommeil.",
+  "jean.archives_title": "Fiches archivées",
+  "jean.archives_hint": "Fiches retirées ou fusionnées. Rien n'est effacé : une fiche peut être ressortie.",
+  "jean.archives_empty": "Aucune fiche archivée.",
+  "jean.archives_restore": "Ressortir",
+  "jean.archives_restored": "Fiche « {name} » ressortie des archives.",
   "jean.sleep_now": "Dormir maintenant",
   "jean.sleep_caption": "Je dors, je range ma mémoire…",
   "jean.sleep_hour": "Heure",
@@ -4917,6 +4988,24 @@ en: {
   "jean.sleep_hint": "Preset used at night to reorganize memory. Jean switches to it for the sleep, then returns to the previous preset.",
   "jean.sleep_active": "Preset active at sleep time",
   "jean.sleep_missing": "(not found)",
+  "jean.sleep_history": "Recent sleeps",
+  "jean.sleep_history_hint": "What each sleep changed. A copy of the memory is kept before each of the last 14.",
+  "jean.sleep_history_empty": "No sleep yet.",
+  "jean.sleep_kind_sleep": "Sleep",
+  "jean.sleep_kind_cut": "Sleep interrupted, undone",
+  "jean.sleep_kind_restore": "Rollback",
+  "jean.sleep_counts": "{e} edited, {a} archived",
+  "jean.sleep_nothing": "nothing changed",
+  "jean.sleep_f_archived": "archived",
+  "jean.sleep_f_created": "created",
+  "jean.sleep_restore": "Go back to before this sleep",
+  "jean.sleep_restore_confirm": "Restore Jean's memory as it was before the sleep of {when}? What was learned since will also be removed. The current state is kept: this rollback can itself be undone.",
+  "jean.sleep_restored": "Memory restored to before this sleep.",
+  "jean.archives_title": "Archived fiches",
+  "jean.archives_hint": "Fiches removed or merged. Nothing is deleted: a fiche can be brought back.",
+  "jean.archives_empty": "No archived fiche.",
+  "jean.archives_restore": "Bring back",
+  "jean.archives_restored": "Fiche “{name}” brought back from the archives.",
   "jean.sleep_now": "Sleep now",
   "jean.sleep_caption": "Sleeping, tidying my memory…",
   "jean.sleep_hour": "Time",
@@ -12108,7 +12197,7 @@ async function pickProjFromMenu(slug){
   await switchProjectUI(slug);
 }
 let JM_OFF=0, JM_T=null;
-function openJeanMem(){ showModal('jean-mem-modal'); const s=document.getElementById('jm-search'); if(s) s.value=''; jmLoad(false); jmLoadSleep(); jmLoadEmbed(); }
+function openJeanMem(){ showModal('jean-mem-modal'); const s=document.getElementById('jm-search'); if(s) s.value=''; let tab='profile'; try{ tab=localStorage.getItem('jm-tab')||tab; }catch(_){} jmTab(tab); jmLoad(false); jmLoadSleep(); jmLoadEmbed(); }
 async function jmLoadEmbed(){
   const cb=document.getElementById('jm-embed'), st=document.getElementById('jm-embed-st'); if(!cb||!st) return;
   let r; try{ r=await jget('/api/jean/embed'); }catch(_){ return; }
@@ -12287,6 +12376,75 @@ function jmEditFiche(f, row){
     else if(e.key==='Enter' && (e.ctrlKey||e.metaKey || (e.target!==c && !e.shiftKey))){ e.preventDefault(); save(); }
   };
   (f?c:n).focus();
+}
+function jmTab(v){
+  const card=document.querySelector('#jean-mem-modal .jm-card'); if(!card) return;
+  if(!card.querySelector('.jm-pane[data-pane="'+v+'"]')) v='profile';
+  card.querySelectorAll('.jm-pane').forEach(p=>p.classList.toggle('on', p.dataset.pane===v));
+  const r=card.querySelector('input[name="jm-tab"][value="'+v+'"]'); if(r && !r.checked) r.checked=true;
+  try{ localStorage.setItem('jm-tab', v); }catch(_){}
+  if(v==='sleep') jmLoadSleeps();
+}
+function jmFileLabel(n){
+  if(n==='profile.md') return t('jean.mem_profile');
+  if(n==='lessons.md') return t('jean.mem_lessons');
+  return n.replace(/^fiche-/,'').replace(/\.md$/,'');
+}
+async function jmLoadSleeps(){
+  const box=document.getElementById('jm-sleeps'), ab=document.getElementById('jm-archives'); if(!box) return;
+  let r; try{ r=await jget('/api/jean/sleeps'); }catch(_){ return; }
+  if(!r || !r.ok) return;
+  box.textContent='';
+  const list=r.sleeps||[];
+  if(!list.length) box.innerHTML='<div class="jm-empty">'+jmEsc(t('jean.sleep_history_empty'))+'</div>';
+  for(const s of list){
+    const m=s.meta||{}, ch=s.changes||[];
+    const d=new Date(m.when||0);
+    const when=d.toLocaleDateString(undefined,{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+    const kind=m.kind==='restauration' ? t('jean.sleep_kind_restore') : m.status==='interrompu' ? t('jean.sleep_kind_cut') : t('jean.sleep_kind_sleep');
+    const merged=ch.filter(c=>c.status==='removed').length, edited=ch.filter(c=>c.status==='changed').length;
+    const row=document.createElement('div'); row.className='jm-sl';
+    const head=document.createElement('button'); head.type='button'; head.className='jm-sl-head';
+    head.innerHTML='<span class="jm-sl-when">'+jmEsc(when)+'</span><span class="jm-sl-kind">'+jmEsc(kind)+'</span>'
+      +'<span class="jm-sl-n">'+jmEsc(ch.length ? t('jean.sleep_counts').replace('{e}',edited).replace('{a}',merged) : t('jean.sleep_nothing'))+'</span>';
+    row.appendChild(head);
+    const det=document.createElement('div'); det.className='jm-sl-det';
+    if(m.summary){ const p=document.createElement('div'); p.className='jm-sl-sum'; p.textContent=m.summary; det.appendChild(p); }
+    for(const c of ch){
+      const f=document.createElement('div'); f.className='jm-sl-file';
+      const st=c.status==='removed' ? t('jean.sleep_f_archived') : c.status==='created' ? t('jean.sleep_f_created') : '+'+c.n_add+'  −'+c.n_del;
+      f.innerHTML='<div class="jm-sl-fh"><span>'+jmEsc(jmFileLabel(c.name))+'</span><span class="jm-sl-fst">'+jmEsc(st)+'</span></div>';
+      for(const l of (c.removed||[])){ const x=document.createElement('div'); x.className='jm-sl-l del'; x.textContent=l; f.appendChild(x); }
+      for(const l of (c.added||[])){ const x=document.createElement('div'); x.className='jm-sl-l add'; x.textContent=l; f.appendChild(x); }
+      det.appendChild(f);
+    }
+    const back=document.createElement('button'); back.type='button'; back.className='jm-sl-back';
+    back.textContent=t('jean.sleep_restore');
+    back.onclick=async()=>{
+      if(!confirm(t('jean.sleep_restore_confirm').replace('{when}', when))) return;
+      const x=await jpost('/api/jean/sleeps',{restore:m.id}).catch(e=>({ok:false,error:String(e)}));
+      if(!x || !x.ok){ toast((x&&x.error)||t('jean.mem_error')); return; }
+      toast(t('jean.sleep_restored')); jmLoad(false); jmLoadSleeps();
+    };
+    det.appendChild(back);
+    row.appendChild(det);
+    head.onclick=()=>row.classList.toggle('open');
+    box.appendChild(row);
+  }
+  if(!ab) return;
+  ab.textContent='';
+  const arch=r.archives||[];
+  if(!arch.length) ab.innerHTML='<div class="jm-empty">'+jmEsc(t('jean.archives_empty'))+'</div>';
+  for(const a of arch){
+    const row=document.createElement('div'); row.className='jm-row jm-fiche';
+    row.innerHTML='<span class="jm-ic">'+JM_DOC+'</span><div class="jm-main"><div class="jm-fname">'+jmEsc(a.name)+'</div><div class="jm-when">'+jmEsc(a.when)+'</div></div><button class="jm-unarch" type="button">'+jmEsc(t('jean.archives_restore'))+'</button>';
+    row.querySelector('.jm-unarch').onclick=async()=>{
+      const x=await jpost('/api/jean/sleeps',{unarchive:a.name}).catch(e=>({ok:false,error:String(e)}));
+      if(!x || !x.ok){ toast((x&&x.error)||t('jean.mem_error')); return; }
+      toast(t('jean.archives_restored').replace('{name}', a.name)); jmLoad(false); jmLoadSleeps();
+    };
+    ab.appendChild(row);
+  }
 }
 let TRACKER_CUR = null;  
 let TRACKER_EDIT = null; 
