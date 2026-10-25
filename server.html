@@ -2180,6 +2180,7 @@ button.th-head:hover{background:var(--t1)}
     <div class="slist">
         <label class="switchrow agent-gated"><span class="switch"><input type="checkbox" id="compact-toggle" onchange="toggleCompact()"><span class="slider"></span></span> <span data-i18n="agent.compact_toggle">compactage automatique du contexte</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="agent.compact_help" data-i18n-html>activé par défaut : quand la conversation approche de la limite de contexte, les vieux tours sont résumés automatiquement (façon Hermes) au lieu de t'imposer un « vider ». Discussions quasi illimitées sans perdre le fil.</span></span></label>
         <div class="switchrow agent-gated compact-max-row"><span data-i18n="agent.compact_max">compacter au plus tard à</span><select id="compact-max" class="sctl" onchange="setCompactMax()"><option value="0" data-i18n="agent.compact_max_auto">75 % du contexte</option><option value="16384">16K</option><option value="24576">24K</option><option value="32768">32K</option><option value="49152">48K</option><option value="65536">64K</option><option value="98304">96K</option><option value="131072">128K</option></select><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="agent.compact_max_help">Par défaut, le contexte est compacté à 75 % de la fenêtre du modèle. Avec une très grande fenêtre, ce seuil n'est presque jamais atteint et les longues conversations deviennent lentes. Un plafond compacte plus tôt, quelle que soit la fenêtre.</span></span></div>
+        <label class="switchrow"><span class="switch"><input type="checkbox" id="prewarm-toggle" onchange="togglePrewarm()"><span class="slider"></span></span> <span data-i18n="agent.prewarm_toggle">pré-chauffage du prompt</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="agent.prewarm_help">Activé par défaut. Quand une nouvelle conversation est ouverte, le moteur lit à l'avance les consignes et les outils. Le premier message obtient sa réponse en quelques dixièmes de seconde au lieu de plusieurs secondes. Le moteur travaille quelques secondes en arrière-plan à chaque nouvelle conversation.</span></span></label>
         <label class="switchrow"><span class="switch"><input type="checkbox" id="push-toggle" onchange="togglePush()"><span class="slider"></span></span> <span data-i18n="agent.push_toggle">me prévenir quand la réponse est prête</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="agent.push_help" data-i18n-html>Le serveur t'envoie une <b>notification</b> à la fin de chaque réponse, même l'app fermée ou le téléphone verrouillé. Sur iPhone : <b>ajoute d'abord AJEAN à l'écran d'accueil</b> puis active depuis l'app installée. À régler sur chaque appareil.</span></span></label>
         <label class="switchrow"><span class="switch"><input type="checkbox" id="mem-enc-toggle" onchange="toggleMemEncrypt()"><span class="slider"></span></span> <span data-i18n="agent.encrypt_toggle">activer le chiffrement</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="agent.encrypt_help" data-i18n-html>Chiffre ta <b>mémoire</b> ET tes <b>conversations</b> au repos (AES-256), protégées par ta <b>clé d'accès</b> : si tu as accès à l'interface, c'est déjà déverrouillé ; sinon on te demande ta clé d'accès. Une <b>clé de récupération</b> t'est donnée à l'activation (garde-la). Rien n'est perdu : snapshots automatiques avant chaque bascule.</span></span></label>
         <label class="switchrow"><span data-i18n="settings.link_browser_label">liens externes dans</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="settings.link_browser_help" data-i18n-html>Les liens cliqués dans AJEAN s'ouvrent dans ce navigateur. La fenêtre AJEAN elle-même ne change pas : seuls les liens cliqués changent de navigateur. « Navigateur par défaut » suit le réglage de ta machine et couvre aussi les navigateurs absents de cette liste.</span></span>
@@ -3170,7 +3171,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261023115050"></script>
+<script src="/e2e.js?v=20261025124221"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3470,6 +3471,8 @@ fr: {
   "agent.compact_max_auto": "75 % du contexte",
   "agent.compact_max_help": "Par défaut, le contexte est compacté à 75 % de la fenêtre du modèle. Avec une très grande fenêtre, ce seuil n'est presque jamais atteint et les longues conversations deviennent lentes. Un plafond compacte plus tôt, quelle que soit la fenêtre.",
   "agent.push_toggle": "me prévenir quand la réponse est prête",
+  "agent.prewarm_toggle": "pré-chauffage du prompt",
+  "agent.prewarm_help": "Activé par défaut. Quand une nouvelle conversation est ouverte, le moteur lit à l'avance les consignes et les outils. Le premier message obtient sa réponse en quelques dixièmes de seconde au lieu de plusieurs secondes. Le moteur travaille quelques secondes en arrière-plan à chaque nouvelle conversation.",
   "agent.push_help": "Le serveur t'envoie une <b>notification</b> à la fin de chaque réponse, même l'app fermée ou le téléphone verrouillé. Sur iPhone : <b>ajoute d'abord AJEAN à l'écran d'accueil</b> puis active depuis l'app installée. À régler sur chaque appareil.",
   "agent.encrypt_toggle": "activer le chiffrement",
   "agent.encrypt_help": "Chiffre ta <b>mémoire</b> ET tes <b>conversations</b> au repos (AES-256), protégées par ta <b>clé d'accès</b> : si tu as accès à l'interface, c'est déjà déverrouillé ; sinon on te demande ta clé d'accès. Une <b>clé de récupération</b> t'est donnée à l'activation (garde-la). Rien n'est perdu : snapshots automatiques avant chaque bascule.",
@@ -4845,6 +4848,8 @@ en: {
   "agent.compact_max_auto": "75% of the context",
   "agent.compact_max_help": "By default, the context is compacted at 75% of the model's window. With a very large window this threshold is almost never reached and long conversations get slow. A cap compacts earlier, whatever the window.",
   "agent.push_toggle": "notify me when the response is ready",
+  "agent.prewarm_toggle": "prompt prewarming",
+  "agent.prewarm_help": "On by default. When a new conversation is opened, the engine reads the instructions and tools in advance. The first message gets its answer in a few tenths of a second instead of several seconds. The engine works for a few seconds in the background for each new conversation.",
   "agent.push_help": "The server sends you a <b>notification</b> at the end of each response, even with the app closed or the phone locked. On iPhone: <b>first add AJEAN to the home screen</b>, then enable it from the installed app. Must be set up on each device.",
   "agent.encrypt_toggle": "enable encryption",
   "agent.encrypt_help": "Encrypts your <b>memory</b> AND your <b>conversations</b> at rest (AES-256), protected by your <b>access key</b>: if you have access to the interface, it's already unlocked; otherwise you'll be asked for your access key. A <b>recovery key</b> is given to you when you enable it (keep it safe). Nothing is lost: automatic snapshots before every switch.",
@@ -7176,6 +7181,7 @@ async function loadAgent(){
   const on = s.enabled;
   AGENT_ON = !!on;
   document.getElementById('compact-toggle').checked = (s.compact !== false);
+  const pw=document.getElementById('prewarm-toggle'); if(pw) pw.checked = (s.prewarm !== false);
   const cm = document.getElementById('compact-max');
   if(cm){
     const v = String(s.compact_max || 0);
@@ -7361,6 +7367,11 @@ async function enableAgent(){
   await jpost('/api/agent/toggle',{on:true});
   await loadAgent();
   return true;
+}
+async function togglePrewarm(){
+  const cb=document.getElementById('prewarm-toggle');
+  const r=await jpost('/api/agent/prewarm',{on:cb.checked});
+  if(!r || r.ok===false){ cb.checked=!cb.checked; toast((r&&r.error)||'erreur'); }
 }
 async function toggleCompact(){
   const on=document.getElementById('compact-toggle').checked;
@@ -12932,7 +12943,7 @@ var JeanAvatar = (()=>{
     inputBox.style.setProperty('--gx', dx+'px'); inputBox.style.setProperty('--gy', dy+'px');
     inputBox.classList.add('gulp');
     setTimeout(()=>{ JeanAvatar&&JeanAvatar.gulp(); }, 260);
-    setTimeout(()=>{ inputOpen=false; stage.classList.remove('typing'); inputBox.classList.remove('gulp'); }, 420);
+    setTimeout(()=>{ inputOpen=false; stage.classList.remove('typing'); inputBox.classList.remove('gulp'); ta.blur(); }, 420);
     send();
   }
   function sync(){
