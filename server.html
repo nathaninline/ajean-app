@@ -3344,7 +3344,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261026113441"></script>
+<script src="/e2e.js?v=20261026114825"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -11138,12 +11138,15 @@ function exl3Model(){
   return ((exl3State && exl3State.models) || []).find(m => m.path === cur || m.name === cur) || null;
 }
 function exl3FixGpus(){
-  const all = ((exl3State && exl3State.env) || {}).gpus || [];
-  if(all.length && !cfgReadKey('CUDA_VISIBLE_DEVICES')) cfgWriteKey('CUDA_VISIBLE_DEVICES', all.map(g => g.index).join(','));
+  const old = cfgReadKey('CUDA_VISIBLE_DEVICES');
+  if(old){
+    if(!cfgReadKey('EXL3_GPUS')) cfgWriteKey('EXL3_GPUS', old);
+    cfgWriteKey('CUDA_VISIBLE_DEVICES', '');
+  }
 }
 function exl3VisibleGpus(){
   const all = ((exl3State && exl3State.env) || {}).gpus || [];
-  const sel = cfgReadKey('CUDA_VISIBLE_DEVICES').split(',').map(x=>x.trim()).filter(Boolean);
+  const sel = cfgReadKey('EXL3_GPUS').split(',').map(x=>x.trim()).filter(Boolean);
   if(!sel.length) return all;
   return sel.map(i => all.find(g => String(g.index) === i)).filter(Boolean);
 }
@@ -11237,7 +11240,7 @@ function onExl3Use(){
   const all = ((exl3State && exl3State.env) || {}).gpus || [];
   const used = [...document.querySelectorAll('.exl3-use')].filter(c => c.checked).map(c => c.dataset.gpu);
   if(!used.length){ toast(t('preset.exl3_need_gpu')); renderExl3Gpus(); return; }
-  cfgWriteKey('CUDA_VISIBLE_DEVICES', used.join(','));
+  cfgWriteKey('EXL3_GPUS', used.length === all.length ? '' : used.join(','));
   cfgWriteKey('EXL3_GPU_SPLIT', '');
   cfgWriteKey('EXL3_VISION_DEVICE', '');
   if(used.length < 2) cfgWriteKey('EXL3_TP', '');
