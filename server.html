@@ -3344,7 +3344,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261026114825"></script>
+<script src="/e2e.js?v=20261026172412"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -8973,7 +8973,9 @@ async function saveItem(){
   if(editingKind==='mem' && typeof MEM_VIEW_PROJECT!=='undefined' && MEM_VIEW_PROJECT) payload.project = MEM_VIEW_PROJECT;
   const r = await jpost(K.saveUrl, payload);
   if(!r.ok){ toast(t('common.error_prefix') + (r.error||'')); return; }
+  const applyNow = editingKind==='preset' && r.reload;
   toast(t('models.saved')); closeModal(); K.reload();
+  if(applyNow) switchTo(0, name, r.id);
 }
 async function delItem(){
   if(!editingKey) return;
