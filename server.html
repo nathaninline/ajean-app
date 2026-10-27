@@ -1958,6 +1958,10 @@ button.th-head:hover{background:var(--t1)}
 .jm-sl-l.del::before{content:"−";text-decoration:none}
 .jm-sl-back{margin-top:4px;border:none;background:var(--text);color:var(--bg);font:inherit;font-size:12.5px;font-weight:500;padding:7px 14px;border-radius:999px;cursor:pointer}
 .jm-sl-back:hover{opacity:.85}
+@keyframes aj-word-in{from{opacity:0}to{opacity:1}}
+.body .wi{animation:aj-word-in 450ms cubic-bezier(.33,.1,.45,1) both}
+.body li.li-wait::marker{color:transparent}
+@media (prefers-reduced-motion: reduce){.body .wi{animation:none}}
 </style></head><body>
 <button id="menubtn" onclick="toggleSide()" aria-label="Menu" title="Menu"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 <button id="lc-chip" onclick="lcChipOpen()" hidden></button>
@@ -3344,7 +3348,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261026172412"></script>
+<script src="/e2e.js?v=20261027213737"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -9182,40 +9186,56 @@ addEventListener('orientationchange', syncComposerPad);
 addEventListener('DOMContentLoaded', initComposerPad);
 addEventListener('load', initComposerPad);
 addEventListener('pageshow', initComposerPad); 
-let _scrollRAF = 0, _lastScrollWrite = 0;
-const SCROLL_MIN_GAP = 150;
-let TOUCHING = false, _touchEnd = 0;
+let _scrollRAF = 0;
+let TOUCHING = false, _touchEnd = 0, _touchStart = 0;
 const TOUCH_GRACE = 350;
+function touchHold(){
+  const now = performance.now();
+  if(TOUCHING) return now - _touchStart < 8000;
+  return now - _touchEnd < TOUCH_GRACE;
+}
 (function(){
-  const on = ()=>{ TOUCHING = true; };
+  const on = ()=>{ TOUCHING = true; _touchStart = performance.now(); };
   const off = ()=>{ TOUCHING = false; _touchEnd = performance.now(); if(stickyBottom) setTimeout(()=>scrollMaybe(), TOUCH_GRACE + 20); };
   document.addEventListener('touchstart', on, {passive:true, capture:true});
   document.addEventListener('touchend', off, {passive:true, capture:true});
   document.addEventListener('touchcancel', off, {passive:true, capture:true});
 })();
+const FOLLOW_TAU = 110, FOLLOW_MAX = 400;
+let _followLast = 0;
+function followStep(ts){
+  _scrollRAF = 0;
+  const c = chatEl(); if(!c) return;
+  const sb = document.getElementById('scrollbtn');
+  if(sb) sb.classList.toggle('show', !stickyBottom);
+  if(!stickyBottom){ _followLast = 0; return; }
+  if(touchHold()){ _followLast = 0; _scrollRAF = requestAnimationFrame(followStep); return; }
+  const target = c.scrollHeight - c.clientHeight;
+  let cur = c.scrollTop, diff = target - cur;
+  if(diff <= 1){ _followLast = 0; return; }
+  if(diff > FOLLOW_MAX){ cur = target - FOLLOW_MAX; diff = FOLLOW_MAX; }
+  const dt = _followLast ? Math.min(64, ts - _followLast) : 16; _followLast = ts;
+  const step = Math.max(1, diff * (1 - Math.exp(-dt / FOLLOW_TAU)));
+  c.scrollTop = Math.min(target, cur + step);
+  _scrollRAF = requestAnimationFrame(followStep);
+}
 function scrollMaybe(force){
   if(REPLAYING && !force) return;
   if(_scrollRAF) return;                 
-  _scrollRAF = requestAnimationFrame(()=>{
-    _scrollRAF = 0;
-    const c = chatEl(); if(!c) return;
-    if(stickyBottom){
-      const now = (window.performance&&performance.now)?performance.now():Date.now();
-      const touchBusy = TOUCHING || now - _touchEnd < TOUCH_GRACE;
-      if(!touchBusy && (force || now - _lastScrollWrite >= SCROLL_MIN_GAP)){
-        const target = c.scrollHeight - c.clientHeight;
-        if(Math.abs(c.scrollTop - target) > 1){ c.scrollTop = target; _lastScrollWrite = now; }
-      }
-    }
-    const sb = document.getElementById('scrollbtn');
-    if(sb) sb.classList.toggle('show', !stickyBottom);
-  });
+  _scrollRAF = requestAnimationFrame(followStep);
 }
-function jumpBottom(){ stickyBottom = true; scrollMaybe(true); }
+function jumpBottom(){
+  stickyBottom = true;
+  if(_scrollRAF){ cancelAnimationFrame(_scrollRAF); _scrollRAF = 0; }
+  const c = chatEl(); if(c) c.scrollTop = c.scrollHeight - c.clientHeight;
+  const sb = document.getElementById('scrollbtn'); if(sb) sb.classList.remove('show');
+}
 document.addEventListener('DOMContentLoaded', ()=>{
   const c = chatEl();
+  let lastTop = c.scrollTop;
   c.addEventListener('scroll', ()=>{
-    stickyBottom = isNearBottom();
+    const up = c.scrollTop < lastTop - 2; lastTop = c.scrollTop;
+    if(isNearBottom()) stickyBottom = true; else if(up) stickyBottom = false;
     maybeLoadOlder(); 
     document.getElementById('scrollbtn').classList.toggle('show', !stickyBottom);
   });
@@ -9329,26 +9349,146 @@ function setStats(el, text){
   s.textContent = text;
 }
 function bodyOf(el){ return el.querySelector('.body'); }
-function renderBody(el, text, tail){ const b=bodyOf(el); b.innerHTML = md(encodeMdLinkSpaces(text)); markNotices(b); addCopyButtons(b); markFileLinks(b); markWorkspaceImages(b); if(tail) fadeTail(b, FADE_TAIL); scrollMaybe(); }
-const FADE_TAIL = 16;
-function fadeTail(root, n){
-  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode:(t)=>t.parentElement.closest('button') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
-  const nodes = []; while(w.nextNode()) nodes.push(w.currentNode);
-  let k = 0; 
-  for(let i = nodes.length - 1; i >= 0 && k < n; i--){
-    const tn = nodes[i], chars = [...tn.data];
-    if(!k && !tn.data.trim()) continue;
-    const take = Math.min(n - k, chars.length);
-    const frag = document.createDocumentFragment();
-    if(chars.length > take) frag.appendChild(document.createTextNode(chars.slice(0, chars.length - take).join('')));
-    chars.slice(chars.length - take).forEach((ch, j)=>{
-      const fromEnd = k + (take - 1 - j);
-      const sp = document.createElement('span');
-      sp.style.opacity = (0.2 + 0.8 * fromEnd / n).toFixed(2);
-      sp.textContent = ch; frag.appendChild(sp);
+const MD_SEP_ROW = /^\s*\|?\s*:?-{2,}/;
+function streamSafe(s){
+  const fences = (s.match(/^\s*(```|~~~)/gm) || []).length;
+  if(fences % 2) return s;
+  const lines = s.split('\n');
+  let last = lines.pop();
+  if(/^\s*\|/.test(last)) last = '';
+  let k = lines.length;
+  while(k > 0 && /^\s*\|/.test(lines[k-1])) k--;
+  if(k < lines.length && !lines.slice(k).some(l => MD_SEP_ROW.test(l))) lines.length = k;
+  const t = last.trimStart();
+  if(/^(#{1,6}|[-*+]|\d+[.)]|>)\s*$/.test(t)) last = '';
+  else if(last){
+    last = last.replace(/(\*{1,3}|_{1,2}|`)$/, m => {
+      const before = last.slice(0, -m.length);
+      return (before.split(m).length - 1) % 2 ? m : '';
     });
-    tn.replaceWith(frag); k += take;
+    const sp = /\s*$/.exec(last)[0]; last = last.slice(0, last.length - sp.length);
+    if(((last.match(/\*\*/g) || []).length) % 2 && /\*\*\S(?:(?!\*\*).)*$/.test(last)) last += '**';
+    const single = last.replace(/\*\*/g, '');
+    if(((single.match(/\*/g) || []).length) % 2 && /\*\S[^*]*$/.test(single)) last += '*';
+    if(((last.match(/`/g) || []).length) % 2) last += '`';
+    last += sp;
+    if(/^(#{1,6}|[-*+]|\d+[.)]|>)\s*$/.test(last.trimStart())) last = '';
   }
+  lines.push(last);
+  return lines.join('\n');
+}
+const WORD_IN_MS = 450;       
+const REVEAL_MAX_LAG = 250;   
+function textLenNoBtn(node){
+  if(node.nodeType===3) return node.data.length;
+  if(node.nodeType!==1 || node.tagName==='BUTTON') return 0;
+  let L=0; const w=document.createTreeWalker(node, NodeFilter.SHOW_TEXT, {acceptNode:(t)=>t.parentElement.closest('button') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+  while(w.nextNode()) L+=w.currentNode.data.length;
+  return L;
+}
+function visibleLen(root){
+  const w = textWalker(root); let pos = 0, L = 0;
+  while(w.nextNode()){ const d = w.currentNode.data, m = /\S\s*$/.exec(d); if(m) L = pos + m.index + 1; pos += d.length; }
+  return L;
+}
+function textWalker(root){
+  return document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode:(t)=>t.parentElement.closest('button') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+}
+function holdPartialWord(s, minStart){
+  const m = /\S+$/.exec(s);
+  return (!m || m[0].length > 40 || m.index < (minStart||0)) ? s : s.slice(0, m.index);
+}
+function revealState(b){
+  return b._rv || (b._rv = {marks:[], len:visibleLen(b), nextT:0, mspw:40, lastR:0});
+}
+function revealAt(st, j){
+  let t = null;
+  for(const m of st.marks){ if(m.from<=j) t=m.t; else break; }
+  return t;
+}
+function planReveal(b, st, now){
+  const starts = [];
+  const w = textWalker(b); let pos = 0, L = 0;
+  while(w.nextNode()){
+    const d = w.currentNode.data;
+    for(const m of d.matchAll(/\S+/g)){
+      const at = pos + m.index;
+      if(at >= st.len) starts.push(at);
+      L = at + m[0].length;
+    }
+    pos += d.length;
+  }
+  if(L < st.len){ st.marks = st.marks.filter(m => m.from < L); st.len = L; return; }
+  st.len = L;
+  if(!starts.length) return;
+  const dt = st.lastR ? Math.min(now - st.lastR, 400) : 0; st.lastR = now;
+  if(dt > 0) st.mspw = st.mspw*0.7 + (dt / starts.length)*0.3;
+  let t = st.nextT;
+  starts.forEach((at, i) => {
+    const behind = Math.max(0, t - now);            
+    const step = behind > st.mspw ? st.mspw*0.5 : st.mspw;
+    t = Math.min(Math.max(now, t + (i || st.marks.length ? step : 0)), now + REVEAL_MAX_LAG);
+    st.marks.push({from: at, t});
+  });
+  st.nextT = t;
+  while(st.marks.length > 1 && st.marks[1].t + WORD_IN_MS < now) st.marks.shift();
+}
+function wrapReveal(root, offset, st, now){
+  const w = textWalker(root), nodes = [];
+  while(w.nextNode()) nodes.push(w.currentNode);
+  let pos = offset;
+  for(const tn of nodes){
+    const d = tn.data, start = pos; pos += d.length;
+    if(!st.marks.length || pos <= st.marks[0].from) continue;
+    const frag = document.createDocumentFragment(); let plain = '', any = false;
+    for(const m of d.matchAll(/\S+\s*|\s+/g)){
+      const t = /\S/.test(m[0]) ? revealAt(st, start + m.index) : null;
+      if(t === null || now - t >= WORD_IN_MS){ plain += m[0]; continue; }
+      if(plain){ frag.appendChild(document.createTextNode(plain)); plain = ''; }
+      const sp = document.createElement('span');
+      sp.className = 'wi'; sp.style.animationDelay = Math.round(t - now) + 'ms'; sp.dataset.t = Math.round(t);
+      sp.textContent = m[0]; frag.appendChild(sp); any = true;
+    }
+    if(!any) continue;
+    if(plain) frag.appendChild(document.createTextNode(plain));
+    tn.replaceWith(frag);
+  }
+}
+function renderBody(el, text, tail){
+  const b=bodyOf(el);
+  const live = tail === true || tail === 'idle';
+  const anim = !!tail;
+  const st = anim ? revealState(b) : null;
+  const tmp=document.createElement('div');
+  if(tail === 'idle') el._idleAt = text.length;
+  else if(el._idleAt > text.length) el._idleAt = 0;   
+  tmp.innerHTML=md(encodeMdLinkSpaces(live ? streamSafe(tail === 'idle' ? text : holdPartialWord(text, el._idleAt)) : text));
+  const keys=[...tmp.childNodes].map(n=>n.nodeType===1 ? n.outerHTML : n.nodeType+':'+n.textContent);
+  const prev=b._blk, ok=prev && b.childNodes.length===prev.length && b.firstChild===b._blkFirst;
+  let k=0;
+  if(ok) while(k<keys.length && k<prev.length && keys[k]===prev[k]) k++;
+  while(b.childNodes.length>k) b.lastChild.remove();
+  for(let i=0;i<k;i++) tmp.removeChild(tmp.firstChild);
+  markNotices(tmp); addCopyButtons(tmp); markFileLinks(tmp); markWorkspaceImages(tmp);
+  let offset = 0; for(const n of b.childNodes) offset += textLenNoBtn(n);
+  const fresh = [...tmp.childNodes];
+  while(tmp.firstChild) b.appendChild(tmp.firstChild);
+  b._blk=keys; b._blkFirst=b.firstChild;
+  if(anim){
+    const now = performance.now();
+    planReveal(b, st, now);
+    for(const n of fresh){ const len = textLenNoBtn(n); if(n.nodeType===1) wrapReveal(n, offset, st, now); offset += len; }
+    for(const n of fresh){
+      if(n.nodeType!==1) continue;
+      for(const li of (n.tagName==='LI' ? [n] : n.querySelectorAll('li'))){
+        const tw = textWalker(li); let first; while((first = tw.nextNode()) && !/\S/.test(first.data));
+        const sp = first && first.parentElement.closest('span.wi');
+        const d = sp && li.contains(sp) ? parseFloat(sp.style.animationDelay) || 0 : 0;
+        if(d > 0){ li.classList.add('li-wait'); setTimeout(()=>li.classList.remove('li-wait'), d + 60); }
+      }
+    }
+  }
+  scrollMaybe();
 }
 function bodyLineCount(s){ s=String(s).replace(/\r\n/g,'\n').replace(/\n$/,''); return s ? s.split('\n').length : 0; }
 function renderToolMsg(el, tu){
@@ -9943,6 +10083,7 @@ function genItems(secs, tok, rate, pr, extra){
 }
 function paintGenStatus(){
   if(!ELAPSED) return;
+  if(touchHold()) return; 
   if(COMPACTING) return; 
   const g=ensureGenEl(); const txt=g.querySelector('.gtxt');
   const secs=(Date.now()-ELAPSED.start)/1000;
@@ -10120,46 +10261,50 @@ function syncSendBtn(){
     hint.classList.toggle('waiting', !ready);
   }
 }
-let renderTimer=null, renderPending=null, lastRenderMs=0; 
+let renderTimer=null, renderPending=new Map(), lastRenderMs=0; 
 function scheduleRender(el, text, tail){
-  if(renderPending && renderPending.el!==el) flushRender();
-  renderPending={el, text, tail:!!tail};
+  renderPending.set(el, {text, tail:tail||false});
   if(renderTimer) return;
   const delay=Math.min(500, Math.max(16, lastRenderMs*6));
   renderTimer=setTimeout(flushRender, delay);
 }
 function flushRender(){
   if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; }
-  const p=renderPending; renderPending=null;
-  if(!p) return;
+  if(!renderPending.size) return;
+  if(!REPLAYING && touchHold()){ renderTimer=setTimeout(flushRender, TOUCH_GRACE); return; }
+  const items=[...renderPending]; renderPending.clear();
+  const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const t0=performance.now();
-  renderBody(p.el, p.text, p.tail && !matchMedia('(prefers-reduced-motion: reduce)').matches);
+  for(const [el, p] of items) renderBody(el, p.text, still ? false : p.tail);
   lastRenderMs=performance.now()-t0;
 }
-let smooth=null, smoothLast=0; 
-function smoothReset(){ if(smooth&&smooth.raf) cancelAnimationFrame(smooth.raf); smooth=null; smoothLast=0; }
-function smoothSnap(){ if(!smooth) return; const el=smooth.el, target=smooth.target; smoothReset(); scheduleRender(el, target); }
-const SMOOTH_TAU=260; 
-function smoothStep(ts){
-  if(!smooth){ return; }
-  if(!smoothLast) smoothLast=ts;
-  const dt=Math.min(120, ts-smoothLast); smoothLast=ts;
-  const remaining=smooth.target.length - smooth.shown;
-  if(remaining<=0){ smooth.raf=null; smoothLast=0; scheduleRender(smooth.el, smooth.target); return; }
-  let adv=remaining*dt/SMOOTH_TAU;      
-  if(adv<0.4) adv=0.4;                  
-  smooth.shown=Math.min(smooth.target.length, smooth.shown+Math.ceil(adv));
-  scheduleRender(smooth.el, smooth.target.slice(0, smooth.shown), true);
-  smooth.raf=requestAnimationFrame(smoothStep);
-}
-function smoothFeed(el, target){
-  if(smooth && smooth.el!==el) smoothSnap();   
-  if(!smooth) smooth={el, target, shown:0, raf:null};
-  smooth.target=target;
-  if(!smooth.raf) smooth.raf=requestAnimationFrame(smoothStep);
-}
+let LIVE=null;
+function smoothReset(){ if(LIVE && LIVE.idle) clearTimeout(LIVE.idle); LIVE=null; }
+function smoothSnap(){ if(!LIVE) return; const {el, text, idle}=LIVE; if(idle) clearTimeout(idle); LIVE=null; scheduleRender(el, text, 'end'); }
 let CATCHUP=false;
-function feedBlock(el, full){ if(REPLAYING||CATCHUP) scheduleRender(el, full); else smoothFeed(el, full); }
+const WORD_IDLE_MS=150;
+function feedBlock(el, full){
+  if(REPLAYING||CATCHUP){ scheduleRender(el, full); return; }
+  if(LIVE && LIVE.el!==el) smoothSnap();   
+  if(LIVE && LIVE.idle) clearTimeout(LIVE.idle);
+  LIVE={el, text:full};
+  LIVE.idle=setTimeout(()=>{ if(LIVE && LIVE.el===el && LIVE.text===full) scheduleRender(el, full, 'idle'); }, WORD_IDLE_MS);
+  scheduleRender(el, full, true);
+}
+const LIVEQ=[]; let liveQTimer=0;
+function liveDelta(d){
+  if(LIVEQ.length || (!REPLAYING && !CATCHUP && touchHold())){
+    LIVEQ.push(d);
+    if(!liveQTimer) liveQTimer=setTimeout(drainLive, TOUCH_GRACE+20);
+    return;
+  }
+  handleDelta(d);
+}
+function drainLive(){
+  liveQTimer=0;
+  if(touchHold()){ liveQTimer=setTimeout(drainLive, TOUCH_GRACE+20); return; }
+  while(LIVEQ.length){ const d=LIVEQ.shift(); try{ handleDelta(d); }catch(e){} }
+}
 function handleDelta(d){
   if(typeof d.seq==='number' && d.seq>lastSeq) lastSeq=d.seq;
   if(d.caught_up){
@@ -10183,7 +10328,7 @@ function handleDelta(d){
     if(d.id!==undefined) CONV_ID=d.id||''; 
     if(d.mode) setModeFromConv(d.mode);
     histRefreshSoon();
-    TURN_ENDED=true; elapsedStop(); smoothReset(); if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; } renderPending=null; PENDS=[];
+    TURN_ENDED=true; elapsedStop(); smoothReset(); if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; } renderPending.clear(); PENDS=[];
     if(d.replay) hideChatForReplay(); else chatClearAnimated();
     newTurn(); setCtxUsed(0); setCompactCount(0); lastSeq=0; setBusy(false); return; }
   if(d.history_more!==undefined){ showHistoryMore(d.history_more, d.before); return; }
@@ -10230,7 +10375,7 @@ function handleDelta(d){
     if(ELAPSED) ensureGenEl(); 
     return; }
   if(d.drop_reasoning){
-    smoothReset(); if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; } renderPending=null; 
+    smoothReset(); if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; } renderPending.clear(); 
     if(T.reasonEl){ const i=T.turnCollapsibles.indexOf(T.reasonEl); if(i>=0) T.turnCollapsibles.splice(i,1); T.reasonEl.remove(); T.reasonEl=null; T.fullReason=''; }
     return; }
   if(d.reasoning_content){
@@ -10285,7 +10430,7 @@ async function connectStream(){
           for(const line of chunk.split('\n')){
             if(!line.startsWith('data:')) continue;
             const data=line.slice(5).trim(); if(data===''||data==='[DONE]') continue;
-            try{ const o=JSON.parse(data); const d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{}; handleDelta(d); }catch(e){}
+            try{ const o=JSON.parse(data); const d=(o.choices&&o.choices[0]&&o.choices[0].delta)||{}; liveDelta(d); }catch(e){}
             if(performance.now()-slice>12){ await new Promise(res=>setTimeout(res,0)); slice=performance.now(); }
           }
         }
@@ -10348,7 +10493,7 @@ async function readConversation(id, title){
   READING=true; READING_ID=id; chatEl().classList.add('reading'); 
   if(streamAbort){ try{ streamAbort.abort(); }catch(e){} } 
   const chat=document.getElementById('chat'); if(chat) chat.innerHTML=''; newTurn();
-  smoothReset(); if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; } renderPending=null;
+  smoothReset(); if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; } renderPending.clear();
   const wasReplaying=REPLAYING; REPLAYING=true;
   for(const ev of (r.log||[])){ try{ handleDelta((ev&&ev.delta)||{}); }catch(e){} }
   REPLAYING=wasReplaying;
@@ -10362,7 +10507,7 @@ function exitReading(){
   READING=false; READING_ID=''; chatEl().classList.remove('reading');
   PENDING_LIVE=false; leaveReadingUI();
   const chat=document.getElementById('chat'); if(chat) chat.innerHTML=''; newTurn();
-  smoothReset(); if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; } renderPending=null;
+  smoothReset(); if(renderTimer){ clearTimeout(renderTimer); renderTimer=null; } renderPending.clear();
   lastSeq=0; REPLAYING=true; setChatLoading(t('chat.loading_conversation'));
 }
 let _savedPlaceholder=null;
@@ -13626,6 +13771,8 @@ var JeanAvatar = (()=>{
       const keep=new Map();
       for(const im of bubbleBody.querySelectorAll('img[src]')) if(im.complete && im.naturalWidth) keep.set(im.getAttribute('src'), im);
       lastHTML=html; bubbleBody.innerHTML=html;
+      const now=performance.now();
+      for(const w of bubbleBody.querySelectorAll('span.wi[data-t]')) w.style.animationDelay=Math.round(+w.dataset.t-now)+'ms';
       adoptImages(keep);
       if(fresh){ userScrolled=false; bubbleBody.scrollTop=0; }
       else if(!userScrolled) bubbleBody.scrollTop=bubbleBody.scrollHeight;
