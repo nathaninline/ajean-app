@@ -2687,7 +2687,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111122307"></script>
+<script src="/e2e.js?v=20261111122414"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -11429,7 +11429,7 @@ var Spirit = (()=>{
   let birthAt=0, burstAt=-1e9, wasBusy=false, color='', seat=null, sleepEl=null;
   let lastAct=performance.now(), asleep=false, still=0, goFrom=null, goT0=0;  
   const sparks=[];
-  let pokeAt=-1e9, offX=0, offY=0;
+  let pokeAt=-1e9, offX=0, offY=0, offVX=0, offVY=0;  
   const N=11, D2=[[0,.5],[.75,.25]];
   const quant=(v,i,j)=>Math.min(1,Math.floor(v*N+D2[j&1][i&1])/N);
   function hidden(){ return document.documentElement.getAttribute('data-hide-spirit')==='1'; }
@@ -11443,7 +11443,7 @@ var Spirit = (()=>{
     addEventListener('resize', ()=>{ if(asleep){ asleep=false; kick(); } });
     addEventListener('pointerdown', e=>{ const v=near(e,34); if(v) poke(v); }, {passive:true, capture:true});
     addEventListener('pointermove', e=>{ if(e.pointerType!=='mouse' || hidden()) return; const v=near(e,52);
-      if(v){ const f=(52-v.d)/52*9; offX-=v.dx/v.d*f; offY-=v.dy/v.d*f; lastAct=performance.now(); if(asleep){ asleep=false; } kick(); } }, {passive:true});
+      if(v){ const f=(52-v.d)/52*60; offVX-=v.dx/v.d*f; offVY-=v.dy/v.d*f; lastAct=performance.now(); if(asleep){ asleep=false; } kick(); } }, {passive:true});
     return true;
   }
   function near(e,rad){
@@ -11454,7 +11454,7 @@ var Spirit = (()=>{
   function poke(v){
     const now=performance.now();
     pokeAt=now; burstAt=now; lastAct=now;
-    offX-=v.dx/v.d*34; offY-=v.dy/v.d*34-10;           
+    offVX-=v.dx/v.d*300; offVY-=v.dy/v.d*300+60;        
     for(let i=0;i<8;i++){ const a=i/8*6.283; sparks.push({x:x+Math.cos(a)*6, y:y+Math.sin(a)*6, vx:Math.cos(a)*60, vy:Math.sin(a)*60, life:1}); }
     if(asleep) asleep=false;
     kick();
@@ -11560,7 +11560,7 @@ var Spirit = (()=>{
       if(p.life<=0){ sparks.splice(i,1); continue; }
       if(Math.sin(t*20+i)>-.3) sparkle(c+(p.x-x)/PX, c+(p.y-y)/PX, Math.round(p.life*3*Math.max(.6,s)), .4+.6*p.life); }
     const pk=Math.max(0,1-(now-pokeAt)/1200);           
-    offX*=Math.exp(-dt*3.2); offY*=Math.exp(-dt*3.2);
+    offVX+=(-offX*30-offVX*10.5)*dt; offVY+=(-offY*30-offVY*10.5)*dt; offX+=offVX*dt; offY+=offVY*dt;
     drawOrb(c,c,s*(1+.35*pk*pk),busy||pk>0);
     if(still>0){ for(let i=0;i<buf.length;i++) buf[i]*=1-still; drawStar(c,c,still); }
     const be=(now-burstAt)/1000;                          
@@ -11574,7 +11574,7 @@ var Spirit = (()=>{
     g.globalCompositeOperation='source-in'; g.fillStyle=color; g.fillRect(0,0,B,B); g.globalCompositeOperation='source-over';
     cv.style.opacity=appOpen?'0':'1';
     cv.style.transform=`translate(${x+offX-c*PX}px,${y+offY-c*PX}px)`;
-    if(asleep && still>=1 && !sparks.length && Math.abs(offX)+Math.abs(offY)<.5 && pk<=0) return;
+    if(asleep && still>=1 && !sparks.length && Math.abs(offX)+Math.abs(offY)<.5 && Math.abs(offVX)+Math.abs(offVY)<1 && pk<=0) return;
     raf=requestAnimationFrame(frame);
   }
   function init(){ if(!mount()) return; kick();
