@@ -2683,7 +2683,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111115102"></script>
+<script src="/e2e.js?v=20261111115430"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -11412,16 +11412,16 @@ function jeanMemActivity(a){
   }
 }
 var Spirit = (()=>{
-  const IDLE_MS=45000;       
+  const IDLE_MS=30000;       
   const PX=3;                 
   const B=120;                
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   let main=null, cv=null, g=null, img=null, buf=null, raf=0, last=0, t=0;
-  let x=0, y=0, vx=0, vy=0;   
+  let x=0, y=0;              
   let k=0, kT=0;              
   let phase='wait';           
   let birthAt=0, burstAt=-1e9, wasBusy=false, color='', seat=null;
-  let lastAct=performance.now(), asleep=false;
+  let lastAct=performance.now(), asleep=false, still=0;  
   const sparks=[];
   const N=11, D2=[[0,.5],[.75,.25]];
   const quant=(v,i,j)=>Math.min(1,Math.floor(v*N+D2[j&1][i&1])/N);
@@ -11456,6 +11456,11 @@ var Spirit = (()=>{
     }
     for(let q=0;q<3;q++){ const a=t*2.2*sp+q*2.09; put(cx+Math.cos(a)*9*s, cy+Math.sin(a)*5*s, .85); }
     if(pulse>.88) sparkle(cx,cy,Math.round(13*s),1);
+  }
+  function drawStar(cx,cy,a){
+    for(let j=-8;j<=8;j++) for(let i=-8;i<=8;i++){ const d=Math.hypot(i,j)/8; if(d<1) add(cx+i,cy+j,.32*a*Math.pow(1-d,2)); }
+    put(cx,cy,a); put(cx+1,cy,a*.9); put(cx,cy+1,a*.9); put(cx+1,cy+1,a*.9);
+    for(let q=1;q<=4;q++){ const f=a*(1-q/5)*.85; put(cx-q,cy,f); put(cx+1+q,cy,f); put(cx,cy-q,f); put(cx,cy+1+q,f); put(cx+1,cy-q,f*.5); put(cx+1,cy+1+q,f*.5); }
   }
   function home(){
     const r=main.getBoundingClientRect(), comp=document.getElementById('composer');
@@ -11505,9 +11510,9 @@ var Spirit = (()=>{
       if(wasBusy && !busy) burstAt=now;                    
       wasBusy=busy;
     }
-    const stiff=sit?.08:.035, damp=Math.pow(.86,dt*60);
     if(reduced.matches){ x=tx; y=ty; }
-    else { vx=(vx+(tx-x)*stiff*dt*60)*damp; vy=(vy+(ty-y)*stiff*dt*60)*damp; x+=vx*dt*60; y+=vy*dt*60; }
+    else { const a=1-Math.exp(-dt*(sit?9:asleep?2.4:3)); x+=(tx-x)*a; y+=(ty-y)*a; }
+    if(asleep && Math.hypot(tx-x,ty-y)<4) still=Math.min(1,still+dt*1.2); else if(!asleep) still=0;
     k+=(kT-k)*Math.min(1,dt*(phase==='birth'?3.2:4));
     const want=(sit && Math.hypot(tx-x,ty-y)<10 && phase==='live') ? (busyTarget()||{}).el||null : null;
     if(want!==seat){ if(seat) seat.style.visibility=''; seat=want; if(seat) seat.style.visibility='hidden'; }
@@ -11519,6 +11524,7 @@ var Spirit = (()=>{
       if(p.life<=0){ sparks.splice(i,1); continue; }
       if(Math.sin(t*20+i)>-.3) sparkle(c+(p.x-x)/PX, c+(p.y-y)/PX, Math.round(p.life*3*Math.max(.6,s)), .4+.6*p.life); }
     drawOrb(c,c,s,busy);
+    if(still>0){ for(let i=0;i<buf.length;i++) buf[i]*=1-still; drawStar(c,c,still); }
     const be=(now-burstAt)/1000;                          
     if(be>=0 && be<.7){ const q=be/.7; sparkle(c,c,Math.round(10+q*30*s),1-q);
       const rr=6+q*40*s; for(let a=0;a<6.283;a+=.08) put(c+Math.cos(a)*rr, c+Math.sin(a)*rr, .6*(1-q)); }
@@ -11530,7 +11536,7 @@ var Spirit = (()=>{
     g.globalCompositeOperation='source-in'; g.fillStyle=color; g.fillRect(0,0,B,B); g.globalCompositeOperation='source-over';
     cv.style.opacity=appOpen?'0':'1';
     cv.style.transform=`translate(${x-c*PX}px,${y-c*PX}px)`;
-    if(asleep && Math.hypot(tx-x,ty-y)<1 && Math.abs(kT-k)<.01 && !sparks.length) return;
+    if(asleep && still>=1 && !sparks.length) return;
     raf=requestAnimationFrame(frame);
   }
   function init(){ if(!mount()) return; kick();
