@@ -2687,7 +2687,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111122754"></script>
+<script src="/e2e.js?v=20261111122945"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -11423,7 +11423,8 @@ var Spirit = (()=>{
   const B=120;                
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   let main=null, cv=null, g=null, img=null, buf=null, raf=0, last=0, t=0;
-  let x=0, y=0;              
+  let x=0, y=0, mvx=0, mvy=0;  
+  let typeFirst=-1e9, ttx=null, tty=null;  
   let k=0, kT=0;              
   let phase='wait';           
   let birthAt=0, burstAt=-1e9, wasBusy=false, color='', seat=null, sleepEl=null;
@@ -11443,7 +11444,7 @@ var Spirit = (()=>{
     for(const ev of ['pointerdown','keydown','wheel','touchstart']) addEventListener(ev, wake, {passive:true, capture:true});
     addEventListener('resize', ()=>{ if(asleep){ asleep=false; kick(); } });
     addEventListener('pointerdown', e=>{ const v=near(e,34); if(v) poke(v); }, {passive:true, capture:true});
-    addEventListener('input', e=>{ if(e.target && e.target.id==='input'){ typeAt=performance.now(); wake(); } }, {capture:true});
+    addEventListener('input', e=>{ if(e.target && e.target.id==='input'){ const n=performance.now(); if(n-typeAt>2500) typeFirst=n; typeAt=n; wake(); } }, {capture:true});
     addEventListener('pointermove', e=>{ if(e.pointerType!=='mouse' || hidden()) return; const v=near(e,52);
       if(v){ const f=(52-v.d)/52*60; offVX-=v.dx/v.d*f; offVY-=v.dy/v.d*f; lastAct=performance.now(); if(asleep){ asleep=false; } kick(); } }, {passive:true});
     return true;
@@ -11471,7 +11472,7 @@ var Spirit = (()=>{
     const line=before.slice(before.lastIndexOf('\n')+1);
     const w=tr.width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
     const cx=parseFloat(cs.paddingLeft)+Math.min(w, measure.measureText(line).width % Math.max(40,w));
-    return [Math.max(30, Math.min(r.width-30, tr.left-r.left+cx+14)), tr.top-r.top-26];
+    return [Math.max(30, Math.min(r.width-30, tr.left-r.left+cx+14)), tr.top-r.top-60];
   }
   function wake(){ lastAct=performance.now(); if(asleep){ asleep=false; kick(); } }
   function kick(){ if(!raf && !hidden()) { last=performance.now(); raf=requestAnimationFrame(frame); } }
@@ -11549,7 +11550,10 @@ var Spirit = (()=>{
       if(busy) lastAct=now;
       asleep=false;
       if(bt && !bt.off){ tx=bt.x; ty=bt.y; kT=.42; sit=true; }
-      else if(now-typeAt<2500 && typeSpot()){ const [px,py]=typeSpot(); tx=px+Math.sin(t*1.3)*10; ty=py+Math.sin(t*2.1)*5; kT=.5; }
+      else if(now-typeAt<2500 && now-typeFirst>450 && typeSpot()){
+        const [px,py]=typeSpot(); if(ttx==null){ ttx=x; tty=y; }
+        const a=1-Math.exp(-dt*1.6); ttx+=(px-ttx)*a; tty+=(py-tty)*a;
+        tx=ttx+Math.sin(t*1.1)*12; ty=tty+Math.sin(t*1.7)*6; kT=.5; }
       else if(now-lastAct>IDLE_MS){ [tx,ty,sleepEl]=sleepSpot(); kT=.42; asleep=true; }
       else { const [hx,hy]=home(); tx=hx+Math.sin(t*.6)*22+Math.sin(t*1.9)*3; ty=hy+Math.sin(t*1.2)*8+Math.sin(t*7)*.8; kT=.55; }
       if(wasBusy && !busy) burstAt=now;                    
@@ -11557,11 +11561,18 @@ var Spirit = (()=>{
     }
     if(reduced.matches){ x=tx; y=ty; }
     else if(asleep){
-      if(!goFrom){ goFrom=[x,y]; goT0=now; }
+      if(!goFrom){ goFrom=[x,y]; goT0=now; } mvx=mvy=0;
       const p=Math.min(1,(now-goT0)/GO_SLEEP_MS), e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
       x=goFrom[0]+(tx-goFrom[0])*e; y=goFrom[1]+(ty-goFrom[1])*e-Math.sin(p*Math.PI)*28;
     }
-    else { goFrom=null; const a=1-Math.exp(-dt*(sit?9:3)); x+=(tx-x)*a; y+=(ty-y)*a; }
+    else if(sit){ goFrom=null; const a=1-Math.exp(-dt*9); x+=(tx-x)*a; y+=(ty-y)*a; mvx=mvy=0; }
+    else {
+      goFrom=null;
+      const w=2.6; mvx+=(w*w*(tx-x)-2*w*mvx)*dt; mvy+=(w*w*(ty-y)-2*w*mvy)*dt;
+      const sp=Math.hypot(mvx,mvy), MAX=260; if(sp>MAX){ mvx*=MAX/sp; mvy*=MAX/sp; }
+      x+=mvx*dt; y+=mvy*dt;
+    }
+    if(now-typeAt>=2500) ttx=tty=null;
     k+=(kT-k)*Math.min(1,dt*(phase==='birth'?7:4));
     if(asleep && Math.hypot(tx-x,ty-y)<4) still=Math.min(1,still+dt*1.2); else if(!asleep) still=0;
     const near=Math.hypot(tx-x,ty-y)<90 && phase==='live';
