@@ -251,8 +251,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .msg.assistant .body blockquote{border-left:3px solid var(--border);padding:0 0 0 10px;margin:.4em 0;color:var(--dim)}
 .msg.assistant .body a{color:var(--accent);text-decoration:none}
 .msg.assistant .body a:hover{text-decoration:underline}
-.msg.assistant .body table{border-collapse:collapse;margin:.5em 0}
-.msg.assistant .body th,.msg.assistant .body td{border:1px solid var(--border);padding:4px 8px}
+.msg.assistant .body table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse;margin:.6em 0;font-size:.93em}
+.msg.assistant .body th,.msg.assistant .body td{border:1px solid var(--border);padding:5px 10px;text-align:left;vertical-align:top;overflow-wrap:normal;word-break:normal}
+.msg.assistant .body th{font-weight:600;background:var(--row-bg)}
 .msg.assistant .body hr{border:none;border-top:1px solid var(--border);margin:.6em 0}
 #scrollbtn{position:absolute;bottom:80px;right:20px;background:var(--panel);border:1px solid var(--border);color:var(--accent);width:36px;height:36px;border-radius:50%;cursor:pointer;display:none;font-size:16px;z-index:5}
 #scrollbtn.show{display:block}
@@ -1504,7 +1505,7 @@ body.jean-mode .jst-hist{display:flex}
 .jst-bubble-body blockquote{border-left:3px solid var(--border);padding:0 0 0 10px;margin:.4em 0;color:var(--dim)}
 .jst-bubble-body a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
 .jst-bubble-body table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse;margin:.6em 0;font-size:.93em}
-.jst-bubble-body th,.jst-bubble-body td{border:1px solid var(--border);padding:5px 10px;text-align:left;vertical-align:top}
+.jst-bubble-body th,.jst-bubble-body td{border:1px solid var(--border);padding:5px 10px;text-align:left;vertical-align:top;overflow-wrap:normal;word-break:normal}
 .jst-bubble-body th{font-weight:600;background:var(--row-bg)}
 .jst-bubble-body hr{border:none;border-top:1px solid var(--border);margin:.6em 0}
 .jst-screen{position:relative;width:min(560px,92%);max-height:0;opacity:0;margin-bottom:0;transform:translateY(16px) scale(.9);
@@ -2867,7 +2868,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111101131"></script>
+<script src="/e2e.js?v=20261111102717"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
