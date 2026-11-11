@@ -296,6 +296,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .genstatus{display:flex;align-items:center;gap:8px;margin-top:-8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--dim)}
 .genstatus .jlogo{width:16px;height:16px;flex:none;color:var(--accent)}
 .genstatus .jlogo rect{fill:currentColor}
+html:not([data-hide-spirit="1"]) .genstatus .jlogo{width:0;margin-right:-8px;opacity:0;
+  transition:width .5s cubic-bezier(.2,.8,.2,1),margin .5s cubic-bezier(.2,.8,.2,1)}
+html:not([data-hide-spirit="1"]) .genstatus.orb-seat .jlogo{width:16px;margin-right:0}
 #chat.genon .msg.typing:not(.compacting){display:none}
 .genstatus.compacting{color:var(--accent)}
 .genstatus.compacting .jlogo{animation:jpulse 1.1s ease-in-out infinite}
@@ -2684,7 +2687,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111120805"></script>
+<script src="/e2e.js?v=20261111121025"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -11413,6 +11416,7 @@ function jeanMemActivity(a){
   }
 }
 var Spirit = (()=>{
+  const SEAT_X=8;            
   const IDLE_MS=30000;       
   const PX=3;                 
   const B=120;                
@@ -11422,7 +11426,7 @@ var Spirit = (()=>{
   let k=0, kT=0;              
   let phase='wait';           
   let birthAt=0, burstAt=-1e9, wasBusy=false, color='', seat=null, sleepEl=null;
-  let lastAct=performance.now(), asleep=false, still=0;  
+  let lastAct=performance.now(), asleep=false;
   const sparks=[];
   const N=11, D2=[[0,.5],[.75,.25]];
   const quant=(v,i,j)=>Math.min(1,Math.floor(v*N+D2[j&1][i&1])/N);
@@ -11458,11 +11462,6 @@ var Spirit = (()=>{
     for(let q=0;q<3;q++){ const a=t*2.2*sp+q*2.09; put(cx+Math.cos(a)*9*s, cy+Math.sin(a)*5*s, .85); }
     if(pulse>.88) sparkle(cx,cy,Math.round(13*s),1);
   }
-  function drawStar(cx,cy,a){
-    for(let j=-8;j<=8;j++) for(let i=-8;i<=8;i++){ const d=Math.hypot(i,j)/8; if(d<1) add(cx+i,cy+j,.32*a*Math.pow(1-d,2)); }
-    put(cx,cy,a); put(cx+1,cy,a*.9); put(cx,cy+1,a*.9); put(cx+1,cy+1,a*.9);
-    for(let q=1;q<=4;q++){ const f=a*(1-q/5)*.85; put(cx-q,cy,f); put(cx+1+q,cy,f); put(cx,cy-q,f); put(cx,cy+1+q,f); put(cx+1,cy-q,f*.5); put(cx+1,cy+1+q,f*.5); }
-  }
   function home(){
     const r=main.getBoundingClientRect(), comp=document.getElementById('composer');
     const cr=comp? comp.getBoundingClientRect() : {top:r.bottom-120,right:r.right-40};
@@ -11470,10 +11469,10 @@ var Spirit = (()=>{
   }
   function sleepSpot(){
     const r=main.getBoundingClientRect(), comp=document.getElementById('composer'), chat=document.getElementById('chat');
-    const logos=chat? chat.querySelectorAll(':scope > .genstatus .jlogo') : [];
-    const lg=logos.length? logos[logos.length-1] : null;
-    if(lg){ const lr=lg.getBoundingClientRect(), chr=chat.getBoundingClientRect();
-      if(lr.width && lr.top>chr.top+4 && lr.bottom<chr.bottom-4) return [lr.left-r.left+lr.width/2, lr.top-r.top+lr.height/2, lg]; }
+    const lines=chat? chat.querySelectorAll(':scope > .genstatus') : [];
+    const gs=lines.length? lines[lines.length-1] : null;
+    if(gs){ const lr=gs.getBoundingClientRect(), chr=chat.getBoundingClientRect();
+      if(lr.height && lr.top>chr.top+4 && lr.bottom<chr.bottom-4) return [lr.left-r.left+SEAT_X, lr.top-r.top+lr.height/2, gs]; }
     const cr=comp? comp.getBoundingClientRect() : {top:r.bottom-120,left:r.left+40};
     return [Math.max(26, r.width/2-380+14), cr.top-r.top-22, null];
   }
@@ -11481,13 +11480,13 @@ var Spirit = (()=>{
     const chat=document.getElementById('chat'); if(!chat) return null;
     const gs=(typeof GENEL!=='undefined' && GENEL && GENEL.isConnected) ? GENEL : null;
     if(!gs) return null;
-    const lg=gs.querySelector('.jlogo')||gs, r=lg.getBoundingClientRect(), mr=main.getBoundingClientRect(), cr=chat.getBoundingClientRect();
+    const r=gs.getBoundingClientRect(), mr=main.getBoundingClientRect(), cr=chat.getBoundingClientRect();
     if(r.bottom<cr.top+10 || r.top>cr.bottom-10) return {off:true};   
-    return {x:r.left-mr.left+r.width/2, y:r.top-mr.top+r.height/2, el:gs.querySelector('.jlogo')};
+    return {x:r.left-mr.left+SEAT_X, y:r.top-mr.top+r.height/2, el:gs};
   }
   function frame(now){
     raf=0;
-    if(hidden()||!main){ cv&&(cv.style.opacity='0'); if(seat){ seat.style.visibility=''; seat=null; } return; }
+    if(hidden()||!main){ cv&&(cv.style.opacity='0'); if(seat){ seat.classList.remove('orb-seat'); seat=null; } return; }
     if(document.hidden) return;
     const dt=Math.min(.05,(now-last)/1000); last=now; t+=dt;
     const r=main.getBoundingClientRect();
@@ -11517,10 +11516,10 @@ var Spirit = (()=>{
     }
     if(reduced.matches){ x=tx; y=ty; }
     else { const a=1-Math.exp(-dt*(sit?9:asleep?2.4:3)); x+=(tx-x)*a; y+=(ty-y)*a; }
-    if(asleep && Math.hypot(tx-x,ty-y)<4) still=Math.min(1,still+dt*1.2); else if(!asleep) still=0;
     k+=(kT-k)*Math.min(1,dt*(phase==='birth'?7:4));
-    const want=(sit && Math.hypot(tx-x,ty-y)<10 && phase==='live') ? (busyTarget()||{}).el||null : (asleep && still>.3 ? sleepEl : null);
-    if(want!==seat){ if(seat) seat.style.visibility=''; seat=want; if(seat) seat.style.visibility='hidden'; }
+    const near=Math.hypot(tx-x,ty-y)<90 && phase==='live';
+    const want=near ? (sit ? (busyTarget()||{}).el||null : (asleep ? sleepEl : null)) : null;
+    if(want!==seat){ if(seat) seat.classList.remove('orb-seat'); seat=want; if(seat) seat.classList.add('orb-seat'); }
     buf.fill(0);
     const c=B/2;
     const s=Math.max(.05,k);
@@ -11529,7 +11528,6 @@ var Spirit = (()=>{
       if(p.life<=0){ sparks.splice(i,1); continue; }
       if(Math.sin(t*20+i)>-.3) sparkle(c+(p.x-x)/PX, c+(p.y-y)/PX, Math.round(p.life*3*Math.max(.6,s)), .4+.6*p.life); }
     drawOrb(c,c,s,busy);
-    if(still>0){ for(let i=0;i<buf.length;i++) buf[i]*=1-still; drawStar(c,c,still); }
     const be=(now-burstAt)/1000;                          
     if(be>=0 && be<.7){ const q=be/.7; sparkle(c,c,Math.round(10+q*30*s),1-q);
       const rr=6+q*40*s; for(let a=0;a<6.283;a+=.08) put(c+Math.cos(a)*rr, c+Math.sin(a)*rr, .6*(1-q)); }
@@ -11541,11 +11539,10 @@ var Spirit = (()=>{
     g.globalCompositeOperation='source-in'; g.fillStyle=color; g.fillRect(0,0,B,B); g.globalCompositeOperation='source-over';
     cv.style.opacity=appOpen?'0':'1';
     cv.style.transform=`translate(${x-c*PX}px,${y-c*PX}px)`;
-    if(asleep && still>=1 && !sparks.length) return;
     raf=requestAnimationFrame(frame);
   }
   function init(){ if(!mount()) return; kick();
-    new MutationObserver(()=>{ if(hidden()){ cv.style.opacity='0'; if(seat){ seat.style.visibility=''; seat=null; } } else kick(); })
+    new MutationObserver(()=>{ if(hidden()){ cv.style.opacity='0'; if(seat){ seat.classList.remove('orb-seat'); seat=null; } } else kick(); })
       .observe(document.documentElement,{attributes:true,attributeFilter:['data-hide-spirit']});
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
