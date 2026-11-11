@@ -322,6 +322,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 #cl-logo{width:52px;height:52px;display:block;color:var(--accent);fill:currentColor;
   shape-rendering:crispEdges;animation:jpulse 1.1s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){#cl-logo{animation:none;opacity:.7}}
+#spirit{position:absolute;left:0;top:0;width:360px;height:360px;z-index:7;pointer-events:none;
+  image-rendering:pixelated;image-rendering:crisp-edges;opacity:0;transition:opacity .35s ease;will-change:transform}
+[data-hide-spirit="1"] #spirit{display:none}
 .cl-dots{display:inline-flex;gap:5px;align-items:center}
 .cl-dots span{width:7px;height:7px;border-radius:50%;background:var(--dim);animation:typingdot 1.2s infinite ease-in-out}
 .cl-dots span:nth-child(2){animation-delay:.16s}
@@ -2068,6 +2071,7 @@ audio.jf-media{width:min(520px,100%);margin-top:18vh}
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-enter-newline" onchange="toggleView('enter-newline')"><span class="slider"></span></span> <span data-i18n="appearance.enter_newline">Entrée = retour à la ligne</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="appearance.enter_newline_help" data-i18n-html>Par défaut, <b>Entrée</b> envoie le message et <b>Maj+Entrée</b> fait un retour à la ligne. Activez ceci pour inverser : Entrée va à la ligne, et <b>Maj+Entrée</b> (ou Ctrl+Entrée) envoie.</span></span></label>
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-hide-preset" onchange="toggleView('hide-preset')"><span class="slider"></span></span> <span data-i18n="appearance.hide_preset">masquer le nom du preset</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="appearance.hide_preset_help" data-i18n-html>Retire le nom du preset de la ligne d'état sous chaque réponse (durée, tokens, vitesse). Les autres informations restent affichées.</span></span></label>
     <label class="switchrow"><span class="switch"><input type="checkbox" id="view-hide-term" onchange="toggleView('hide-term')"><span class="slider"></span></span> <span data-i18n="appearance.hide_term">masquer le terminal en plein écran</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="appearance.hide_term_help" data-i18n-html>En plein écran du mode Jean, les commandes lancées par l'IA ne s'affichent plus dans la fenêtre <b>terminal</b>. La recherche web et le navigateur restent visibles.</span></span></label>
+    <label class="switchrow"><span class="switch"><input type="checkbox" id="view-hide-spirit" onchange="toggleView('hide-spirit')"><span class="slider"></span></span> <span data-i18n="appearance.hide_spirit">masquer le petit esprit</span><span class="help" tabindex="0" onclick="event.preventDefault();event.stopPropagation();this.classList.toggle('open')">?<span class="tip" data-i18n="appearance.hide_spirit_help" data-i18n-html>Retire la petite orbe de lumière qui accompagne la conversation : elle naît au chargement, se pose sur la ligne d'activité pendant une réponse et lance un éclat à la fin.</span></span></label>
     </div>
   </details>
   <details><summary><span class="stitle" data-i18n="api.title">API</span></summary>
@@ -2868,7 +2872,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111102717"></script>
+<script src="/e2e.js?v=20261111114043"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -3207,6 +3211,8 @@ fr: {
   "appearance.enter_newline": "Entrée = retour à la ligne",
   "appearance.enter_newline_help": "Par défaut, <b>Entrée</b> envoie le message et <b>Maj+Entrée</b> fait un retour à la ligne. Activez ceci pour inverser : Entrée va à la ligne, et <b>Maj+Entrée</b> (ou Ctrl+Entrée) envoie.",
   "appearance.hide_term": "masquer le terminal en plein écran",
+  "appearance.hide_spirit": "masquer le petit esprit",
+  "appearance.hide_spirit_help": "Retire la petite orbe de lumière qui accompagne la conversation : elle naît au chargement, se pose sur la ligne d'activité pendant une réponse et lance un éclat à la fin.",
   "appearance.hide_term_help": "En plein écran du mode Jean, les commandes lancées par l'IA ne s'affichent plus dans la fenêtre <b>terminal</b>. La recherche web et le navigateur restent visibles.",
   "appearance.hide_preset": "masquer le nom du modèle",
   "appearance.hide_preset_help": "Retire le nom du modèle de la ligne d'état sous chaque réponse (durée, tokens, vitesse). Les autres informations restent affichées.",
@@ -4235,6 +4241,8 @@ en: {
   "appearance.enter_newline": "Enter = new line",
   "appearance.enter_newline_help": "By default, <b>Enter</b> sends the message and <b>Shift+Enter</b> makes a new line. Turn this on to swap them: Enter makes a new line, and <b>Shift+Enter</b> (or Ctrl+Enter) sends.",
   "appearance.hide_term": "hide the terminal in full screen",
+  "appearance.hide_spirit": "hide the little spirit",
+  "appearance.hide_spirit_help": "Removes the small orb of light that accompanies the conversation: it appears on load, sits on the activity line during a reply and sparkles when done.",
   "appearance.hide_term_help": "In Jean mode full screen, commands run by the AI no longer show in the <b>terminal</b> window. Web search and the browser stay visible.",
   "appearance.hide_preset": "hide the model name",
   "appearance.hide_preset_help": "Removes the model name from the status line under each reply (duration, tokens, speed). The other details stay visible.",
@@ -5199,6 +5207,7 @@ const VIEW_OPTS=[
   {id:'enter-newline',  label:'Entrée = retour à la ligne'},
   {id:'hide-preset',    label:'masquer le nom du preset'},
   {id:'hide-term',      label:'masquer le terminal du plein écran'},
+  {id:'hide-spirit',    label:'masquer le petit esprit'},
 ];
 function viewOn(id){ return document.documentElement.getAttribute('data-'+id)==='1'; }
 function applyView(id, on){
@@ -12163,4 +12172,119 @@ function jeanMemActivity(a){
     p.classList.remove('show');
   }
 }
+var Spirit = (()=>{
+  const PX=3;                 
+  const B=120;                
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  let main=null, cv=null, g=null, img=null, buf=null, raf=0, last=0, t=0;
+  let x=0, y=0, vx=0, vy=0;   
+  let k=0, kT=0;              
+  let phase='wait';           
+  let birthAt=0, burstAt=-1e9, wasBusy=false, color='', seat=null;
+  const sparks=[];
+  const N=11, D2=[[0,.5],[.75,.25]];
+  const quant=(v,i,j)=>Math.min(1,Math.floor(v*N+D2[j&1][i&1])/N);
+  function hidden(){ return document.documentElement.getAttribute('data-hide-spirit')==='1'; }
+  function mount(){
+    main=document.querySelector('.main'); if(!main) return false;
+    cv=document.createElement('canvas'); cv.id='spirit'; cv.width=B; cv.height=B; cv.setAttribute('aria-hidden','true');
+    main.appendChild(cv); g=cv.getContext('2d'); img=g.createImageData(B,B); buf=new Float32Array(B*B);
+    const r=main.getBoundingClientRect(); x=r.width/2; y=r.height/2;
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) kick(); });
+    return true;
+  }
+  function kick(){ if(!raf && !hidden()) { last=performance.now(); raf=requestAnimationFrame(frame); } }
+  const put=(px,py,v)=>{ px|=0; py|=0; if(px<0||py<0||px>=B||py>=B) return; const i=py*B+px; if(v>buf[i]) buf[i]=v; };
+  const add=(px,py,v)=>{ px|=0; py|=0; if(px<0||py<0||px>=B||py>=B) return; const i=py*B+px; buf[i]=Math.min(1,buf[i]+v); };
+  function sparkle(px,py,size,b){ put(px,py,b); for(let q=1;q<=size;q++){ const f=b*(1-q/(size+1)); put(px+q,py,f); put(px-q,py,f); put(px,py+q,f); put(px,py-q,f); } }
+  function drawOrb(cx,cy,s,busy){
+    const sp=busy?1.8:1;
+    const pulse=.5+.5*Math.sin(t*4*sp);
+    const GR=(26+pulse*6)*s;
+    for(let j=-GR;j<=GR;j++) for(let i=-GR;i<=GR;i++){ const d=Math.hypot(i,j)/GR; if(d<1) add(cx+i,cy+j,.55*Math.pow(1-d,2.2)); }
+    for(let q=0;q<8;q++){ const a=q/8*Math.PI*2+t*.4*sp, L=(q%2?14:22)*s*(.8+.2*Math.sin(t*3+q));
+      for(let r=6*s;r<L;r+=.5) put(cx+Math.cos(a)*r, cy+Math.sin(a)*r, .5*(1-r/L)); }
+    const flick=.9+.1*Math.sin(t*23)*Math.sin(t*9.7), R=Math.ceil(16*s);
+    for(let j=-R;j<=R;j++) for(let i=-R;i<=R;i++){
+      const a=Math.atan2(j,i), wob=1+.18*Math.sin(a*5+t*6*sp)+.1*Math.sin(a*3-t*9*sp);
+      const d=Math.hypot(i,j)/wob/s;
+      put(cx+i,cy+j,(d<2.6?1:.97*Math.exp(-Math.pow((d-2.6)/3.4,1.4)))*flick);
+    }
+    for(let q=0;q<3;q++){ const a=t*2.2*sp+q*2.09; put(cx+Math.cos(a)*9*s, cy+Math.sin(a)*5*s, .85); }
+    if(pulse>.88) sparkle(cx,cy,Math.round(13*s),1);
+  }
+  function home(){
+    const r=main.getBoundingClientRect(), comp=document.getElementById('composer');
+    const cr=comp? comp.getBoundingClientRect() : {top:r.bottom-120,right:r.right-40};
+    return [Math.min(r.width-40, cr.right-r.left-34), cr.top-r.top-34];
+  }
+  function busyTarget(){
+    const chat=document.getElementById('chat'); if(!chat) return null;
+    const all=chat.querySelectorAll(':scope > .genstatus'); const gs=all.length? all[all.length-1] : null;
+    if(!gs) return null;
+    const lg=gs.querySelector('.jlogo')||gs, r=lg.getBoundingClientRect(), mr=main.getBoundingClientRect(), cr=chat.getBoundingClientRect();
+    if(r.bottom<cr.top+10 || r.top>cr.bottom-10) return {off:true};   
+    return {x:r.left-mr.left+r.width/2, y:r.top-mr.top+r.height/2, el:gs.querySelector('.jlogo')};
+  }
+  function frame(now){
+    raf=0;
+    if(hidden()||!main){ cv&&(cv.style.opacity='0'); if(seat){ seat.style.visibility=''; seat=null; } return; }
+    if(document.hidden) return;
+    const dt=Math.min(.05,(now-last)/1000); last=now; t+=dt;
+    const r=main.getBoundingClientRect();
+    const loading=document.getElementById('chat-loading');
+    const veil=loading && loading.classList.contains('show');
+    const appOpen=(()=>{ const a=document.getElementById('app-run'); return a && !a.hidden; })();
+    let tx, ty, busy=false, sit=false;
+    if(phase==='wait'){
+      if(veil){ x=r.width/2; y=r.height/2; k=0; cv.style.opacity='0'; raf=requestAnimationFrame(frame); return; }
+      phase='birth'; birthAt=now; burstAt=now; x=r.width/2; y=r.height/2;
+    }
+    if(phase==='birth'){
+      const e=(now-birthAt)/1000;
+      kT=1; tx=r.width/2; ty=r.height/2;
+      if(e>1.1){ phase='live'; }
+    }
+    if(phase==='live'){
+      const bt=busyTarget();
+      busy=!!bt;
+      if(bt && !bt.off){ tx=bt.x; ty=bt.y; kT=.42; sit=true; }
+      else { const [hx,hy]=home(); tx=hx+Math.sin(t*.6)*22+Math.sin(t*1.9)*3; ty=hy+Math.sin(t*1.2)*8+Math.sin(t*7)*.8; kT=.55; }
+      if(wasBusy && !busy) burstAt=now;                    
+      wasBusy=busy;
+    }
+    const stiff=sit?.08:.035, damp=Math.pow(.86,dt*60);
+    if(reduced.matches){ x=tx; y=ty; }
+    else { vx=(vx+(tx-x)*stiff*dt*60)*damp; vy=(vy+(ty-y)*stiff*dt*60)*damp; x+=vx*dt*60; y+=vy*dt*60; }
+    k+=(kT-k)*Math.min(1,dt*(phase==='birth'?3.2:4));
+    const want=(sit && Math.hypot(tx-x,ty-y)<10 && phase==='live') ? (busyTarget()||{}).el||null : null;
+    if(want!==seat){ if(seat) seat.style.visibility=''; seat=want; if(seat) seat.style.visibility='hidden'; }
+    buf.fill(0);
+    const c=B/2;
+    const s=Math.max(.05,k);
+    if(!reduced.matches && Math.random()<dt*(busy?20:10)*s) sparks.push({x:x+(Math.random()-.5)*8*PX*s, y:y+(Math.random()-.5)*8*PX*s, vx:(Math.random()-.5)*6*PX, vy:(4+Math.random()*6)*PX*.6, life:1});
+    for(let i=sparks.length-1;i>=0;i--){ const p=sparks[i]; p.life-=dt*.9; p.x+=p.vx*dt; p.y+=p.vy*dt;
+      if(p.life<=0){ sparks.splice(i,1); continue; }
+      if(Math.sin(t*20+i)>-.3) sparkle(c+(p.x-x)/PX, c+(p.y-y)/PX, Math.round(p.life*3*Math.max(.6,s)), .4+.6*p.life); }
+    drawOrb(c,c,s,busy);
+    const be=(now-burstAt)/1000;                          
+    if(be>=0 && be<.7){ const q=be/.7; sparkle(c,c,Math.round(10+q*30*s),1-q);
+      const rr=6+q*40*s; for(let a=0;a<6.283;a+=.08) put(c+Math.cos(a)*rr, c+Math.sin(a)*rr, .6*(1-q)); }
+    const d=img.data;
+    for(let i=0;i<buf.length;i++){ const v=quant(buf[i],i%B,(i/B)|0); const o=i*4; d[o]=d[o+1]=d[o+2]=0; d[o+3]=Math.round(v*255); }
+    g.putImageData(img,0,0);
+    const col=getComputedStyle(document.body).color;
+    if(col!==color) color=col;
+    g.globalCompositeOperation='source-in'; g.fillStyle=color; g.fillRect(0,0,B,B); g.globalCompositeOperation='source-over';
+    cv.style.opacity=appOpen?'0':'1';
+    cv.style.transform=`translate(${x-c*PX}px,${y-c*PX}px)`;
+    raf=requestAnimationFrame(frame);
+  }
+  function init(){ if(!mount()) return; kick();
+    new MutationObserver(()=>{ if(hidden()){ cv.style.opacity='0'; if(seat){ seat.style.visibility=''; seat=null; } } else kick(); })
+      .observe(document.documentElement,{attributes:true,attributeFilter:['data-hide-spirit']});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+  return {kick};
+})();
 </script></body></html>
