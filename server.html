@@ -2683,7 +2683,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111115430"></script>
+<script src="/e2e.js?v=20261111120236"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -11474,7 +11474,7 @@ var Spirit = (()=>{
   }
   function busyTarget(){
     const chat=document.getElementById('chat'); if(!chat) return null;
-    const all=chat.querySelectorAll(':scope > .genstatus'); const gs=all.length? all[all.length-1] : null;
+    const gs=(typeof GENEL!=='undefined' && GENEL && GENEL.isConnected) ? GENEL : null;
     if(!gs) return null;
     const lg=gs.querySelector('.jlogo')||gs, r=lg.getBoundingClientRect(), mr=main.getBoundingClientRect(), cr=chat.getBoundingClientRect();
     if(r.bottom<cr.top+10 || r.top>cr.bottom-10) return {off:true};   
