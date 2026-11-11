@@ -2687,7 +2687,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111121025"></script>
+<script src="/e2e.js?v=20261111121230"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -11539,6 +11539,7 @@ var Spirit = (()=>{
     g.globalCompositeOperation='source-in'; g.fillStyle=color; g.fillRect(0,0,B,B); g.globalCompositeOperation='source-over';
     cv.style.opacity=appOpen?'0':'1';
     cv.style.transform=`translate(${x-c*PX}px,${y-c*PX}px)`;
+    if(asleep && Math.hypot(tx-x,ty-y)<.8 && Math.abs(kT-k)<.005 && !sparks.length) return;
     raf=requestAnimationFrame(frame);
   }
   function init(){ if(!mount()) return; kick();
