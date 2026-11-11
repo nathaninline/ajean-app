@@ -325,6 +325,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 #spirit{position:absolute;left:0;top:0;width:360px;height:360px;z-index:7;pointer-events:none;
   image-rendering:pixelated;image-rendering:crisp-edges;opacity:0;transition:opacity .35s ease;will-change:transform}
 [data-hide-spirit="1"] #spirit{display:none}
+html:not([data-hide-spirit="1"]) #cl-logo{visibility:hidden}
 .cl-dots{display:inline-flex;gap:5px;align-items:center}
 .cl-dots span{width:7px;height:7px;border-radius:50%;background:var(--dim);animation:typingdot 1.2s infinite ease-in-out}
 .cl-dots span:nth-child(2){animation-delay:.16s}
@@ -2683,7 +2684,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111120649"></script>
+<script src="/e2e.js?v=20261111120805"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -11495,8 +11496,8 @@ var Spirit = (()=>{
     const appOpen=(()=>{ const a=document.getElementById('app-run'); return a && !a.hidden; })();
     let tx, ty, busy=false, sit=false;
     if(phase==='wait'){
-      if(veil){ x=r.width/2; y=r.height/2; k=0; cv.style.opacity='0'; raf=requestAnimationFrame(frame); return; }
-      phase='birth'; birthAt=now; burstAt=now; x=r.width/2; y=r.height/2; k=.12;
+      if(veil){ tx=r.width/2; ty=r.height/2; kT=.34; if(k<.01){ x=tx; y=ty; k=.05; } }
+      else { phase='birth'; birthAt=now; burstAt=now; }
     }
     if(phase==='birth'){
       const e=(now-birthAt)/1000;
