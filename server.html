@@ -2067,7 +2067,7 @@ audio.jf-media{width:min(520px,100%);margin-top:18vh}
     </div>
     <div id="app-run-body" class="app-run-body"></div>
   </div>
-  <div id="chat-loading" class="show" aria-label="chargement de la conversation" data-i18n="chat.loading_aria" data-i18n-attr="aria-label"><svg id="cl-logo" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor"><rect x="6" y="3" width="2" height="2"/><rect x="6" y="5" width="2" height="2"/><rect x="4" y="7" width="2" height="2"/></svg></div>
+  <div id="chat-loading" class="show" aria-label="chargement de la conversation" data-i18n="chat.loading_aria" data-i18n-attr="aria-label"><svg id="cl-logo" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor"><rect x="5" y="1" width="2" height="10" opacity=".3"/><rect x="1" y="5" width="10" height="2" opacity=".3"/><rect x="5" y="3" width="2" height="6" opacity=".7"/><rect x="3" y="5" width="6" height="2" opacity=".7"/><rect x="4" y="4" width="4" height="4" opacity=".35"/><rect x="5" y="5" width="2" height="2"/></svg></div>
   <div id="chat-empty" aria-hidden="true">
     <div id="ce-logo"></div>
     <div id="ce-title" data-i18n="chat.empty_title">On commence par quoi ?</div>
@@ -2683,7 +2683,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111120236"></script>
+<script src="/e2e.js?v=20261111120649"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -7543,7 +7543,7 @@ function ensureGenEl(){
   const chat=chatEl();
   if(!GENEL){ GENEL=document.createElement('div'); GENEL.className='genstatus gs-in';
     GENEL.addEventListener('animationend', function(){ this.classList.remove('gs-in'); }, {once:true});
-    GENEL.innerHTML='<svg class="jlogo" viewBox="0 0 12 12" aria-hidden="true"><rect x="6" y="3" width="2" height="2"/><rect x="6" y="5" width="2" height="2"/><rect x="4" y="7" width="2" height="2"/></svg><span class="jact"></span><span class="gtxt"></span>'; }
+    GENEL.innerHTML='<svg class="jlogo" viewBox="0 0 12 12" aria-hidden="true"><rect x="5" y="1" width="2" height="10" opacity=".3"/><rect x="1" y="5" width="10" height="2" opacity=".3"/><rect x="5" y="3" width="2" height="6" opacity=".7"/><rect x="3" y="5" width="6" height="2" opacity=".7"/><rect x="4" y="4" width="4" height="4" opacity=".35"/><rect x="5" y="5" width="2" height="2"/></svg><span class="jact"></span><span class="gtxt"></span>'; }
   if(GENEL.parentNode!==chat || chat.lastElementChild!==GENEL) chat.appendChild(GENEL); 
   if(MODE==='jean' && !REPLAYING && !CHAT_TARGET) Spirit&&Spirit.wake();
   return GENEL;
@@ -11420,7 +11420,7 @@ var Spirit = (()=>{
   let x=0, y=0;              
   let k=0, kT=0;              
   let phase='wait';           
-  let birthAt=0, burstAt=-1e9, wasBusy=false, color='', seat=null;
+  let birthAt=0, burstAt=-1e9, wasBusy=false, color='', seat=null, sleepEl=null;
   let lastAct=performance.now(), asleep=false, still=0;  
   const sparks=[];
   const N=11, D2=[[0,.5],[.75,.25]];
@@ -11468,9 +11468,13 @@ var Spirit = (()=>{
     return [Math.min(r.width-40, cr.right-r.left-34), cr.top-r.top-34];
   }
   function sleepSpot(){
-    const r=main.getBoundingClientRect(), comp=document.getElementById('composer');
+    const r=main.getBoundingClientRect(), comp=document.getElementById('composer'), chat=document.getElementById('chat');
+    const logos=chat? chat.querySelectorAll(':scope > .genstatus .jlogo') : [];
+    const lg=logos.length? logos[logos.length-1] : null;
+    if(lg){ const lr=lg.getBoundingClientRect(), chr=chat.getBoundingClientRect();
+      if(lr.width && lr.top>chr.top+4 && lr.bottom<chr.bottom-4) return [lr.left-r.left+lr.width/2, lr.top-r.top+lr.height/2, lg]; }
     const cr=comp? comp.getBoundingClientRect() : {top:r.bottom-120,left:r.left+40};
-    return [Math.max(26, r.width/2-380+14), cr.top-r.top-22];
+    return [Math.max(26, r.width/2-380+14), cr.top-r.top-22, null];
   }
   function busyTarget(){
     const chat=document.getElementById('chat'); if(!chat) return null;
@@ -11492,7 +11496,7 @@ var Spirit = (()=>{
     let tx, ty, busy=false, sit=false;
     if(phase==='wait'){
       if(veil){ x=r.width/2; y=r.height/2; k=0; cv.style.opacity='0'; raf=requestAnimationFrame(frame); return; }
-      phase='birth'; birthAt=now; burstAt=now; x=r.width/2; y=r.height/2;
+      phase='birth'; birthAt=now; burstAt=now; x=r.width/2; y=r.height/2; k=.12;
     }
     if(phase==='birth'){
       const e=(now-birthAt)/1000;
@@ -11505,7 +11509,7 @@ var Spirit = (()=>{
       if(busy) lastAct=now;
       asleep=false;
       if(bt && !bt.off){ tx=bt.x; ty=bt.y; kT=.42; sit=true; }
-      else if(now-lastAct>IDLE_MS){ [tx,ty]=sleepSpot(); kT=.42; asleep=true; }
+      else if(now-lastAct>IDLE_MS){ [tx,ty,sleepEl]=sleepSpot(); kT=.42; asleep=true; }
       else { const [hx,hy]=home(); tx=hx+Math.sin(t*.6)*22+Math.sin(t*1.9)*3; ty=hy+Math.sin(t*1.2)*8+Math.sin(t*7)*.8; kT=.55; }
       if(wasBusy && !busy) burstAt=now;                    
       wasBusy=busy;
@@ -11513,8 +11517,8 @@ var Spirit = (()=>{
     if(reduced.matches){ x=tx; y=ty; }
     else { const a=1-Math.exp(-dt*(sit?9:asleep?2.4:3)); x+=(tx-x)*a; y+=(ty-y)*a; }
     if(asleep && Math.hypot(tx-x,ty-y)<4) still=Math.min(1,still+dt*1.2); else if(!asleep) still=0;
-    k+=(kT-k)*Math.min(1,dt*(phase==='birth'?3.2:4));
-    const want=(sit && Math.hypot(tx-x,ty-y)<10 && phase==='live') ? (busyTarget()||{}).el||null : null;
+    k+=(kT-k)*Math.min(1,dt*(phase==='birth'?7:4));
+    const want=(sit && Math.hypot(tx-x,ty-y)<10 && phase==='live') ? (busyTarget()||{}).el||null : (asleep && still>.3 ? sleepEl : null);
     if(want!==seat){ if(seat) seat.style.visibility=''; seat=want; if(seat) seat.style.visibility='hidden'; }
     buf.fill(0);
     const c=B/2;
