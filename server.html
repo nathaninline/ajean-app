@@ -2687,7 +2687,7 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111122414"></script>
+<script src="/e2e.js?v=20261111122754"></script>
 <script>
 // Modales intégrées (empreinte + code d'appairage) : server.html n'a pas l'UI du
 // portail et les confirm()/prompt() natifs sont peu fiables (mobile, contexte async).
@@ -11429,6 +11429,7 @@ var Spirit = (()=>{
   let birthAt=0, burstAt=-1e9, wasBusy=false, color='', seat=null, sleepEl=null;
   let lastAct=performance.now(), asleep=false, still=0, goFrom=null, goT0=0;  
   const sparks=[];
+  let typeAt=-1e9, measure=null;   
   let pokeAt=-1e9, offX=0, offY=0, offVX=0, offVY=0;  
   const N=11, D2=[[0,.5],[.75,.25]];
   const quant=(v,i,j)=>Math.min(1,Math.floor(v*N+D2[j&1][i&1])/N);
@@ -11442,6 +11443,7 @@ var Spirit = (()=>{
     for(const ev of ['pointerdown','keydown','wheel','touchstart']) addEventListener(ev, wake, {passive:true, capture:true});
     addEventListener('resize', ()=>{ if(asleep){ asleep=false; kick(); } });
     addEventListener('pointerdown', e=>{ const v=near(e,34); if(v) poke(v); }, {passive:true, capture:true});
+    addEventListener('input', e=>{ if(e.target && e.target.id==='input'){ typeAt=performance.now(); wake(); } }, {capture:true});
     addEventListener('pointermove', e=>{ if(e.pointerType!=='mouse' || hidden()) return; const v=near(e,52);
       if(v){ const f=(52-v.d)/52*60; offVX-=v.dx/v.d*f; offVY-=v.dy/v.d*f; lastAct=performance.now(); if(asleep){ asleep=false; } kick(); } }, {passive:true});
     return true;
@@ -11458,6 +11460,18 @@ var Spirit = (()=>{
     for(let i=0;i<8;i++){ const a=i/8*6.283; sparks.push({x:x+Math.cos(a)*6, y:y+Math.sin(a)*6, vx:Math.cos(a)*60, vy:Math.sin(a)*60, life:1}); }
     if(asleep) asleep=false;
     kick();
+  }
+  function typeSpot(){
+    const ta=document.getElementById('input'); if(!ta) return null;
+    const r=main.getBoundingClientRect(), tr=ta.getBoundingClientRect(); if(!tr.width) return null;
+    const cs=getComputedStyle(ta);
+    if(!measure) measure=document.createElement('canvas').getContext('2d');
+    measure.font=cs.fontSize+' '+cs.fontFamily;
+    const before=ta.value.slice(0, ta.selectionStart==null? ta.value.length : ta.selectionStart);
+    const line=before.slice(before.lastIndexOf('\n')+1);
+    const w=tr.width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+    const cx=parseFloat(cs.paddingLeft)+Math.min(w, measure.measureText(line).width % Math.max(40,w));
+    return [Math.max(30, Math.min(r.width-30, tr.left-r.left+cx+14)), tr.top-r.top-26];
   }
   function wake(){ lastAct=performance.now(); if(asleep){ asleep=false; kick(); } }
   function kick(){ if(!raf && !hidden()) { last=performance.now(); raf=requestAnimationFrame(frame); } }
@@ -11535,6 +11549,7 @@ var Spirit = (()=>{
       if(busy) lastAct=now;
       asleep=false;
       if(bt && !bt.off){ tx=bt.x; ty=bt.y; kT=.42; sit=true; }
+      else if(now-typeAt<2500 && typeSpot()){ const [px,py]=typeSpot(); tx=px+Math.sin(t*1.3)*10; ty=py+Math.sin(t*2.1)*5; kT=.5; }
       else if(now-lastAct>IDLE_MS){ [tx,ty,sleepEl]=sleepSpot(); kT=.42; asleep=true; }
       else { const [hx,hy]=home(); tx=hx+Math.sin(t*.6)*22+Math.sin(t*1.9)*3; ty=hy+Math.sin(t*1.2)*8+Math.sin(t*7)*.8; kT=.55; }
       if(wasBusy && !busy) burstAt=now;                    
