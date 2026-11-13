@@ -111,7 +111,12 @@ code{border:0;border-radius:6px;background:var(--field)}
     <button class="btn btn-primary" type="submit">Se connecter →</button>
   </form>
   <p class="foot">Pas encore de compte ? <a href="/signup.html">Créer un compte</a><br>
-    <a href="https://ajean.link/">← Accueil</a></p>
+    <a href="https://ajean.link/" id="backLink">← Accueil</a></p>
+  <!-- App PC : dans la fenêtre de l'app installée, « Accueil » ramène à l'AJEAN
+       local (adresse de retour laissée par l'app, boucle locale uniquement). -->
+  <script>try{var _h=JSON.parse(localStorage.getItem('ajean.dev.home')||'null');
+    if(_h&&/^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(_h.url||'')){var _a=document.getElementById('backLink');
+      _a.href=_h.url+'/';_a.textContent='← '+(_h.name||'Ce PC');}}catch(e){}</script>
 </div></div>
 </div>
 <script src="/wasm_exec.js"></script>

@@ -30,8 +30,20 @@ html[data-theme="dark"],html[data-theme="dark"] body{background:#0a0a0a}
     if(r.ok)v=(await r.json()).build||'';
   }catch(e){}
   if(!v)v=Date.now();                       // repli : au pire on ne cache pas
-  var q=location.search||'';                // conserve ?sub=ok etc.
-  location.replace('/app.html?v='+encodeURIComponent(v)+(q?('&'+q.slice(1)):''));
+  // App PC (AJEAN installé) : quand la fenêtre de l'app arrive ici depuis le PC
+  // local, elle donne son adresse de retour (?home=…&hm=<id>&hn=<nom>). On la
+  // retient pour proposer « Ce PC » dans le sélecteur d'appareils (voir
+  // 13b-devices.js côté AJEAN). Boucle locale uniquement : un lien piégé ne doit
+  // pas pouvoir faire pointer ce retour vers un site quelconque.
+  var sp=new URLSearchParams(location.search),auto=sp.get('auto')==='1',home=sp.get('home')||'',idrx=/^[A-Za-z0-9_-]{1,64}$/;
+  try{if(/^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(home)){var hm=sp.get('hm')||'';
+    localStorage.setItem('ajean.dev.home',JSON.stringify({url:home,id:idrx.test(hm)?hm:'',name:(sp.get('hn')||'').slice(0,64)}));}}catch(e){}
+  ['home','hm','hn','auto'].forEach(function(k){sp.delete(k);});
+  // ?auto=1 : reprise au lancement de l'app → droit sur le dernier appareil ouvert.
+  var last='';try{last=localStorage.getItem('ajk-home')||'';}catch(e){}
+  if(auto&&idrx.test(last)){location.replace('/server.html?m='+encodeURIComponent(last)+'&v='+encodeURIComponent(v));return;}
+  var q=sp.toString();                      // conserve ?sub=ok etc.
+  location.replace('/app.html?v='+encodeURIComponent(v)+(q?('&'+q):''));
 })();
 </script>
 </body></html>

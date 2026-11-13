@@ -13,6 +13,19 @@ function jsonPost(u,b){return j(u,{method:'POST',headers:{'Content-Type':'applic
 function machineById(id){return MACHINES.find(function(x){return x.id===id});}
 function machineName(id){var m=machineById(id);return m?m.name:id;}
 
+/* ---- App PC : retour à l'AJEAN local ----------------------------------------
+   La fenêtre de l'app installée navigue entre l'AJEAN local et ce portail ; elle a
+   laissé son adresse de retour dans ajean.dev.home (index.html). On repart vers
+   elle en lui confiant la liste des appareils du compte (#dev=…), qu'elle affiche
+   dans son sélecteur. Boucle locale uniquement. */
+function homePC(){try{var h=JSON.parse(localStorage.getItem('ajean.dev.home')||'null');
+  return (h&&/^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(h.url||''))?h:null;}catch(e){return null;}}
+function goHomePC(){var h=homePC();if(!h)return;
+  var list=MACHINES.map(function(m){return {id:m.id,name:m.name||'',hostname:m.hostname||'',online:!!m.online};});
+  location.href=h.url+'/#dev='+encodeURIComponent(JSON.stringify(list));}
+document.addEventListener('DOMContentLoaded',function(){var h=homePC(),b=document.getElementById('homeBtn');
+  if(h&&b){b.textContent='← '+(h.name||'Ce PC');b.title='Revenir à l’AJEAN de ce PC';b.style.display='';}});
+
 /* ---- petites modales (askConfirm/askPrompt) utilisées aussi par e2e.js ------- */
 var _cf=null;
 function askConfirm(opt){opt=opt||{};

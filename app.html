@@ -234,6 +234,9 @@ header{background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:s
 <header>
   <div class="brand"><svg viewBox="0 0 23 5" shape-rendering="crispEdges" fill="currentColor" role="img" aria-label="AJEAN"><rect x="1" y="0" width="2" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="3" y="1" width="1" height="1"/><rect x="0" y="2" width="4" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="6" y="0" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="5" y="4" width="1" height="1"/><rect x="8" y="0" width="4" height="1"/><rect x="8" y="1" width="1" height="1"/><rect x="8" y="2" width="3" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="8" y="4" width="4" height="1"/><rect x="14" y="0" width="2" height="1"/><rect x="13" y="1" width="1" height="1"/><rect x="16" y="1" width="1" height="1"/><rect x="13" y="2" width="4" height="1"/><rect x="13" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="13" y="4" width="1" height="1"/><rect x="16" y="4" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="21" y="0" width="1" height="1"/><rect x="18" y="1" width="2" height="1"/><rect x="21" y="1" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="20" y="2" width="2" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="21" y="3" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="21" y="4" width="1" height="1"/></svg><span class="dom">.link</span></div>
   <span class="sp"></span>
+  <!-- App PC : retour à l'AJEAN local qui héberge la fenêtre (affiché seulement si
+       l'app a donné son adresse de retour, voir index.html). -->
+  <button class="btn subtle" id="homeBtn" onclick="goHomePC()" style="display:none"></button>
   <button class="iconbtn" id="themeBtn" onclick="toggleTheme()" title="Thème clair / sombre" aria-label="Changer de thème"></button>
   <button class="iconbtn" id="acctBtn" onclick="openAccount()" title="Mon compte" aria-label="Mon compte"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></svg></button>
 </header>
@@ -327,10 +330,10 @@ var API='https://ajean.link';
     return _f(u,opt);};})();
 </script>
 <script src="/wasm_exec.js"></script>
-<script src="/e2e.js?v=20261111223855"></script>
+<script src="/e2e.js?v=20261113203202"></script>
 <script src="/marked.min.js"></script>
 <script>
-var BUILD='20261111223855'; // tamponné par build-server-ui.ps1 (anti-cache)
+var BUILD='20261113203202'; // tamponné par build-server-ui.ps1 (anti-cache)
 var MACHINES=[],PROBE={},SCARDS={},SIG_M='',EMAIL='';
 var ACTIVE=true; // abonnement actif ? (« payer ou rien » : sinon aucun accès distant)
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900);}
@@ -344,6 +347,19 @@ async function j(u,opt){var r=await fetch(u,opt);if(r.status===401){location.hre
 function jsonPost(u,b){return j(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});}
 function machineById(id){return MACHINES.find(function(x){return x.id===id});}
 function machineName(id){var m=machineById(id);return m?m.name:id;}
+
+/* ---- App PC : retour à l'AJEAN local ----------------------------------------
+   La fenêtre de l'app installée navigue entre l'AJEAN local et ce portail ; elle a
+   laissé son adresse de retour dans ajean.dev.home (index.html). On repart vers
+   elle en lui confiant la liste des appareils du compte (#dev=…), qu'elle affiche
+   dans son sélecteur. Boucle locale uniquement. */
+function homePC(){try{var h=JSON.parse(localStorage.getItem('ajean.dev.home')||'null');
+  return (h&&/^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(h.url||''))?h:null;}catch(e){return null;}}
+function goHomePC(){var h=homePC();if(!h)return;
+  var list=MACHINES.map(function(m){return {id:m.id,name:m.name||'',hostname:m.hostname||'',online:!!m.online};});
+  location.href=h.url+'/#dev='+encodeURIComponent(JSON.stringify(list));}
+document.addEventListener('DOMContentLoaded',function(){var h=homePC(),b=document.getElementById('homeBtn');
+  if(h&&b){b.textContent='← '+(h.name||'Ce PC');b.title='Revenir à l’AJEAN de ce PC';b.style.display='';}});
 
 /* ---- petites modales (askConfirm/askPrompt) utilisées aussi par e2e.js ------- */
 var _cf=null;
