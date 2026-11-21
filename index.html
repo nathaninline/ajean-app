@@ -6,7 +6,7 @@
 <!-- Thème appliqué AVANT tout rendu : ce bootstrap était peint en blanc en dur, d'où
      un flash blanc au lancement de la PWA en mode sombre (avant d'atteindre app.html).
      On lit la MÊME clé que le portail (jean-theme) ; défaut clair, comme app.html. -->
-<script>try{var t=localStorage.getItem('jean-theme')||'light';if(t==='dark'||/-dark$/.test(t))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<script>try{var t=localStorage.getItem('jean-theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');if(t==='dark'||/-dark$/.test(t))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <style>html,body{height:100%;margin:0;background:#ffffff}
 html[data-theme="dark"],html[data-theme="dark"] body{background:#0a0a0a}
 #l{position:fixed;inset:0;display:grid;place-items:center;color:#7d8590;
